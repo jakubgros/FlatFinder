@@ -11,7 +11,7 @@ class AddressExtractorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        tree = ET.parse('../data/tagged/addresses_from_title_and_description.xml')
+        tree = ET.parse('../data/tagged/addresses_from_title_and_description/addresses_from_title_and_description.xml')
 
         root = tree.getroot()
 
@@ -49,5 +49,3 @@ class AddressExtractorTest(unittest.TestCase):
 
 
 
-if __name__ == '__main__':
-    unittest.main()

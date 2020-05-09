@@ -9,6 +9,7 @@ from src.morfeusz import Morfeusz
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 
 
+
 class AddressExtractor:
     def __init__(self, address_provider):
         self.address_provider = address_provider
