@@ -1,3 +1,9 @@
+from src.exception_rule_type import ExceptionRuleType
+from src.exception_rules_container import ExceptionRulesContainer
+from src.singleton import Singleton
+from src.text_frame import TextFrame
+
+@Singleton
 class Morfeusz:
 
     def __init__(self):
@@ -15,21 +21,41 @@ class Morfeusz:
         return inflection
 
     def _consolidate(self, val):
-        return ''.join(ch for ch in val if ch.isalnum() or ch.isspace()).strip().lower()
+        return ''.join(ch for ch in val if ch.isalnum() or ch.isspace()).strip()
 
-    def compare(self, lhs, rhs):
-        lhs = self._consolidate(lhs)
-        rhs = self._consolidate(rhs)
+    def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
+        if not exception_rules:
+            exception_rules = ExceptionRulesContainer.empty()
 
-        lhs_amount_of_words = len(lhs.split())
-        rhs_amount_of_words = len(rhs.split())
-        if lhs_amount_of_words != rhs_amount_of_words:
+        actual = self._consolidate(actual)
+        expected = self._consolidate(expected)
+
+        actual_amount_of_words = len(actual.split())
+        expected_amount_of_words = len(expected.split())
+        if actual_amount_of_words != expected_amount_of_words:
             return False
 
-        inflection_lhs = self.get_inflection(lhs)
-        inflection_rhs = self.get_inflection(rhs)
+        inflection_actual = self.get_inflection(actual)
+        inflection_expected = self.get_inflection(expected)
 
-        for word_inflection_lhs, word_inflection_rhs in zip(inflection_lhs, inflection_rhs):
-            if word_inflection_lhs.isdisjoint(word_inflection_rhs):
+        for word_inflection_actual, word_inflection_expected, actual_word, expected_word\
+                in zip(inflection_actual, inflection_expected, actual.split(), expected.split()):
+
+            force_case_insensitivity \
+                = exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
+
+            test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
+
+            if word_inflection_actual.isdisjoint(word_inflection_expected) or \
+                    (test_case_sensitivity and actual_word.istitle() != expected_word.istitle()):
                 return False
         return True
+
+    def contains(self, phrase, text, *, exception_rules=None, title_case_sensitive=False):
+        frame_size = len(phrase.split())
+
+        for frame in TextFrame(text, frame_size):
+            if self.equals(phrase, frame, exception_rules=exception_rules, title_case_sensitive=title_case_sensitive):
+                return True
+
+        return False

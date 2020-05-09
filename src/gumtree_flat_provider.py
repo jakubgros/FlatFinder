@@ -1,3 +1,5 @@
+from src.address_provider import AddressProvider
+from src.extractor import AddressExtractor
 from src.flat import Flat
 from src.flat_provider import FlatProvider
 from src.driver import driver
@@ -19,7 +21,6 @@ class GumtreeFlatProvider(FlatProvider):
 
     def raw_announce_page_generator(self):
 
-
         page_number = 0
         while True:
             current_page_url = self.web_url.format(page_number=page_number)
@@ -34,12 +35,15 @@ class GumtreeFlatProvider(FlatProvider):
             page_number += 1
 
     def run(self):
-        found_in_city = "Kraków"
-        flats = []
-        for i, url in enumerate(self.raw_announce_page_generator()):
-            print(i)
-            flat = Flat.from_url(url)
-            flat.extract_location_from_description(found_in_city)
-            flats.append(flat)
-            if(i > 50):
-                break
+            flats = []
+            for i, url in enumerate(self.raw_announce_page_generator()):
+                try:
+                    print(i)
+                    flat = Flat.from_url(url)
+                    address_extractor = AddressExtractor(AddressProvider.Instance())
+                    flat.extract_info_from_description(address_extractor)
+                    flats.append(flat)
+                    if(i > 50):
+                        break
+                except Exception as e:
+                    print(e)

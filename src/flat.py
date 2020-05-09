@@ -1,11 +1,15 @@
+from collections import namedtuple
+
 from selenium.common.exceptions import NoSuchElementException
 
 from src.driver import driver
 
+ExtractionResult = namedtuple('ExtractionResult', ['status', 'value'])
 
 class Flat:
     def __init__(self):
         self.attributes = {}
+        self.description_attributes = {}
         self.title = None
         self.url = None
         self.price = None
@@ -42,13 +46,9 @@ class Flat:
 
         return obj
 
-    def extract_location_from_description(self, found_in_city):
-
-        import unidecode
-        found_in_city = unidecode.unidecode(found_in_city).strip().lower()
-        address = unidecode.unidecode(self.address).strip().lower()
-
-        need_to_extract = found_in_city == address
-
-        if(not need_to_extract):
-            return
+    def extract_info_from_description(self, extractor):
+        status, attribute, value = extractor(self.description)
+        self.description_attributes[attribute] = ExtractionResult(status, value)
+        print(self.description_attributes[attribute])
+        print(self.url)
+        print(self.description)
