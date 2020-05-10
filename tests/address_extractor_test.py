@@ -1,4 +1,5 @@
 import unittest
+from collections import Counter
 
 from src.address_provider import AddressProvider
 from src.extractor import AddressExtractor
@@ -33,19 +34,35 @@ class AddressExtractorTest(unittest.TestCase):
         status, *_ = self.extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe") # won't match "Śliczna" street
         self.assertFalse(status)
 
+    def _compareAddressResults(self, flat, found_address):
+        expected = flat['locations']
+        actual = found_address.street + found_address.estate + found_address.district
+        expected_counter = Counter(expected)
+        actual_counter = Counter(actual)
+
+        return self.assertTrue(expected_counter == actual_counter,
+                               f'expected = {expected_counter}, actual = {actual_counter}')
+
     def testBulk(self):
-        print()
-
+        import logging
+        logging.root.setLevel(logging.NOTSET)
         flat = AddressExtractorTest.all_flats[0]
-        print(flat['description'])
-        status, attribute, value = self.extractor(flat['description'])
-        pass
+
+        import cProfile
+        pr = cProfile.Profile()
+        pr.enable()
+
+        _, _, found_address = self.extractor(flat['description'])
+
+        pr.disable()
+
+        from pstats import Stats
+        p = Stats(pr)
+        p.sort_stats('tottime').print_stats()
 
 
+        #self._compareAddressResults(flat, found_address)
 
 
-
-
-
-
-
+if __name__ == "__main__":
+    unittest.main()

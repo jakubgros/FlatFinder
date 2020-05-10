@@ -32,7 +32,6 @@ class AddressExtractor:
 
     def __call__(self, description):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
-
         matched_districts = self._match_locations(self.address_provider.districts, description)
         matched_estates = self._match_locations(self.address_provider.estates, description)
         matched_streets = self._match_locations(self.address_provider.streets, description)

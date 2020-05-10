@@ -5,7 +5,7 @@ class TextFrame:
         self.frame_size = frame_size
 
     def __iter__(self):
-        text_split = re.split(' |-|:|;|!|,|\.|\n', self.text)
+        text_split = re.split('\+|\(|\)| |-|:|;|!|,|\.|\n', self.text)
         text_split = [word.strip() for word in text_split if word.strip()]
         words_count = len(text_split)
 

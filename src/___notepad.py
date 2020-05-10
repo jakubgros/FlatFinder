@@ -26,3 +26,13 @@ def generate_description_title_data_for_address_tagging():
 
     tree = ET.ElementTree(root)
     tree.write('thexml.xml')
+
+
+import morfeusz2
+
+morf = morfeusz2.Morfeusz(dict_path=r'..\third parties\morfeusz2-dictionary-polimorf',
+                               dict_name="polimorf")
+
+kraka = morf.analyse("kraka")
+krakow = morf.analyse("kraków")
+pass

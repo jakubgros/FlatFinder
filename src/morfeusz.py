@@ -1,3 +1,6 @@
+import functools
+import logging
+
 from src.exception_rule_type import ExceptionRuleType
 from src.exception_rules_container import ExceptionRulesContainer
 from src.singleton import Singleton
@@ -11,6 +14,7 @@ class Morfeusz:
         self.morf = morfeusz2.Morfeusz(dict_path=r'..\third parties\morfeusz2-dictionary-polimorf',
                                        dict_name="polimorf")
 
+    @functools.lru_cache(maxsize=None)
     def get_inflection(self, val):
         inflection = list()
         for idx, _, (_, base_form, *_) in self.morf.analyse(val):
@@ -20,6 +24,7 @@ class Morfeusz:
 
         return inflection
 
+    @functools.lru_cache(maxsize=None)
     def _consolidate(self, val):
         return ''.join(ch for ch in val if ch.isalnum() or ch.isspace()).strip()
 
@@ -27,6 +32,8 @@ class Morfeusz:
         if not exception_rules:
             exception_rules = ExceptionRulesContainer.empty()
 
+        a = actual
+        e = expected
         actual = self._consolidate(actual)
         expected = self._consolidate(expected)
 
@@ -34,6 +41,7 @@ class Morfeusz:
         expected_amount_of_words = len(expected.split())
         if actual_amount_of_words != expected_amount_of_words:
             return False
+
 
         inflection_actual = self.get_inflection(actual)
         inflection_expected = self.get_inflection(expected)
@@ -56,6 +64,7 @@ class Morfeusz:
 
         for frame in TextFrame(text, frame_size):
             if self.equals(phrase, frame, exception_rules=exception_rules, title_case_sensitive=title_case_sensitive):
+                logging.info(f"Matched: {phrase} = {frame}")
                 return True
 
         return False
