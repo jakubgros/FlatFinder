@@ -60,7 +60,6 @@ class AddressExtractorTest(unittest.TestCase):
             self._compareAddressResults(flat, found_address)
 
 
-
         for i, flat in enumerate(AddressExtractorTest.all_flats):
             with self.subTest(i=i):
                 _, _, found_address = self.extractor(flat['title'] + flat['description'])
