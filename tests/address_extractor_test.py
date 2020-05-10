@@ -37,13 +37,19 @@ class AddressExtractorTest(unittest.TestCase):
     def _compareAddressResults(self, flat, found_address):
         expected = flat['locations']
         actual = found_address.street + found_address.estate + found_address.district
-        expected_counter = Counter(expected)
-        actual_counter = Counter(actual)
 
-        return self.assertTrue(expected_counter == actual_counter,
-                               f'\nexpected = {expected_counter},\n'
-                               f'actual = {actual_counter}\n'
-                               f'description = {flat["description"]}')
+        expected = set(Counter(expected).keys())
+        actual = set(Counter(actual).keys())
+
+        matched = { key: key in actual for key in expected}
+        extra_matches = actual.difference(expected)
+
+        return self.assertTrue(expected.issubset(actual),
+                               f'\n'
+                               + f'[matched from expected] = {matched}\n\n'
+                               + f'[extra matches] =\n{extra_matches}\n\n'
+                               + f'[title] =\n{flat["title"]}\n\n'
+                               + f'[description] =\n {flat["description"]}\n\n')
 
     def testBulk(self):
         import logging
@@ -52,7 +58,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         for i, flat in enumerate(AddressExtractorTest.all_flats):
             with self.subTest(i=i):
-                _, _, found_address = self.extractor(flat['description'])
+                _, _, found_address = self.extractor(flat['title'] + flat['description'])
                 self._compareAddressResults(flat, found_address)
 
 
