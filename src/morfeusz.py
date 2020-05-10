@@ -1,6 +1,7 @@
 import functools
 import logging
 
+from src.exception import FFE_InvalidArgument
 from src.exception_rule_type import ExceptionRuleType
 from src.exception_rules_container import ExceptionRulesContainer
 from src.singleton import Singleton
@@ -16,11 +17,12 @@ class Morfeusz:
 
     @functools.lru_cache(maxsize=None)
     def get_inflection(self, val):
-        inflection = list()
-        for idx, _, (_, base_form, *_) in self.morf.analyse(val):
-            if len(inflection) <= idx:
-                inflection.append(set())
-            inflection[-1].add(base_form)
+        """ To improve performance of cache, value passed to the function has to be a single word. If you have a sentence
+        you have to call the function many times """
+        if len(val.split()) > 1:
+            raise FFE_InvalidArgument("Passed multi-word argument. The function accepts only single word as argument.")
+
+        inflection = set(base_form for _, _, (_, base_form, *_) in self.morf.analyse(val))
 
         return inflection
 
@@ -28,12 +30,11 @@ class Morfeusz:
     def _consolidate(self, val):
         return ''.join(ch for ch in val if ch.isalnum() or ch.isspace()).strip()
 
+    @functools.lru_cache(maxsize=None)
     def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
         if not exception_rules:
             exception_rules = ExceptionRulesContainer.empty()
 
-        a = actual
-        e = expected
         actual = self._consolidate(actual)
         expected = self._consolidate(expected)
 
@@ -42,9 +43,8 @@ class Morfeusz:
         if actual_amount_of_words != expected_amount_of_words:
             return False
 
-
-        inflection_actual = self.get_inflection(actual)
-        inflection_expected = self.get_inflection(expected)
+        inflection_actual = [self.get_inflection(word) for word in actual.split()]
+        inflection_expected = [self.get_inflection(word) for word in expected.split()]
 
         for word_inflection_actual, word_inflection_expected, actual_word, expected_word\
                 in zip(inflection_actual, inflection_expected, actual.split(), expected.split()):

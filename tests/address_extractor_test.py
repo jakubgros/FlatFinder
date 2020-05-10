@@ -48,20 +48,9 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
         flat = AddressExtractorTest.all_flats[0]
 
-        import cProfile
-        pr = cProfile.Profile()
-        pr.enable()
-
         _, _, found_address = self.extractor(flat['description'])
 
-        pr.disable()
-
-        from pstats import Stats
-        p = Stats(pr)
-        p.sort_stats('tottime').print_stats()
-
-
-        #self._compareAddressResults(flat, found_address)
+        self._compareAddressResults(flat, found_address)
 
 
 if __name__ == "__main__":
