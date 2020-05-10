@@ -51,10 +51,10 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
 
-    def testRegression(self): #TODO once all passes in testBulk, remove it
+    def testRegression(self): #TODO once all passes in testBulk, change compareAddressResult to more strict comparison
         import logging
         logging.root.setLevel(logging.NOTSET)
-        passing_tests = [AddressExtractorTest.all_flats[i] for i in [0, 1, 4, 13, 20, 23, 24, 27, 28, 36, 37, 43, 48, 50]]
+        passing_tests = [AddressExtractorTest.all_flats[i] for i in [0, 1, 4, 5, 13, 20, 23, 24, 27, 28, 36, 37, 43, 48, 50]]
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
             self._compareAddressResults(flat, found_address)
