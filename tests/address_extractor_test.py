@@ -41,16 +41,19 @@ class AddressExtractorTest(unittest.TestCase):
         actual_counter = Counter(actual)
 
         return self.assertTrue(expected_counter == actual_counter,
-                               f'expected = {expected_counter}, actual = {actual_counter}')
+                               f'\nexpected = {expected_counter},\n'
+                               f'actual = {actual_counter}\n'
+                               f'description = {flat["description"]}')
 
     def testBulk(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
         flat = AddressExtractorTest.all_flats[0]
 
-        _, _, found_address = self.extractor(flat['description'])
-
-        self._compareAddressResults(flat, found_address)
+        for i, flat in enumerate(AddressExtractorTest.all_flats):
+            with self.subTest(i=i):
+                _, _, found_address = self.extractor(flat['description'])
+                self._compareAddressResults(flat, found_address)
 
 
 if __name__ == "__main__":
