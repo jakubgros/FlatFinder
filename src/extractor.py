@@ -1,3 +1,4 @@
+import logging
 from collections import namedtuple
 
 from src.exception_rule import ExceptionRule
@@ -20,15 +21,36 @@ class AddressExtractor:
             ExceptionRule("osiedle", ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
         ])
 
-    def _match_locations(self, all_locations, description):
-        matched_locations = []
-        for location in all_locations:
-            if self.morfeusz.contains(location, description,
-                                      exception_rules=self.exception_rules,
-                                      title_case_sensitive=True):
-                matched_locations.append(location)
+    def _extract_street_number(self, all_words, matched_location_slice_pos):
+        slice_start, slice_end = matched_location_slice_pos
+        if len(all_words) < slice_end:
+            return None
 
-        return matched_locations
+        elem_after_slice = all_words[slice_end]
+
+        try:
+            street_number = int(elem_after_slice)
+            return True, street_number
+        except ValueError:
+            return False, None
+
+    def _match_locations(self, all_locations, description):
+        all_matched_locations = []
+        for location in all_locations:
+            does_contain, (matched_location_slice_pos, all_words) = self.morfeusz.contains(location, description,
+                                      exception_rules=self.exception_rules,
+                                      title_case_sensitive=True)
+
+            if does_contain:
+                success, street_number = self._extract_street_number(all_words, matched_location_slice_pos)
+                matched_location = location
+                if success:
+                    matched_location += " " + str(street_number)
+                all_matched_locations.append(matched_location)
+                slice_beg, slice_end = matched_location_slice_pos
+                logging.info(f"Matched: db[{matched_location}] = text[{' '.join(all_words[slice_beg:slice_end])}]")
+
+        return all_matched_locations
 
     def __call__(self, description):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """

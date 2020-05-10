@@ -4,13 +4,20 @@ class TextFrame:
         self.text = text
         self.frame_size = frame_size
 
-    def __iter__(self):
         text_split = re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', self.text)
-        text_split = [word.strip() for word in text_split if word and word.strip()]
-        words_count = len(text_split)
+        self.text_split = [word.strip() for word in text_split if word and word.strip()]
+
+    @property
+    def all_words(self):
+        return self.text_split
+
+    def __iter__(self):
+        words_count = len(self.text_split)
 
         if self.frame_size > words_count:
             return
 
         for i in range(words_count - self.frame_size + 1):
-            yield " ".join(text_split[i:i+self.frame_size])
+            start = i
+            end = start + self.frame_size
+            yield ((start, end), " ".join(self.text_split[start:end]))

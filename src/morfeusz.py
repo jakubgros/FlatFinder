@@ -27,16 +27,9 @@ class Morfeusz:
         return inflection
 
     @functools.lru_cache(maxsize=None)
-    def _consolidate(self, val):
-        return ''.join(ch for ch in val if ch.isalnum() or ch.isspace()).strip()
-
-    @functools.lru_cache(maxsize=None)
     def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
         if not exception_rules:
             exception_rules = ExceptionRulesContainer.empty()
-
-        actual = self._consolidate(actual)
-        expected = self._consolidate(expected)
 
         actual_amount_of_words = len(actual.split())
         expected_amount_of_words = len(expected.split())
@@ -62,9 +55,9 @@ class Morfeusz:
     def contains(self, phrase, text, *, exception_rules=None, title_case_sensitive=False):
         frame_size = len(phrase.split())
 
-        for frame in TextFrame(text, frame_size):
+        text_frame = TextFrame(text, frame_size)
+        for slice_position, frame in text_frame:
             if self.equals(phrase, frame, exception_rules=exception_rules, title_case_sensitive=title_case_sensitive):
-                logging.info(f"Matched: {phrase} = {frame}")
-                return True
+                return True, (slice_position, text_frame.all_words)
 
-        return False
+        return False, (None, text_frame.all_words)
