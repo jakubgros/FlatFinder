@@ -134,3 +134,10 @@ class NameComparatorTest(unittest.TestCase):
         ]
 
         self._test_all_cases(test_cases)
+
+    def testComparisonTitlesProvidedInDifferentOrder(self):
+        test_cases = [
+            ("ks. abp. Jana Kowalskiego", "abp. ks. Jana Kowalskiego"),
+        ]
+
+        self._test_all_cases(test_cases)
