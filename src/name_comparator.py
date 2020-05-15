@@ -12,11 +12,15 @@ class NameComparator:
         CONSTANTS.titles.remove(*CONSTANTS.titles)
 
         morf = Morfeusz.Instance()
-        with open("../data/name_titles/polish/titles.txt", encoding='UTF-8', ) as handle:
+
+        with open("../data/name_titles/polish/titles.txt", encoding='UTF-8') as handle:
             for title in handle.read().splitlines():
                 CONSTANTS.titles.add(title)
+                CONSTANTS.first_name_titles.add(title)
+
                 for title_synthesis in morf.morphological_synthesis(title):
                     CONSTANTS.titles.add(title_synthesis)
+                    CONSTANTS.first_name_titles.add(title_synthesis)
 
     def equals(self, lhs, rhs):
 

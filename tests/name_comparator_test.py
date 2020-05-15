@@ -4,7 +4,7 @@ from src.name_comparator import NameComparator
 
 
 class NameComparatorTest(unittest.TestCase):
-    def testTitleIgnoringFirstNameAndSurnameComparison(self):
+    def testTitleIgnoringComparisonOfFirstNameAndSurname(self):
         test_cases = [
             ("ks. Jana Kowalskiego", "Jana Kowalskiego"),
             ("księdza Jana Kowalskiego", "Jana Kowalskiego"),
@@ -57,6 +57,20 @@ class NameComparatorTest(unittest.TestCase):
             ("świętego Jana Kowalskiego", "Jana Kowalskiego"),
             ("im. Jana Kowalskiego", "Jana Kowalskiego"),
             ("imienia Jana Kowalskiego", "Jana Kowalskiego"),
+        ]
+
+        comp = NameComparator()
+
+        for i, (lhs, rhs) in enumerate(test_cases):
+            with self.subTest(i=i, lhs=lhs, rhs=rhs):
+                self.assertTrue(comp.equals(lhs, rhs))
+
+    def testTitleIgnoringComparisonOfFirstNameOnly(self):
+        test_cases = [
+            ("świętej Anny", "Anny"),
+            ("ojca Jana", "Jana"),
+            ("dr Jana", "Jana"),
+            ("prof. Jana", "Jana"),
         ]
 
         comp = NameComparator()
