@@ -125,3 +125,12 @@ class NameComparatorTest(unittest.TestCase):
         ]
 
         self._test_all_cases(test_cases)
+
+    def testComparisonWhenAllTitlesProvidedVsOnlyPartOfTitlesProvided(self):
+        test_cases = [
+            ("ks. abp. Jana Kowalskiego", "ks. Jana Kowalskiego"),
+            ("ks. abp. Jana Kowalskiego", "abp. Jana Kowalskiego"),
+            ("ks. abp. Jana Kowalskiego", " Jana Kowalskiego"),
+        ]
+
+        self._test_all_cases(test_cases)
