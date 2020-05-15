@@ -29,6 +29,5 @@ class MorfeuszTest(unittest.TestCase):
     def test_comparison_ignores_white_spaces(self):
         self.assertTrue(self.morfeusz.equals("jakieś słowo  ", "    jakieś    słowo"))
 
-
 if __name__ == "__main__":
     unittest.main() # run all tests

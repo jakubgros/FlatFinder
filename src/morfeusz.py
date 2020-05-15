@@ -62,6 +62,5 @@ class Morfeusz:
 
         return False, (None, text_frame.all_words)
 
-    def extract_surname(self, full_name):
-        """ based on fullname returns only surname """
-
+    def morphological_synthesis(self, word):
+        return [elem[0] for elem in self.morf.generate(word)]
