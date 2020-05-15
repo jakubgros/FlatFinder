@@ -8,6 +8,11 @@ class NameComparatorTest(unittest.TestCase):
     def setUp(self):
         self.comp = NameComparator()
 
+    def _test_all_cases(self, test_cases):
+        for i, (lhs, rhs) in enumerate(test_cases):
+            with self.subTest(i=i, lhs=lhs, rhs=rhs):
+                self.assertTrue(self.comp.equals(lhs, rhs))
+
     def testTitleIgnoringComparisonOfFirstNameAndSurname(self):
         test_cases = [
             ("ks. Jana Kowalskiego", "Jana Kowalskiego"),
@@ -63,11 +68,8 @@ class NameComparatorTest(unittest.TestCase):
             ("imienia Jana Kowalskiego", "Jana Kowalskiego"),
         ]
 
-        comp = NameComparator()
+        self._test_all_cases(test_cases)
 
-        for i, (lhs, rhs) in enumerate(test_cases):
-            with self.subTest(i=i, lhs=lhs, rhs=rhs):
-                self.assertTrue(self.comp.equals(lhs, rhs))
 
     def testTitleIgnoringComparisonOfFirstNameOnly(self):
         test_cases = [
@@ -77,9 +79,7 @@ class NameComparatorTest(unittest.TestCase):
             ("prof. Jana", "Jana"),
         ]
 
-        for i, (lhs, rhs) in enumerate(test_cases):
-            with self.subTest(i=i, lhs=lhs, rhs=rhs):
-                self.assertTrue(self.comp.equals(lhs, rhs))
+        self._test_all_cases(test_cases)
 
     def testTitleIgnoringComparisonOfSurnameOnly(self):
         test_cases = [
@@ -89,6 +89,39 @@ class NameComparatorTest(unittest.TestCase):
             ("płk. Kowalskiego", "Kowalskiego"),
         ]
 
-        for i, (lhs, rhs) in enumerate(test_cases):
-            with self.subTest(i=i, lhs=lhs, rhs=rhs):
-                self.assertTrue(self.comp.equals(lhs, rhs))
+        self._test_all_cases(test_cases)
+
+    def testComparisonBetweenLongAndAbbreviatedFormOfTitle(self):
+        test_cases = [
+            ("ks. Jana Kowalskiego", "księdza Jana Kowalskiego"),
+            ("abp. Jana Kowalskiego", "arcybiskupa Jana Kowalskiego"),
+            ("gen. Jana Kowalskiego", "generała Jana Kowalskiego"),
+            ("gen. Anny Kowalskiej", "generał Anny Kowalskiej"),
+            ("marsz. Jana Kowalskiego", " marszałka Jana Kowalskiego"),
+            ("marsz. Anny Kowalskiej", "marszałek Anny Kowalskiej"),
+            ("płk. Jana Kowalskiego", "pułkownika Jana Kowalskiego"),
+            ("płk. Anny Kowalskiej", "pułkownik Anny Kowalskiej"),
+            ("bł. Jana Kowalskiego", "błogosławionego Jana Kowalskiego"),
+            ("bł. Anny Kowalskiej", "błogosławionej Anny Kowalskiej"),
+            ("bp. Jana Kowalskiego", "biskupa Jana Kowalskiego"),
+            ("bpa Jana Kowalskiego", "biskupa Jana Kowalskiego"),
+            ("bp. Jana Kowalskiego", "bpa Jana Kowalskiego"),
+            ("dr Jana Kowalskiego", "doktora Jana Kowalskiego"),
+            ("dr Anny Kowalskiej", "doktor Anny Kowalskiej"),
+            ("pil. Jana Kowalskiego", "pilota Jana Kowalskiego"),
+            ("harc. Jana Kowalskiego", "harcmistrza Jana Kowalskiego"),
+            ("Jana Kowalskiego", "profesora Jana Kowalskiego"),
+            ("prof. Anny Kowalskiej", "profesor Anny Kowalskiej"),
+            ("kmr. Jana Kowalskiego", "komandora Jana Kowalskiego"),
+            ("kard. Jana Kowalskiego", "kardynała Jana Kowalskiego"),
+            ("mjr. Jana Kowalskiego", "majora Jana Kowalskiego"),
+            ("o. Jana Kowalskiego", "ojca Jana Kowalskiego"),
+            ("por. Jana Kowalskiego", "porucznika Jana Kowalskiego"),
+            ("rtm. Jana Kowalskiego", "rotmistrza Jana Kowalskiego"),
+            ("s. Anny Kowalskiej", "siostry Anny Kowalskiej"),
+            ("św. Anny Kowalskiej", "świętej Anny Kowalskiej"),
+            ("św. Jana Kowalskiego", "świętego Jana Kowalskiego"),
+            ("im. Jana Kowalskiego", "imienia Jana Kowalskiego"),
+        ]
+
+        self._test_all_cases(test_cases)
