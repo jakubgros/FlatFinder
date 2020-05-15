@@ -75,3 +75,4 @@ venv/
 src/__pycache__/
 third parties/
 debug.log
+src/___notepad.py

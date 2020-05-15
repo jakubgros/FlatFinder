@@ -61,3 +61,7 @@ class Morfeusz:
                 return True, (slice_position, text_frame.all_words)
 
         return False, (None, text_frame.all_words)
+
+    def extract_surname(self, full_name):
+        """ based on fullname returns only surname """
+
