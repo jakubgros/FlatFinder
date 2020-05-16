@@ -1,6 +1,7 @@
 import logging
 from collections import namedtuple
 
+from src.TextSearcher import TextSearcher
 from src.exception_rule import ExceptionRule
 from src.exception_rule_type import ExceptionRuleType
 
@@ -37,9 +38,12 @@ class AddressExtractor:
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
         for location in all_locations:
-            does_contain, (matched_location_slice_pos, all_words) = self.morfeusz.contains(location, description,
+            equality_comparator = lambda lhs, rhs: self.morfeusz.equals(lhs, rhs,
                                       exception_rules=self.exception_rules,
                                       title_case_sensitive=True)
+
+            does_contain, (matched_location_slice_pos, all_words) \
+                = TextSearcher.contains(location, description, equality_comparator=equality_comparator)
 
             if does_contain:
                 success, street_number = self._extract_street_number(all_words, matched_location_slice_pos)
@@ -48,7 +52,7 @@ class AddressExtractor:
                     matched_location += " " + str(street_number)
                 all_matched_locations.append(matched_location)
                 slice_beg, slice_end = matched_location_slice_pos
-                logging.info(f"Matched: db[{matched_location}] = text[{' '.join(all_words[slice_beg:slice_end])}]")
+                logging.debug(f"Matched: db[{matched_location}] = text[{' '.join(all_words[slice_beg:slice_end])}]")
 
         return all_matched_locations
 

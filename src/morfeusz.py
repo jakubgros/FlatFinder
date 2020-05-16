@@ -52,20 +52,9 @@ class Morfeusz:
                 return False
         return True
 
-    def contains(self, phrase, text, *, exception_rules=None, title_case_sensitive=False):
-        frame_size = len(phrase.split())
-
-        text_frame = TextFrame(text, frame_size)
-        for slice_position, frame in text_frame:
-            if self.equals(phrase, frame, exception_rules=exception_rules, title_case_sensitive=title_case_sensitive):
-                return True, (slice_position, text_frame.all_words)
-
-        return False, (None, text_frame.all_words)
-
     def morphological_synthesis(self, word):
         return [elem[0] for elem in self.morf.generate(word)]
 
     def does_contain_person_first_name(self, text):
         tagging = set(tag for word_analysis in self.morf.analyse(text) for tag in word_analysis[2][3])
-
         return 'imię' in tagging
