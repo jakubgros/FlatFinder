@@ -77,3 +77,4 @@ debug.log
 src/___notepad.py
 temp/
 */__pycache__/*
+~$*.xlsx
