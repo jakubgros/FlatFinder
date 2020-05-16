@@ -141,3 +141,7 @@ class NameComparatorTest(unittest.TestCase):
         ]
 
         self._test_all_cases(test_cases)
+
+
+if __name__ == "__main__":
+    unittest.main()

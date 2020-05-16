@@ -2,6 +2,7 @@ import unittest
 
 from src.morfeusz import Morfeusz
 
+
 class MorfeuszTest(unittest.TestCase):
 
     def setUp(self):
@@ -19,7 +20,7 @@ class MorfeuszTest(unittest.TestCase):
         self.assertTrue(self.morfeusz.equals("Stanisława", "Stanisławem"))
         self.assertFalse(self.morfeusz.equals("Piotra", "Stanisławem"))
 
-    def test_comparison_is_case_insensitive(self):
+    def testcomparison_is_case_insensitive(self):
         self.assertTrue(self.morfeusz.equals("stanisława", "Stanisława"))
         self.assertTrue(self.morfeusz.equals("stanisława", "STANISłAWA"))
 

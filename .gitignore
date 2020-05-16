@@ -72,8 +72,8 @@ fabric.properties
 
 # Other
 venv/
-src/__pycache__/
 third parties/
 debug.log
 src/___notepad.py
 temp/
+*/__pycache__/*
