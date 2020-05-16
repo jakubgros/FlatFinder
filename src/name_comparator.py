@@ -22,9 +22,22 @@ class NameComparator:
                     CONSTANTS.titles.add(title_synthesis)
                     CONSTANTS.first_name_titles.add(title_synthesis)
 
-    def equals(self, lhs, rhs):
+    def _get_first_and_last(self, str_name):
+        name = HumanName(str_name)
 
-        hn_lhs = HumanName(lhs)
-        hn_rhs = HumanName(rhs)
+        first = name.first
+        last = name.last
 
-        return hn_lhs.first == hn_rhs.first and hn_lhs.last == hn_rhs.last
+        # HumanName library doesn't recognize first and last name correctly if only one part was provided,
+        # thus the correction is needed
+        morf = Morfeusz.Instance()
+        if not morf.does_contain_person_first_name(first):
+            first, last = last, first
+
+        return first, last
+
+    def equals(self, lhs: str, rhs: str) -> bool:
+        lhs_first, lhs_last = self._get_first_and_last(lhs)
+        rhs_first, rhs_last = self._get_first_and_last(rhs)
+
+        return (lhs_first == "" or rhs_first == "" or lhs_first == rhs_first) and lhs_last == rhs_last

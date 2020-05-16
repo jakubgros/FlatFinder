@@ -8,12 +8,16 @@ class NameComparatorTest(unittest.TestCase):
     def setUp(self):
         self.comp = NameComparator()
 
-    def _test_all_cases(self, test_cases):
-        for i, (lhs, rhs) in enumerate(test_cases):
+    def _test_all_cases(self, *, true_cases=[], false_cases=[]):
+        for i, (lhs, rhs) in enumerate(true_cases):
             with self.subTest(i=i, lhs=lhs, rhs=rhs):
                 self.assertTrue(self.comp.equals(lhs, rhs))
 
-    def testTitleIgnoringComparisonOfFirstNameAndSurname(self):
+        for i, (lhs, rhs) in enumerate(false_cases):
+            with self.subTest(i=i, lhs=lhs, rhs=rhs):
+                self.assertFalse(self.comp.equals(lhs, rhs))
+
+    def test_title_ignoring_comparison_of_first_name_and_surname(self):
         test_cases = [
             ("ks. Jana Kowalskiego", "Jana Kowalskiego"),
             ("księdza Jana Kowalskiego", "Jana Kowalskiego"),
@@ -68,10 +72,10 @@ class NameComparatorTest(unittest.TestCase):
             ("imienia Jana Kowalskiego", "Jana Kowalskiego"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
 
-    def testTitleIgnoringComparisonOfFirstNameOnly(self):
+    def test_title_ignoring_comparison_of_first_name_only(self):
         test_cases = [
             ("świętej Anny", "Anny"),
             ("ojca Jana", "Jana"),
@@ -79,9 +83,9 @@ class NameComparatorTest(unittest.TestCase):
             ("prof. Jana", "Jana"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
-    def testTitleIgnoringComparisonOfSurnameOnly(self):
+    def test_title_ignoring_comparison_of_surname_only(self):
         test_cases = [
             ("majora Kowalskiego", "Kowalskiego"),
             ("gen. Kowalskiego", "Kowalskiego"),
@@ -89,9 +93,9 @@ class NameComparatorTest(unittest.TestCase):
             ("płk. Kowalskiego", "Kowalskiego"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
-    def testComparisonBetweenLongAndAbbreviatedFormOfTitle(self):
+    def test_comparison_between_long_and_abbreviated_form_of_title(self):
         test_cases = [
             ("ks. Jana Kowalskiego", "księdza Jana Kowalskiego"),
             ("abp. Jana Kowalskiego", "arcybiskupa Jana Kowalskiego"),
@@ -124,24 +128,44 @@ class NameComparatorTest(unittest.TestCase):
             ("im. Jana Kowalskiego", "imienia Jana Kowalskiego"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
-    def testComparisonWhenAllTitlesProvidedVsOnlyPartOfTitlesProvided(self):
+    def test_comparison_when_all_titles_provided_vs_only_part_of_titles_provided(self):
         test_cases = [
             ("ks. abp. Jana Kowalskiego", "ks. Jana Kowalskiego"),
             ("ks. abp. Jana Kowalskiego", "abp. Jana Kowalskiego"),
             ("ks. abp. Jana Kowalskiego", " Jana Kowalskiego"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
-    def testComparisonTitlesProvidedInDifferentOrder(self):
+    def test_comparison_titles_provided_in_different_order(self):
         test_cases = [
             ("ks. abp. Jana Kowalskiego", "abp. ks. Jana Kowalskiego"),
         ]
 
-        self._test_all_cases(test_cases)
+        self._test_all_cases(true_cases=test_cases)
 
+    def test_comparison_of_first_name_and_surname_vs_surname_only(self):
+
+        true_cases = [
+            ("dr Jana Kowalskiego", "dr Kowalskiego"),
+            ("dr Jana Kowalskiego", "dr Jana Kowalskiego"),
+            ("dr Jana Kowalskiego", "Jana Kowalskiego"),
+            ("dr Jana Kowalskiego", "Kowalskiego"),
+            ("dr Kowalskiego", "Kowalskiego"),
+            ("dr Kowalskiego", "dr Kowalskiego"),
+            ("Jana Kowalskiego", "Kowalskiego"),
+        ]
+
+        false_cases = [
+            ("dr Jana Kowalskiego", "dr Jana"),
+            ("dr Jana Kowalskiego", "Jana"),
+            ("Jana Kowalskiego", "Jana"),
+            ("Kowalskiego", "Jana"),
+        ]
+
+        self._test_all_cases(true_cases=true_cases, false_cases=false_cases)
 
 if __name__ == "__main__":
     unittest.main()
