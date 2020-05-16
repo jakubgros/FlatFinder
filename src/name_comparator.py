@@ -40,4 +40,6 @@ class NameComparator:
         lhs_first, lhs_last = self._get_first_and_last(lhs)
         rhs_first, rhs_last = self._get_first_and_last(rhs)
 
-        return (lhs_first == "" or rhs_first == "" or lhs_first == rhs_first) and lhs_last == rhs_last
+        morf = Morfeusz.Instance()
+        return (lhs_first == "" or rhs_first == "" or morf.equals(lhs_first, rhs_first))\
+               and morf.equals(lhs_last, rhs_last)
