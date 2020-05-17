@@ -1,5 +1,6 @@
 import unittest
 from collections import Counter
+from itertools import chain
 
 from src.address_provider import AddressProvider
 from src.extractor import AddressExtractor
@@ -68,6 +69,7 @@ class AddressExtractorTest(unittest.TestCase):
             with self.subTest(i=i):
                 _, _, found_address = self.extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address)
+
 
 if __name__ == "__main__":
     unittest.main()

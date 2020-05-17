@@ -25,8 +25,8 @@ class AddressExtractor:
 
     def _extract_street_number(self, all_words, matched_location_slice_pos):
         slice_start, slice_end = matched_location_slice_pos
-        if len(all_words) < slice_end:
-            return None
+        if len(all_words) < slice_end+1:
+            return False, None
 
         elem_after_slice = all_words[slice_end]
 
@@ -39,14 +39,13 @@ class AddressExtractor:
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
         for location in all_locations:
-            if False: # Tagger.Instance().does_contain_person_first_name(location):
+            if False: #Tagger.Instance().does_contain_person_first_name(location):
                 name_comparator = NameComparator.Instance()
                 equality_comparator = name_comparator.equals
             else:
                 def morphologic_equals(lhs, rhs):
                     return self.morfeusz.equals(lhs, rhs, exception_rules=self.exception_rules, title_case_sensitive=True)
                 equality_comparator = morphologic_equals
-
 
             does_contain, (matched_location_slice_pos, all_words) \
                 = TextSearcher.contains(location, description, equality_comparator=equality_comparator)
@@ -58,7 +57,9 @@ class AddressExtractor:
                     matched_location += " " + str(street_number)
                 all_matched_locations.append(matched_location)
                 slice_beg, slice_end = matched_location_slice_pos
-                logging.debug(f"Matched: db[{matched_location}] = text[{' '.join(all_words[slice_beg:slice_end])}]")
+
+                piece_of_text_that_matched = ' '.join(all_words[slice_beg:slice_end])
+                logging.debug(f"Matched: db[{matched_location}] = text[{piece_of_text_that_matched}]")
 
         return all_matched_locations
 

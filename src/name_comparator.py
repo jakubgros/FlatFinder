@@ -1,9 +1,10 @@
 from nameparser import HumanName
 
-
 from nameparser.config import CONSTANTS
 
+from Tagger import Tagger
 from singleton import Singleton
+
 from src.morfeusz import Morfeusz
 
 @Singleton
@@ -31,8 +32,7 @@ class NameComparator:
 
         # HumanName library doesn't recognize first and last name correctly if only one part was provided,
         # thus the correction is needed
-        morf = Morfeusz.Instance()
-        if not morf.does_contain_person_first_name(first):
+        if not Tagger.Instance().does_contain_person_first_name(first):
             first, last = last, first
 
         return first, last
@@ -42,5 +42,8 @@ class NameComparator:
         rhs_first, rhs_last = self._get_first_and_last(rhs)
 
         morf = Morfeusz.Instance()
-        return (lhs_first == "" or rhs_first == "" or morf.equals(lhs_first, rhs_first))\
-               and morf.equals(lhs_last, rhs_last)
+
+        if (not lhs_first or not rhs_first) and (rhs_first or rhs_last):
+            return morf.equals(lhs_last, rhs_last)
+        else:
+            return morf.equals(lhs_first, rhs_first) and morf.equals(lhs_last, rhs_last)

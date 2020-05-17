@@ -8,7 +8,7 @@ class TextSearcher:
                  exception_rules=None,
                  title_case_sensitive=False,
                  equality_comparator=lambda lhs, rhs: lhs == rhs):
-        frame_size = len(phrase.split())
+        frame_size = min(len(phrase.split()), len(text.split()))
 
         text_frame = TextFrame(text, frame_size)
         for slice_position, frame in text_frame:

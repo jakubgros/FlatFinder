@@ -30,14 +30,5 @@ class MorfeuszTest(unittest.TestCase):
     def test_comparison_ignores_white_spaces(self):
         self.assertTrue(self.morfeusz.equals("jakieś słowo  ", "    jakieś    słowo"))
 
-    def test_does_contain_person_name(self):
-        self.assertTrue(self.morfeusz.does_contain_person_first_name("Stefana Batorego"))
-        self.assertTrue(self.morfeusz.does_contain_person_first_name("ul. Stefana Batorego"))
-        self.assertTrue(self.morfeusz.does_contain_person_first_name("marsz. Józefa Piłsudskiego"))
-
-        self.assertFalse(self.morfeusz.does_contain_person_first_name("Mistrzejowice"))
-        self.assertFalse(self.morfeusz.does_contain_person_first_name("Prądnik Biały"))
-        self.assertFalse(self.morfeusz.does_contain_person_first_name("Do Sanktuarium Bożego Miłosierdzia"))
-
 if __name__ == "__main__":
     unittest.main() # run all tests

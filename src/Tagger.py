@@ -7,7 +7,7 @@ class Tagger:
     def __init__(self):
         self.first_names = {}
         with open("../data/first_names/polish.txt", encoding="utf8") as file_handle:
-            for data in file_handle:
+            for data in file_handle.read().splitlines():
                 self.first_names[data] = True
 
     def does_contain_person_first_name(self, text):
@@ -21,5 +21,3 @@ class Tagger:
                     return True
 
         return False
-
-

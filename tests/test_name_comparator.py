@@ -167,5 +167,14 @@ class NameComparatorTest(unittest.TestCase):
 
         self._test_all_cases(true_cases=true_cases, false_cases=false_cases)
 
+    def test_comma_bug(self):
+        self.assertFalse(self.comp.equals('Kazimierz', ','))
+
+    def test_al_title_bug(self):
+        self.assertFalse(self.comp.equals('Al. gen. Tadeusza Bora-Komorowskiego', '. Trasy rowerowo -'))
+
+    def test_hypen_bug(self):
+        self.assertFalse(self.comp.equals('Tadeusza Bora-Komorowskiego', ', - balkon -'))
+
 if __name__ == "__main__":
     unittest.main()

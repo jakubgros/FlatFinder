@@ -1,5 +1,6 @@
 import functools
 import logging
+import re
 
 from src.exception import FFE_InvalidArgument
 from src.exception_rule_type import ExceptionRuleType
@@ -31,16 +32,20 @@ class Morfeusz:
         if not exception_rules:
             exception_rules = ExceptionRulesContainer.empty()
 
-        actual_amount_of_words = len(actual.split())
-        expected_amount_of_words = len(expected.split())
+        actual_split = [word.strip() for word in re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', actual)
+                           if word and word.strip()]
+        expected_split = [word.strip() for word in re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', expected)
+                           if word and word.strip()]
+        actual_amount_of_words = len(actual_split)
+        expected_amount_of_words = len(expected_split)
         if actual_amount_of_words != expected_amount_of_words:
             return False
 
-        inflection_actual = [self.get_inflection(word) for word in actual.split()]
-        inflection_expected = [self.get_inflection(word) for word in expected.split()]
+        inflection_actual = [self.get_inflection(word) for word in actual_split]
+        inflection_expected = [self.get_inflection(word) for word in expected_split]
 
         for word_inflection_actual, word_inflection_expected, actual_word, expected_word\
-                in zip(inflection_actual, inflection_expected, actual.split(), expected.split()):
+                in zip(inflection_actual, inflection_expected, actual_split, expected_split):
 
             force_case_insensitivity \
                 = exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
