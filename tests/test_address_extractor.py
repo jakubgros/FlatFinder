@@ -69,6 +69,5 @@ class AddressExtractorTest(unittest.TestCase):
                 _, _, found_address = self.extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address)
 
-
 if __name__ == "__main__":
     unittest.main()

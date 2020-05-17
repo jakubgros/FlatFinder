@@ -54,7 +54,3 @@ class Morfeusz:
 
     def morphological_synthesis(self, word):
         return [elem[0] for elem in self.morf.generate(word)]
-
-    def does_contain_person_first_name(self, text):
-        tagging = set(tag for word_analysis in self.morf.analyse(text) for tag in word_analysis[2][3])
-        return 'imię' in tagging

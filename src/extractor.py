@@ -1,6 +1,8 @@
 import logging
 from collections import namedtuple
 
+from Tagger import Tagger
+from name_comparator import NameComparator
 from src.TextSearcher import TextSearcher
 from src.exception_rule import ExceptionRule
 from src.exception_rule_type import ExceptionRuleType
@@ -9,7 +11,6 @@ from src.exception_rules_container import ExceptionRulesContainer
 from src.morfeusz import Morfeusz
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
-
 
 
 class AddressExtractor:
@@ -38,9 +39,14 @@ class AddressExtractor:
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
         for location in all_locations:
-            equality_comparator = lambda lhs, rhs: self.morfeusz.equals(lhs, rhs,
-                                      exception_rules=self.exception_rules,
-                                      title_case_sensitive=True)
+            if False: # Tagger.Instance().does_contain_person_first_name(location):
+                name_comparator = NameComparator.Instance()
+                equality_comparator = name_comparator.equals
+            else:
+                def morphologic_equals(lhs, rhs):
+                    return self.morfeusz.equals(lhs, rhs, exception_rules=self.exception_rules, title_case_sensitive=True)
+                equality_comparator = morphologic_equals
+
 
             does_contain, (matched_location_slice_pos, all_words) \
                 = TextSearcher.contains(location, description, equality_comparator=equality_comparator)
@@ -66,9 +72,9 @@ class AddressExtractor:
                           estate=matched_estates,
                           street=matched_streets)
 
-        return bool(matched_districts or matched_estates or matched_streets),\
-            self.attribute_name,\
-            address
+        return bool(matched_districts or matched_estates or matched_streets), \
+               self.attribute_name, \
+               address
 
 
 '''

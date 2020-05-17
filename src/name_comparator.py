@@ -3,9 +3,10 @@ from nameparser import HumanName
 
 from nameparser.config import CONSTANTS
 
+from singleton import Singleton
 from src.morfeusz import Morfeusz
 
-
+@Singleton
 class NameComparator:
 
     def __init__(self):

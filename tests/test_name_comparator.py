@@ -6,7 +6,7 @@ from src.name_comparator import NameComparator
 class NameComparatorTest(unittest.TestCase):
 
     def setUp(self):
-        self.comp = NameComparator()
+        self.comp = NameComparator.Instance()
 
     def _test_all_cases(self, *, true_cases=[], false_cases=[]):
         for i, (lhs, rhs) in enumerate(true_cases):
