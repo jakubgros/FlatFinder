@@ -70,6 +70,9 @@ class AddressExtractorTest(unittest.TestCase):
                 _, _, found_address = self.extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address)
 
+    def test_extraction_address_that_contains_only_surname(self):
+        *_, found_address = self.extractor("Zamoyskiego")
+        self.assertIn("Jana Zamoyskiego", chain(found_address.district, found_address.estate, found_address.street))
 
 if __name__ == "__main__":
     unittest.main()

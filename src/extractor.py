@@ -39,7 +39,7 @@ class AddressExtractor:
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
         for location in all_locations:
-            if False: #Tagger.Instance().does_contain_person_first_name(location):
+            if Tagger.Instance().does_contain_person_first_name(location):
                 name_comparator = NameComparator.Instance()
                 equality_comparator = name_comparator.equals
             else:
