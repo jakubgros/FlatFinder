@@ -1,3 +1,5 @@
+import functools
+
 from morfeusz import Morfeusz
 
 
@@ -6,6 +8,7 @@ class MorphologicSet:
         self.data = set(data)
         self.morf = Morfeusz.Instance()
 
+    @functools.lru_cache(maxsize=None)
     def __contains__(self, key):
         for elem in self.data:
             if self.morf.equals(elem, key):

@@ -7,7 +7,8 @@ from singleton import Singleton
 from src.morfeusz import Morfeusz
 
 class NameComparator:
-    def equals(self, lhs: str, rhs: str) -> bool:
+    @staticmethod
+    def equals(lhs: str, rhs: str) -> bool:
         name_parser = HumanNameParser.Instance()
 
         _, lhs_first, lhs_last = name_parser.parse(lhs)

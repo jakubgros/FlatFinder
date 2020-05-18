@@ -40,8 +40,7 @@ class AddressExtractor:
         all_matched_locations = []
         for location in all_locations:
             if Tagger.Instance().does_contain_person_first_name(location):
-                name_comparator = NameComparator.Instance()
-                equality_comparator = name_comparator.equals
+                equality_comparator = NameComparator.equals
             else:
                 def morphologic_equals(lhs, rhs):
                     return self.morfeusz.equals(lhs, rhs, exception_rules=self.exception_rules, title_case_sensitive=True)

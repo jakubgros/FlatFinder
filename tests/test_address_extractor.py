@@ -56,7 +56,9 @@ class AddressExtractorTest(unittest.TestCase):
     def test_regression(self): #TODO once all passes in testBulk, change compareAddressResult to more strict comparison
         import logging
         logging.root.setLevel(logging.NOTSET)
-        passing_tests = [AddressExtractorTest.all_flats[i] for i in [0, 1, 4, 5, 13, 20, 23, 24, 27, 28, 36, 37, 43, 48, 50]]
+        passing_tests = [AddressExtractorTest.all_flats[i] for i
+                         in [0, 1, 2, 3, 4, 5, 13, 20, 23, 24, 25, 26, 27, 28, 33, 36, 37, 43, 45, 46, 48, 50]]
+
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
             self._compare_address_results(flat, found_address)
