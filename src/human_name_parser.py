@@ -1,0 +1,60 @@
+import re
+
+from morphologic_set import MorphologicSet
+from singleton import Singleton
+
+
+@Singleton
+class HumanNameParser:
+    def __init__(self):
+        self._all_valid_titles = MorphologicSet(self._load_data("../data/name_titles/polish/titles.txt"))
+        self._all_valid_given_names = MorphologicSet(self._load_data("../data/first_names/polish.txt"))
+
+    def _load_data(self, file_path):
+        with open(file_path, encoding='UTF-8') as handle:
+            loaded_data = [data for data in handle.read().splitlines()]
+
+        return loaded_data
+
+    def parse(self, name):
+        name = re.split('\(|\)| |-|,|\.|\n', name)
+        name = [word.strip() for word in name if word and word.strip()]
+
+        title = list()
+        given_name = list()
+        surname = list()
+
+        word_it = iter(name)
+        try:
+            word = next(word_it)
+
+            #titles
+            while True:
+                if word in self._all_valid_titles:
+                    title.append(word)
+                    word = next(word_it)
+                else:
+                    break
+
+            #given names
+            while True:
+                if word in self._all_valid_given_names:
+                    given_name.append(word)
+                    word = next(word_it)
+                else:
+                    break
+
+            #the rest is parsed as surname
+            while True:
+                surname.append(word)
+                word = next(word_it)
+
+        except StopIteration:
+            pass
+
+        return title, given_name, surname
+
+
+
+
+
