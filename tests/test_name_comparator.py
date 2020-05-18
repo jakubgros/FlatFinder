@@ -6,7 +6,7 @@ from src.name_comparator import NameComparator
 class NameComparatorTest(unittest.TestCase):
 
     def setUp(self):
-        self.comp = NameComparator.Instance()
+        self.comp = NameComparator()
 
     def _test_all_cases(self, *, true_cases=[], false_cases=[]):
         for i, (lhs, rhs) in enumerate(true_cases):
@@ -173,8 +173,9 @@ class NameComparatorTest(unittest.TestCase):
     def test_al_title_bug(self):
         self.assertFalse(self.comp.equals('Al. gen. Tadeusza Bora-Komorowskiego', '. Trasy rowerowo -'))
 
-    def test_hypen_bug(self):
+    def test_hyphen_bug(self):
         self.assertFalse(self.comp.equals('Tadeusza Bora-Komorowskiego', ', - balkon -'))
+
 
 if __name__ == "__main__":
     unittest.main()
