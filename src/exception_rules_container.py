@@ -7,10 +7,6 @@ class ExceptionRulesContainer:
         for rule in rules_list:
             self.rules_dict[rule.rule_type].append(rule)
 
-    @classmethod
-    def empty(cls):
-        return cls([])
-
     def does_apply(self, subject, rule_type):
         if rule_type not in self.rules_dict:
             return False

@@ -37,9 +37,6 @@ class Morfeusz:
 
     @functools.lru_cache(maxsize=None)
     def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
-        if not exception_rules:
-            exception_rules = ExceptionRulesContainer.empty()
-
         actual_split = self._split(actual)
         expected_split = self._split(expected)
 
@@ -55,7 +52,7 @@ class Morfeusz:
                 in zip(inflection_actual, inflection_expected, actual_split, expected_split):
 
             force_case_insensitivity \
-                = exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
+                = exception_rules and exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
 
             test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
 
