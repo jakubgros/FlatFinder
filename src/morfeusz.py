@@ -24,6 +24,7 @@ class Morfeusz:
             raise FFE_InvalidArgument("Passed multi-word argument. The function accepts only single word as argument.")
 
         inflection = set(base_form for _, _, (_, base_form, *_) in self.morf.analyse(val))
+        assert inflection
 
         return inflection
 

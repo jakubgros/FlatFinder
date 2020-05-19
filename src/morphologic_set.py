@@ -7,7 +7,7 @@ from morfeusz import Morfeusz
 class MorphologicSet:
 
     def _get_internal_key(self, elem):
-        return next(iter(self.morf.get_inflection(elem)))  # get first element
+        return elem[0]
 
     def __init__(self, data):
         self.morf = Morfeusz.Instance()
