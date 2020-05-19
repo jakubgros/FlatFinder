@@ -17,7 +17,7 @@ class MorphologicSet:
             internal_key = self._get_internal_key(elem)
             self.data[internal_key].add(elem)
 
-    @functools.lru_cache(maxsize=1000)
+    @functools.lru_cache(maxsize=10000)
     def __contains__(self, key):
         internal_key = self._get_internal_key(key)
         data = self.data[internal_key]

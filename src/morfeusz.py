@@ -16,7 +16,7 @@ class Morfeusz:
         self.morf = morfeusz2.Morfeusz(dict_path=r'..\third parties\morfeusz2-dictionary-polimorf',
                                        dict_name="polimorf")
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=10000)
     def get_inflection(self, val):
         """ To improve performance of cache, value passed to the function has to be a single word. If you have a sentence
         you have to call the function many times """
@@ -28,14 +28,14 @@ class Morfeusz:
 
         return inflection
 
-    @functools.lru_cache(maxsize=1000)
+    @functools.lru_cache(maxsize=10000)
     def _split(self, text):
         text_split = re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', text)
         text_split = [word.strip() for word in text_split if word and word.strip()]
 
         return text_split
 
-    @functools.lru_cache(maxsize=None)
+    @functools.lru_cache(maxsize=10000)
     def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
         actual_split = self._split(actual)
         expected_split = self._split(expected)

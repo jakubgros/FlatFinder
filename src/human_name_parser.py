@@ -17,7 +17,7 @@ class HumanNameParser:
 
         return loaded_data
 
-    @functools.lru_cache(maxsize=1000)
+    @functools.lru_cache(maxsize=10000)
     def _split(self, text):
         split_text = re.split('\(|\)| |-|,|\.|\n', text)
         split_text = [word.strip() for word in split_text if word and word.strip()]
