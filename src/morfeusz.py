@@ -28,15 +28,21 @@ class Morfeusz:
 
         return inflection
 
+    @functools.lru_cache(maxsize=1000)
+    def _split(self, text):
+        text_split = re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', text)
+        text_split = [word.strip() for word in text_split if word and word.strip()]
+
+        return text_split
+
     @functools.lru_cache(maxsize=None)
     def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
         if not exception_rules:
             exception_rules = ExceptionRulesContainer.empty()
 
-        actual_split = [word.strip() for word in re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', actual)
-                           if word and word.strip()]
-        expected_split = [word.strip() for word in re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', expected)
-                           if word and word.strip()]
+        actual_split = self._split(actual)
+        expected_split = self._split(expected)
+
         actual_amount_of_words = len(actual_split)
         expected_amount_of_words = len(expected_split)
         if actual_amount_of_words != expected_amount_of_words:
