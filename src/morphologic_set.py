@@ -1,16 +1,27 @@
 import functools
+from collections import defaultdict
 
 from morfeusz import Morfeusz
 
 
 class MorphologicSet:
+
+    def _get_internal_key(self, elem):
+        return next(iter(self.morf.get_inflection(elem)))  # get first element
+
     def __init__(self, data):
-        self.data = set(data)
         self.morf = Morfeusz.Instance()
 
-    @functools.lru_cache(maxsize=None)
+        self.data = defaultdict(set)
+        for elem in data:
+            internal_key = self._get_internal_key(elem)
+            self.data[internal_key].add(elem)
+
+    @functools.lru_cache(maxsize=1000)
     def __contains__(self, key):
-        for elem in self.data:
+        internal_key = self._get_internal_key(key)
+        data = self.data[internal_key]
+        for elem in data:
             if self.morf.equals(elem, key):
                 return True
 
