@@ -57,7 +57,7 @@ class AddressExtractorTest(unittest.TestCase):
         import logging
         logging.root.setLevel(logging.NOTSET)
         passing_tests = [AddressExtractorTest.all_flats[i] for i
-                         in [0, 1, 2, 3, 4, 5, 7, 9, 10, 13, 20, 23, 24, 25, 26, 27, 28, 30, 32, 33, 36, 37, 43, 45, 46, 48, 50]]
+                         in [0, 1, 2, 3, 4, 5, 7, 9, 10, 13, 14, 20, 23, 24, 25, 26, 27, 28, 30, 32, 33, 36, 37, 43, 45, 46, 48, 50]]
 
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
