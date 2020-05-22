@@ -1,6 +1,7 @@
 import functools
 import logging
 import re
+from collections import defaultdict
 
 from src.exception import FFE_InvalidArgument
 from src.exception_rule_type import ExceptionRuleType
@@ -10,14 +11,37 @@ from src.text_frame import TextFrame
 
 @Singleton
 class Morfeusz:
+    """ The library doesn't have any synchronisation mechanisms so it's not safe to use it in multi-threaded environment
+    straightaway - see Morfeusz's documentation how to handle it"""
 
     def __init__(self):
         import morfeusz2
         self.morf = morfeusz2.Morfeusz(dict_path=r'..\third parties\morfeusz2-dictionary-polimorf',
                                        dict_name="polimorf")
 
+        """ flection:
+            mianownik (kto? co?)
+            dopełniacz (kogo? czego?)
+            celownik (komu? czemu?)
+            biernik (kogo? co?)
+            narzędnik ((z) kim? (z) czym?)
+            miejscownik (o kim? o czym?)
+            wołacz (o!).
+        """
+        #  for easier reading the data is provided in inverted form (lemma to list of flection)
+        self._word_to_lemma_extension = self._invert_dict({
+            "Bonerowska": ("Bonerowska", "Bonerowskiej", "Bonerowskiej", "Bonerowską", "Bonerowską", "Bonerowskiej", "Bonerowsko"),
+        })
+
+    def _invert_dict(self, dictionary):
+        inv_map = {}
+        for key, values in dictionary.items():
+            for v in values:
+                inv_map.setdefault(v, set()).add(key)
+        return inv_map
+
     @functools.lru_cache(maxsize=10000)
-    def get_inflection(self, val):
+    def get_inflection(self, val):  # TODO it's probably lemma - learn and rename
         """ To improve performance of cache, value passed to the function has to be a single word. If you have a sentence
         you have to call the function many times """
         if len(val.split()) > 1:
@@ -25,6 +49,9 @@ class Morfeusz:
 
         inflection = set(base_form for _, _, (_, base_form, *_) in self.morf.analyse(val))
         assert inflection
+
+        extension = self._word_to_lemma_extension.get(val, set())
+        inflection.update(extension)
 
         return inflection
 

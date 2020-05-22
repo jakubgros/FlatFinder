@@ -30,5 +30,10 @@ class MorfeuszTest(unittest.TestCase):
     def test_comparison_ignores_white_spaces(self):
         self.assertTrue(self.morfeusz.equals("jakieś słowo  ", "    jakieś    słowo"))
 
+    def test_data_extension(self):
+        # data for Bonerowska flection has been extended manually
+        self.assertTrue(self.morfeusz.equals("Bonerowska", "Bonerowskiej"))
+
+
 if __name__ == "__main__":
     unittest.main() # run all tests
