@@ -29,16 +29,26 @@ class Morfeusz:
             wołacz (o!).
         """
         #  for easier reading the data is provided in inverted form (lemma to list of flection)
-        self._word_to_lemma_extension = self._invert_dict({
+        self._internal_lemma_dict = self._invert_dict({
             "Bonerowska": ("Bonerowska", "Bonerowskiej", "Bonerowskiej", "Bonerowską", "Bonerowską", "Bonerowskiej", "Bonerowsko"),
         })
 
-    def _invert_dict(self, dictionary):
+        self._reinterpret_mapping = self._invert_dict({
+            "osiedle": ("oś", "os")
+        }, no_duplicates=True)
+
+    def _invert_dict(self, dictionary, *, no_duplicates=False):
         inv_map = {}
         for key, values in dictionary.items():
             for v in values:
-                inv_map.setdefault(v, set()).add(key)
+                if no_duplicates:
+                    assert v not in inv_map
+                    inv_map[v] = key
+                else:
+                    inv_map.setdefault(v, set()).add(key)
         return inv_map
+
+
 
     @functools.lru_cache(maxsize=10000)
     def get_inflection(self, val):  # TODO it's probably lemma - learn and rename
@@ -47,10 +57,13 @@ class Morfeusz:
         if len(val.split()) > 1:
             raise FFE_InvalidArgument("Passed multi-word argument. The function accepts only single word as argument.")
 
+        if val in self._reinterpret_mapping:
+            val = self._reinterpret_mapping[val]
+
         inflection = set(base_form for _, _, (_, base_form, *_) in self.morf.analyse(val))
         assert inflection
 
-        extension = self._word_to_lemma_extension.get(val, set())
+        extension = self._internal_lemma_dict.get(val, set())
         inflection.update(extension)
 
         return inflection

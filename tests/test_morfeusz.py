@@ -34,6 +34,10 @@ class MorfeuszTest(unittest.TestCase):
         # data for Bonerowska flection has been extended manually
         self.assertTrue(self.morfeusz.equals("Bonerowska", "Bonerowskiej"))
 
+    def test_reinterpret(self):
+        # morfeusz doesn't recognize oś as osiedle. We force it to reinterpret oś as osiedle and do the analysis using Morfeusz library
+        self.assertTrue(self.morfeusz.equals("oś", "osiedle"))
+
 
 if __name__ == "__main__":
     unittest.main() # run all tests
