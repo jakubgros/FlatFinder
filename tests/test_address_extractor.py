@@ -57,7 +57,9 @@ class AddressExtractorTest(unittest.TestCase):
         import logging
         logging.root.setLevel(logging.NOTSET)
         passing_tests = [AddressExtractorTest.all_flats[i] for i
-                         in [0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 32, 33, 34, 36, 37, 43, 44, 45, 46, 48, 50]]
+                         in [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 13, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                             32, 33, 34, 36, 37, 39, 43, 44, 45, 46, 48, 50]]
+        self.assertEqual(len(passing_tests), 37)
 
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
@@ -68,10 +70,9 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         for i, flat in enumerate(AddressExtractorTest.all_flats):
-            if i==16:
-                with self.subTest(i=i):
-                    _, _, found_address = self.extractor(flat['title'] + flat['description'])
-                    self._compare_address_results(flat, found_address)
+            with self.subTest(i=i):
+                _, _, found_address = self.extractor(flat['title'] + flat['description'])
+                self._compare_address_results(flat, found_address)
 
     def test_extraction_address_that_contains_only_surname(self):
         *_, found_address = self.extractor("Zamoyskiego")
