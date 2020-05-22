@@ -8,16 +8,19 @@ from src.morfeusz import Morfeusz
 
 class NameComparator:
     @staticmethod
-    def equals(lhs: str, rhs: str) -> bool:
+    def equals(expected: str, actual: str, ignore_case_sensitivity_if_actual_is_all_upper_case: bool=False) -> bool:
         name_parser = HumanNameParser.Instance()
 
-        _, lhs_first, lhs_last = name_parser.parse(lhs)
-        _, rhs_first, rhs_last = name_parser.parse(rhs)
+        _, expected_first, expected_last = name_parser.parse(expected)
+        _, actual_first, actual_last = name_parser.parse(actual)
 
         morf = Morfeusz.Instance()
 
-        if (not lhs_first or not rhs_first) and (rhs_first or rhs_last):
-            return all(morf.equals(*comp_pair) for comp_pair in zip_longest(lhs_last, rhs_last, fillvalue=""))
+        if (not expected_first or not actual_first) and (actual_first or actual_last):
+            return all(morf.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+                       for comp_pair in zip_longest(expected_last, actual_last, fillvalue=""))
         else:
-            return all(morf.equals(*comp_pair) for comp_pair in zip_longest(lhs_first, rhs_first, fillvalue="")) \
-                   and all(morf.equals(*comp_pair) for comp_pair in zip_longest(lhs_last, rhs_last, fillvalue=""))
+            return all(morf.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+                       for comp_pair in zip_longest(expected_first, actual_first, fillvalue="")) \
+                   and all(morf.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+                           for comp_pair in zip_longest(expected_last, actual_last, fillvalue=""))

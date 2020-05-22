@@ -36,23 +36,24 @@ class Morfeusz:
         return text_split
 
     @functools.lru_cache(maxsize=10000)
-    def equals(self, actual, expected, *, exception_rules=None, title_case_sensitive=False):
-        actual_split = self._split(actual)
+    def equals(self, expected, actual, *, exception_rules=None, title_case_sensitive=False, ignore_case_sensitivity_if_actual_is_all_upper_case=False):
         expected_split = self._split(expected)
+        actual_split = self._split(actual)
 
-        actual_amount_of_words = len(actual_split)
         expected_amount_of_words = len(expected_split)
-        if actual_amount_of_words != expected_amount_of_words:
+        actual_amount_of_words = len(actual_split)
+        if expected_amount_of_words != actual_amount_of_words:
             return False
 
-        inflection_actual = [self.get_inflection(word) for word in actual_split]
         inflection_expected = [self.get_inflection(word) for word in expected_split]
+        inflection_actual = [self.get_inflection(word) for word in actual_split]
 
         for word_inflection_actual, word_inflection_expected, actual_word, expected_word\
                 in zip(inflection_actual, inflection_expected, actual_split, expected_split):
 
             force_case_insensitivity \
-                = exception_rules and exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
+                = ignore_case_sensitivity_if_actual_is_all_upper_case and actual.isupper()\
+                  or exception_rules and exception_rules.does_apply(actual_word, ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
 
             test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
 
