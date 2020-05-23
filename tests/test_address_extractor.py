@@ -45,8 +45,8 @@ class AddressExtractorTest(unittest.TestCase):
         import logging
         logging.root.setLevel(logging.NOTSET)
         passing_tests = [AddressExtractorTest.all_flats[i] for i
-                         in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27, ]]
-        self.assertEqual(len(passing_tests), 39)
+                         in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]]
+        self.assertEqual(len(passing_tests), 21)
 
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
@@ -62,9 +62,8 @@ class AddressExtractorTest(unittest.TestCase):
                 self._compare_address_results(flat, found_address)
 
     def test_not_passing(self): #TODO remove once all tests in test_bulk passes
-        passing_tests = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-                         31, 32, 33, 34, 36, 37, 39, 43, 44, 45, 46, 48, 50]
-        self.assertEqual(len(passing_tests), 39)
+        passing_tests = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
+        self.assertEqual(len(passing_tests), 21)
 
         for i, flat in enumerate(AddressExtractorTest.all_flats):
             if i not in passing_tests:
@@ -75,7 +74,12 @@ class AddressExtractorTest(unittest.TestCase):
 
     def test_extraction_address_that_contains_only_surname(self):
         *_, found_address = self.extractor("Zamoyskiego")
-        self.assertIn("Jana Zamoyskiego", chain(found_address.district, found_address.estate, found_address.street))
+        self.assertIn("Jana Zamoyskiego", list(chain(found_address.district, found_address.estate, found_address.street)))
+
+    def test_number_flection_suffixes_are_ignored(self):
+        *_, found_address = self.extractor("Os. 2 go Pułku Lotniczego")
+        self.assertIn("Osiedle 2 Pułku Lotniczego", list(chain(found_address.district, found_address.estate, found_address.street)))
+
 
 if __name__ == "__main__":
     unittest.main()
