@@ -40,8 +40,7 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
 
-    # TODO remove once all tests in test_bulk passes
-    def test_regression(self): #TODO once all passes in testBulk, change compareAddressResult to more strict comparison
+    def test_regression(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
         passing_tests = [AddressExtractorTest.all_flats[i] for i
@@ -51,26 +50,6 @@ class AddressExtractorTest(unittest.TestCase):
         for i, flat in enumerate(passing_tests):
             _, _, found_address = self.extractor(flat['title'] + flat['description'])
             self._compare_address_results(flat, found_address)
-
-    def test_bulk(self):
-        import logging
-        logging.root.setLevel(logging.NOTSET)
-
-        for i, flat in AddressExtractorTest.all_flats.items():
-            with self.subTest(i=i):
-                _, _, found_address = self.extractor(flat['title'] + flat['description'])
-                self._compare_address_results(flat, found_address)
-
-    def test_not_passing(self): #TODO remove once all tests in test_bulk passes
-        passing_tests = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
-        self.assertEqual(len(passing_tests), 21)
-
-        for i, flat in enumerate(AddressExtractorTest.all_flats):
-            if i not in passing_tests:
-                with self.subTest(i=i):
-                    _, _, found_address = self.extractor(flat['title'] + flat['description'])
-                    self._compare_address_results(flat, found_address)
-
 
     def test_extraction_address_that_contains_only_surname(self):
         *_, found_address = self.extractor("Zamoyskiego")
