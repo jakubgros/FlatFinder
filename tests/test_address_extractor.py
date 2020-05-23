@@ -1,3 +1,4 @@
+import json
 import unittest
 from collections import Counter
 from itertools import chain
@@ -5,29 +6,15 @@ from itertools import chain
 from src.address_provider import AddressProvider
 from src.extractor import AddressExtractor
 
-import xml.etree.ElementTree as ET
-
 
 class AddressExtractorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        tree = ET.parse('../data/tagged/addresses_from_title_and_description/addresses_from_title_and_description.xml')
+        with open('../data/test_data/addresses_from_title_and_description/addresses_from_title_and_description.json', encoding='utf-8') as handle:
+            json_obj = json.loads(handle.read())
 
-        root = tree.getroot()
-
-        cls.all_flats = []
-        for flatXml in root:
-            title = flatXml.find('title').text
-            url = flatXml.find('url').text
-            description = flatXml.find('description').text
-            locations_node = flatXml.find('locations')
-            locations = [location.text for location in locations_node]
-            cls.all_flats.append({'title': title,
-                                  'url': url,
-                                  'locations': locations,
-                                  'description': description,
-                                  })
+        cls.all_flats = {int(id): json_obj[id] for id in json_obj}
 
     def setUp(self):
         self.extractor = AddressExtractor(AddressProvider.Instance())
@@ -58,8 +45,7 @@ class AddressExtractorTest(unittest.TestCase):
         import logging
         logging.root.setLevel(logging.NOTSET)
         passing_tests = [AddressExtractorTest.all_flats[i] for i
-                         in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-                         31, 32, 33, 34, 36, 37, 39, 43, 44, 45, 46, 48, 50]]
+                         in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27, ]]
         self.assertEqual(len(passing_tests), 39)
 
         for i, flat in enumerate(passing_tests):
@@ -70,7 +56,7 @@ class AddressExtractorTest(unittest.TestCase):
         import logging
         logging.root.setLevel(logging.NOTSET)
 
-        for i, flat in enumerate(AddressExtractorTest.all_flats):
+        for i, flat in AddressExtractorTest.all_flats.items():
             with self.subTest(i=i):
                 _, _, found_address = self.extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address)
