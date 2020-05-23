@@ -11,7 +11,7 @@ class AddressExtractorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/test_data/addresses_from_title_and_description/addresses_from_title_and_description.json', encoding='utf-8') as handle:
+        with open('../data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
 
         cls.all_flats = {int(id): json_obj[id] for id in json_obj}
