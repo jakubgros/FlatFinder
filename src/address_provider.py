@@ -1,27 +1,26 @@
+import json
+from collections import namedtuple
+
+from exception import FlatFinderException
 from src.singleton import Singleton
 
 @Singleton
 class AddressProvider:
 
-    def _loadData(self, file_path):
-        loaded_data = []
-        with open(file_path, encoding="utf8") as file_handle:
-            for data in file_handle:
-                loaded_data.append(data.rstrip('\n').strip())
+    def __init__(self, city_name="Kraków"):
+        data_dir = "../data/"
 
-        return loaded_data
+        with open(data_dir + "locations.json", encoding="UTF-8") as handle:
+            json_locations = json.loads(handle.read())
 
-    def __init__(self):
-        data_dir = "../data/Cracow/"
+        if city_name not in json_locations:
+            raise FlatFinderException(f"Can't find locations for the '{city_name}' city. Pleas ensure it's available in database")
 
-        self._districts = self._loadData(data_dir + "districts.txt")
-        self._districts.sort(key=lambda x: len(x.split()), reverse=True)
+        locations = json_locations[city_name]["locations"]
 
-        self._estates = self._loadData(data_dir + "estates.txt")
-        self._estates.sort(key=lambda x: len(x.split()), reverse=True)
-
-        self._streets = self._loadData(data_dir + "streets.txt")
-        self._streets.sort(key=lambda x: len(x.split()), reverse=True)
+        self._districts = locations["districts"]
+        self._estates = locations["estates"]
+        self._streets = locations["streets"]
 
     @property
     def districts(self):

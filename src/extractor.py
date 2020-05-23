@@ -39,28 +39,32 @@ class AddressExtractor:
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
         for location in all_locations:
-            if Tagger.Instance().does_contain_person_first_name(location):
-                def name_equals(expected, actual):
-                    return NameComparator.equals(expected, actual, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
-                equality_comparator = name_equals
-            else:
-                def morphologic_equals(expected, actual):
-                    return self.morfeusz.equals(expected, actual, exception_rules=self.exception_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
-                equality_comparator = morphologic_equals
+            all_location_names = []
+            all_location_names.append(location["official"])
+            all_location_names.extend(location["colloquial"])
+            for location_name in all_location_names:
+                if Tagger.Instance().does_contain_person_first_name(location_name):
+                    def name_equals(expected, actual):
+                        return NameComparator.equals(expected, actual, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
+                    equality_comparator = name_equals
+                else:
+                    def morphologic_equals(expected, actual):
+                        return self.morfeusz.equals(expected, actual, exception_rules=self.exception_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
+                    equality_comparator = morphologic_equals
 
-            does_contain, (matched_location_slice_pos, all_words) \
-                = TextSearcher.contains(location, description, equality_comparator=equality_comparator)
+                does_contain, (matched_location_name_slice_pos, all_words) \
+                    = TextSearcher.contains(location_name, description, equality_comparator=equality_comparator)
 
-            if does_contain:
-                success, street_number = self._extract_street_number(all_words, matched_location_slice_pos)
-                matched_location = location
-                if success:
-                    matched_location += " " + str(street_number)
-                all_matched_locations.append(matched_location)
-                slice_beg, slice_end = matched_location_slice_pos
+                if does_contain:
+                    success, street_number = self._extract_street_number(all_words, matched_location_name_slice_pos)
+                    matched_location = location["official"]
+                    if success:
+                        matched_location += " " + str(street_number)
+                    all_matched_locations.append(matched_location)
+                    slice_beg, slice_end = matched_location_name_slice_pos
 
-                piece_of_text_that_matched = ' '.join(all_words[slice_beg:slice_end])
-                logging.debug(f"Matched: db[{matched_location}] = text[{piece_of_text_that_matched}]")
+                    piece_of_text_that_matched = ' '.join(all_words[slice_beg:slice_end])
+                    logging.debug(f"Matched: db[{matched_location}] = text[{piece_of_text_that_matched}]")
 
         return all_matched_locations
 
