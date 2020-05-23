@@ -82,9 +82,9 @@ class AddressExtractorTest(unittest.TestCase):
 
         for i, flat in enumerate(AddressExtractorTest.all_flats):
             if i not in passing_tests:
-                    with self.subTest(i=i):
-                        _, _, found_address = self.extractor(flat['title'] + flat['description'])
-                        self._compare_address_results(flat, found_address)
+                with self.subTest(i=i):
+                    _, _, found_address = self.extractor(flat['title'] + flat['description'])
+                    self._compare_address_results(flat, found_address)
 
 
     def test_extraction_address_that_contains_only_surname(self):
