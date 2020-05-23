@@ -76,10 +76,6 @@ class AddressExtractorTest(unittest.TestCase):
         *_, found_address = self.extractor("Zamoyskiego")
         self.assertIn("Jana Zamoyskiego", list(chain(found_address.district, found_address.estate, found_address.street)))
 
-    def test_number_flection_suffixes_are_ignored(self):
-        *_, found_address = self.extractor("Os. 2 go Pułku Lotniczego")
-        self.assertIn("Osiedle 2 Pułku Lotniczego", list(chain(found_address.district, found_address.estate, found_address.street)))
-
 
 if __name__ == "__main__":
     unittest.main()
