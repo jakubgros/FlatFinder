@@ -7,7 +7,7 @@ from src.singleton import Singleton
 @Singleton
 class AddressProvider:
 
-    def __init__(self, city_name="Kraków"):
+    def __init__(self, city_name):
         data_dir = "../data/"
 
         with open(data_dir + "locations.json", encoding="UTF-8") as handle:

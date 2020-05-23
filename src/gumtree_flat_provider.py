@@ -40,7 +40,7 @@ class GumtreeFlatProvider(FlatProvider):
                 try:
                     print(i)
                     flat = Flat.from_url(url)
-                    address_extractor = AddressExtractor(AddressProvider.Instance())
+                    address_extractor = AddressExtractor(AddressProvider.Instance("Kraków"))
                     flat.extract_info_from_description(address_extractor)
                     flats.append(flat)
                     if(i > 50):

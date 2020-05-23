@@ -30,7 +30,7 @@ class AddressExtractorTest(unittest.TestCase):
                                   })
 
     def setUp(self):
-        self.extractor = AddressExtractor(AddressProvider.Instance())
+        self.extractor = AddressExtractor(AddressProvider.Instance("Kraków"))
 
     def test_case_matters(self):
         status, *_ = self.extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe") # won't match "Śliczna" street
