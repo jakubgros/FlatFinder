@@ -42,7 +42,7 @@ def convert_enter_separated_location_data_to_internal_representation(
                 "colloquial": [],
             })
 
-    parsed = json.dumps(json_data, indent=4, ensure_ascii=False)
+    parsed = json.dumps(json_data, indent=2, ensure_ascii=False)
 
     with open(output_file_path, "w", encoding="utf-8") as out_handle:
         print(parsed, file=out_handle)
