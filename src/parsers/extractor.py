@@ -1,14 +1,15 @@
 import logging
 from collections import namedtuple
 
-from text.Tagger import Tagger
+from comparators.morphologic_comparator import MorphologicComparator
+from text.analysis.Tagger import Tagger
 from comparators.name_comparator import NameComparator
 from text.TextSearcher import TextSearcher
 from comparators.comparison_rules.exception_rule import ExceptionRule
 from comparators.comparison_rules.exception_rule_type import ExceptionRuleType
 
 from comparators.comparison_rules.exception_rules_container import ExceptionRulesContainer
-from comparators.morfeusz import Morfeusz
+from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 
@@ -16,7 +17,7 @@ Address = namedtuple('Address', ['district', 'estate', 'street'])
 class AddressExtractor:
     def __init__(self, address_provider):
         self.address_provider = address_provider
-        self.morfeusz = Morfeusz.Instance()
+        self.morfeusz = MorphologicAnalyser.Instance()
         self.attribute_name = "address"
 
         self.exception_rules = ExceptionRulesContainer([
@@ -49,7 +50,7 @@ class AddressExtractor:
                     equality_comparator = name_equals
                 else:
                     def morphologic_equals(expected, actual):
-                        return self.morfeusz.equals(expected, actual, exception_rules=self.exception_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
+                        return MorphologicComparator.equals(expected, actual, exception_rules=self.exception_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
                     equality_comparator = morphologic_equals
 
                 does_contain, (matched_location_name_slice_pos, all_words) \

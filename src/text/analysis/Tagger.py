@@ -1,4 +1,4 @@
-from comparators.morfeusz import Morfeusz
+from text.analysis.morphologic_analyser import MorphologicAnalyser
 from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
 
@@ -17,7 +17,7 @@ class Tagger:
         if text.lower().strip() in self.contain_person_first_name_exceptions:
             return self.contain_person_first_name_exceptions[text.lower().strip()]
 
-        morf = Morfeusz.Instance()
+        morf = MorphologicAnalyser.Instance()
 
         all_words = text.split()
 

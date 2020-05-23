@@ -1,6 +1,6 @@
 import unittest
 
-from text.Tagger import Tagger
+from text.analysis.Tagger import Tagger
 
 
 class TaggerTest(unittest.TestCase):

@@ -1,6 +1,4 @@
-from comparators.morfeusz import Morfeusz
-
-
+from comparators.morphologic_comparator import MorphologicComparator
 
 
 class ExceptionRule:
@@ -12,7 +10,7 @@ class ExceptionRule:
     @property
     def _comparator(self):
         if self.match_to_lemma:
-            comparator = Morfeusz.Instance().equals
+            comparator = MorphologicComparator.equals
         else:
             comparator = lambda lhs, rhs: lhs == rhs
 
