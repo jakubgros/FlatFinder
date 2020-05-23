@@ -1,7 +1,7 @@
 import functools
 from collections import defaultdict
 
-from morfeusz import Morfeusz
+from comparators.morfeusz import Morfeusz
 
 
 class MorphologicSet:

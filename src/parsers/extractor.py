@@ -1,14 +1,14 @@
 import logging
 from collections import namedtuple
 
-from Tagger import Tagger
-from name_comparator import NameComparator
-from src.TextSearcher import TextSearcher
-from src.exception_rule import ExceptionRule
-from src.exception_rule_type import ExceptionRuleType
+from text.Tagger import Tagger
+from comparators.name_comparator import NameComparator
+from text.TextSearcher import TextSearcher
+from comparators.comparison_rules.exception_rule import ExceptionRule
+from comparators.comparison_rules.exception_rule_type import ExceptionRuleType
 
-from src.exception_rules_container import ExceptionRulesContainer
-from src.morfeusz import Morfeusz
+from comparators.comparison_rules.exception_rules_container import ExceptionRulesContainer
+from comparators.morfeusz import Morfeusz
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 

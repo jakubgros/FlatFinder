@@ -1,12 +1,13 @@
-from morfeusz import Morfeusz
-from singleton import Singleton
+from comparators.morfeusz import Morfeusz
+from decorators.singleton import Singleton
+from env_utils.base_dir import base_dir
 
 
 @Singleton
 class Tagger:
     def __init__(self):
         self.first_names = {}
-        with open("../data/first_names/polish.txt", encoding="utf8") as file_handle:
+        with open(f"{base_dir}/data/first_names/polish.txt", encoding="utf8") as file_handle:
             self.first_names = set(data for data in file_handle.read().splitlines())
 
         self.contain_person_first_name_exceptions = {

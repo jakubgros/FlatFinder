@@ -3,15 +3,16 @@ import unittest
 from collections import Counter
 from itertools import chain
 
-from src.address_provider import AddressProvider
-from src.extractor import AddressExtractor
+from data_provider.address_provider import AddressProvider
+from env_utils.base_dir import base_dir
+from parsers.extractor import AddressExtractor
 
 
 class AddressExtractorTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with open('../data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
+        with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
 
         cls.all_flats = {int(id): json_obj[id] for id in json_obj}

@@ -1,6 +1,6 @@
 import unittest
 
-from Tagger import Tagger
+from text.Tagger import Tagger
 
 
 class TaggerTest(unittest.TestCase):
@@ -16,6 +16,7 @@ class TaggerTest(unittest.TestCase):
 
     def test_aleja_3_maja_bug(self):
         self.assertFalse(Tagger.Instance().does_contain_person_first_name("Aleja 3 Maja"))
+
 
 if __name__ == "__main__":
     unittest.main()

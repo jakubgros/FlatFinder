@@ -1,16 +1,14 @@
 import json
-from collections import namedtuple
 
-from exception import FlatFinderException
-from src.singleton import Singleton
+from env_utils.base_dir import base_dir
+from exception.exception import FlatFinderException
+from decorators.singleton import Singleton
 
 @Singleton
 class AddressProvider:
 
     def __init__(self, city_name="Kraków"):
-        data_dir = "../data/"
-
-        with open(data_dir + "locations.json", encoding="UTF-8") as handle:
+        with open(f"{base_dir}/data/locations.json", encoding="UTF-8") as handle:
             json_locations = json.loads(handle.read())
 
         if city_name not in json_locations:

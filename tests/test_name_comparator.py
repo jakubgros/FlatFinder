@@ -1,6 +1,6 @@
 import unittest
 
-from src.name_comparator import NameComparator
+from comparators.name_comparator import NameComparator
 
 
 class NameComparatorTest(unittest.TestCase):

@@ -1,10 +1,8 @@
 from itertools import zip_longest
 
-from Tagger import Tagger
-from human_name_parser import HumanNameParser
-from singleton import Singleton
+from parsers.human_name_parser import HumanNameParser
 
-from src.morfeusz import Morfeusz
+from comparators.morfeusz import Morfeusz
 
 class NameComparator:
     @staticmethod

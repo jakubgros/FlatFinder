@@ -1,7 +1,7 @@
 import unittest
 from collections import Counter
 
-from human_name_parser import HumanNameParser
+from parsers.human_name_parser import HumanNameParser
 
 
 class HumanNameParserTest(unittest.TestCase):

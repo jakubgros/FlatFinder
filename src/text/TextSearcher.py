@@ -1,6 +1,6 @@
 import re
 
-from text_frame import TextFrame
+from text.text_frame import TextFrame
 
 
 class TextSearcher:

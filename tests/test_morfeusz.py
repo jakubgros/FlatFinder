@@ -1,6 +1,6 @@
 import unittest
 
-from src.morfeusz import Morfeusz
+from comparators.morfeusz import Morfeusz
 
 
 class MorfeuszTest(unittest.TestCase):

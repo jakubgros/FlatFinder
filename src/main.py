@@ -1,4 +1,4 @@
-from src.gumtree_flat_provider import GumtreeFlatProvider
+from data_provider.gumtree_flat_provider import GumtreeFlatProvider
 
 
 

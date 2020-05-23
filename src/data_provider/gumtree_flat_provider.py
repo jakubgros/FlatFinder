@@ -1,8 +1,8 @@
-from src.address_provider import AddressProvider
-from src.extractor import AddressExtractor
-from src.flat import Flat
-from src.flat_provider import FlatProvider
-from src.driver import driver
+from data_provider.address_provider import AddressProvider
+from parsers.extractor import AddressExtractor
+from containers.flat import Flat
+from data_provider.flat_provider import FlatProvider
+from other.driver import driver
 
 
 class GumtreeFlatProvider(FlatProvider):

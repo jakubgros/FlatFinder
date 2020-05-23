@@ -2,7 +2,7 @@ from collections import namedtuple
 
 from selenium.common.exceptions import NoSuchElementException
 
-from src.driver import driver
+from other.driver import driver
 
 ExtractionResult = namedtuple('ExtractionResult', ['status', 'value'])
 

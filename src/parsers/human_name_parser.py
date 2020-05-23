@@ -1,15 +1,16 @@
 import functools
 import re
 
-from morphologic_set import MorphologicSet
-from singleton import Singleton
+from containers.morphologic_set import MorphologicSet
+from decorators.singleton import Singleton
+from env_utils.base_dir import base_dir
 
 
 @Singleton
 class HumanNameParser:
     def __init__(self):
-        self._all_valid_titles = MorphologicSet(self._load_data("../data/name_titles/polish/titles.txt"))
-        self._all_valid_given_names = MorphologicSet(self._load_data("../data/first_names/polish.txt"))
+        self._all_valid_titles = MorphologicSet(self._load_data(f"{base_dir}/data/name_titles/polish/titles.txt"))
+        self._all_valid_given_names = MorphologicSet(self._load_data(f"{base_dir}/data/first_names/polish.txt"))
 
     def _load_data(self, file_path):
         with open(file_path, encoding='UTF-8') as handle:

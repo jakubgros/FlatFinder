@@ -1,13 +1,11 @@
 import functools
-import logging
 import re
-from collections import defaultdict
 
-from src.exception import FFE_InvalidArgument
-from src.exception_rule_type import ExceptionRuleType
-from src.exception_rules_container import ExceptionRulesContainer
-from src.singleton import Singleton
-from src.text_frame import TextFrame
+from env_utils.base_dir import base_dir
+from exception.exception import FFE_InvalidArgument
+from comparators.comparison_rules.exception_rule_type import ExceptionRuleType
+from decorators.singleton import Singleton
+
 
 @Singleton
 class Morfeusz:
@@ -16,7 +14,7 @@ class Morfeusz:
 
     def __init__(self):
         import morfeusz2
-        self.morf = morfeusz2.Morfeusz(dict_path=r'..\third parties\morfeusz2-dictionary-polimorf',
+        self.morf = morfeusz2.Morfeusz(dict_path=f'{base_dir}/third parties/morfeusz2-dictionary-polimorf',
                                        dict_name="polimorf")
 
         """ flection:
