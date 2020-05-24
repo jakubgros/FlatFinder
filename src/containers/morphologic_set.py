@@ -23,7 +23,7 @@ class MorphologicSet:
         internal_key = self._get_internal_key(key)
         data = self.data[internal_key]
         for elem in data:
-            if MorphologicComparator.equals(elem, key):
+            if MorphologicComparator().equals(elem, key):
                 return True
 
         return False

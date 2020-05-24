@@ -22,7 +22,7 @@ class Tagger:
         all_words = text.split()
 
         for word in all_words:
-            for inflection in morf.get_inflection(word):
+            for inflection in morf.get_base_form(word):
                 if inflection in self.first_names:
                     return True
 

@@ -12,12 +12,15 @@ class NameComparator:
         _, expected_first, expected_last = name_parser.parse(expected)
         _, actual_first, actual_last = name_parser.parse(actual)
 
+        comparator = MorphologicComparator(
+            ignore_case_sensitivity_if_actual_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+
 
         if (not expected_first or not actual_first) and (actual_first or actual_last):
-            return all(MorphologicComparator.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+            return all(comparator.equals(*comp_pair)
                        for comp_pair in zip_longest(expected_last, actual_last, fillvalue=""))
         else:
-            return all(MorphologicComparator.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+            return all(comparator.equals(*comp_pair)
                        for comp_pair in zip_longest(expected_first, actual_first, fillvalue="")) \
-                   and all(MorphologicComparator.equals(*comp_pair, ignore_case_sensitivity_if_actual_is_all_upper_case=ignore_case_sensitivity_if_actual_is_all_upper_case)
+                   and all(comparator.equals(*comp_pair)
                            for comp_pair in zip_longest(expected_last, actual_last, fillvalue=""))

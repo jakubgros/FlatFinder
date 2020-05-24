@@ -41,13 +41,11 @@ class AddressExtractor:
 
             equality_comparator = name_equals
         else:
-            def morphologic_equals(expected, actual):
-                return MorphologicComparator.equals(expected, actual,
-                                                    exception_rules=self.comparison_rules,
-                                                    title_case_sensitive=True,
-                                                    ignore_case_sensitivity_if_actual_is_all_upper_case=True)
+            comparator = MorphologicComparator(comparison_rules=self.comparison_rules,
+                                               title_case_sensitive=True,
+                                               ignore_case_sensitivity_if_actual_upper_case=True)
 
-            equality_comparator = morphologic_equals
+            equality_comparator = comparator.equals
 
         return equality_comparator
 

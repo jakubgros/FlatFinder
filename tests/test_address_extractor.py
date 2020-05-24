@@ -51,8 +51,9 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(AddressProvider.Instance())
         for i, flat in enumerate(passing_tests):
-            _, _, found_address = extractor(flat['title'] + flat['description'])
-            self._compare_address_results(flat, found_address)
+            with self.subTest(i=i):
+                _, _, found_address = extractor(flat['title'] + flat['description'])
+                self._compare_address_results(flat, found_address)
 
     def test_case_matters(self):
         mocked_address_provider = self._get_mocked_address_provider(

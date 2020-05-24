@@ -46,7 +46,7 @@ class MorphologicAnalyser:
         return inv_map
 
     @functools.lru_cache(maxsize=10000)
-    def get_inflection(self, val):  # TODO it's probably lemma - learn and rename
+    def get_base_form(self, val):
         """ To improve performance of cache, value passed to the function has to be a single word. If you have a sentence
         you have to call the function many times """
         if len(val.split()) > 1:

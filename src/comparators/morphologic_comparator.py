@@ -1,5 +1,4 @@
 import functools
-import re
 
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from text.analysis.morphologic_analyser import MorphologicAnalyser
@@ -7,35 +6,42 @@ from utilities.utilities import split_on_special_characters_and_preserve_them
 
 
 class MorphologicComparator:
+    def __init__(self, *,
+                 ignore_case_sensitivity_if_actual_upper_case=False,
+                 title_case_sensitive=False,
+                 comparison_rules=None):
 
-    @staticmethod
+        self.ignore_case_sensitivity_if_actual_upper_case = ignore_case_sensitivity_if_actual_upper_case
+        self.title_case_sensitive = title_case_sensitive
+        self.rules = comparison_rules
+
+    def _is_case_sensitive_comparison(self, actual_word):
+        force_case_insensitivity = self.ignore_case_sensitivity_if_actual_upper_case and actual_word.isupper() \
+                                   or self.rules and self.rules.does_apply(actual_word,
+                                                                           ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+
+        return not force_case_insensitivity and self.title_case_sensitive
+
     @functools.lru_cache(maxsize=10000)
-    def equals(expected, actual, *, exception_rules=None, title_case_sensitive=False,
-               ignore_case_sensitivity_if_actual_is_all_upper_case=False):
-
-        morf_analyser = MorphologicAnalyser.Instance()
+    def equals(self, expected, actual):
         expected_split = split_on_special_characters_and_preserve_them(expected)
         actual_split = split_on_special_characters_and_preserve_them(actual)
 
-        expected_amount_of_words = len(expected_split)
-        actual_amount_of_words = len(actual_split)
-        if expected_amount_of_words != actual_amount_of_words:
+        if len(actual_split) != len(expected_split):
             return False
 
-        inflection_expected = [morf_analyser.get_inflection(word) for word in expected_split]
-        inflection_actual = [morf_analyser.get_inflection(word) for word in actual_split]
+        analyser = MorphologicAnalyser.Instance()
+        expected_base_form = [analyser.get_base_form(word) for word in expected_split]
+        actual_base_form = [analyser.get_base_form(word) for word in actual_split]
 
-        for word_inflection_actual, word_inflection_expected, actual_word, expected_word \
-                in zip(inflection_actual, inflection_expected, actual_split, expected_split):
+        for actual_word_base, expected_word_base, actual_word_original, expected_word_original \
+                in zip(actual_base_form, expected_base_form, actual_split, expected_split):
 
-            force_case_insensitivity \
-                = ignore_case_sensitivity_if_actual_is_all_upper_case and actual.isupper() \
-                  or exception_rules and exception_rules.does_apply(actual_word,
-                                                                    ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+            test_case_sensitivity = self._is_case_sensitive_comparison(actual_word_original)
+            are_not_equal = actual_word_base.isdisjoint(expected_word_base)
 
-            test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
-
-            if word_inflection_actual.isdisjoint(word_inflection_expected) or \
-                    (test_case_sensitivity and actual_word.istitle() != expected_word.istitle()):
+            if are_not_equal \
+                    or (test_case_sensitivity and actual_word_original.istitle() != expected_word_original.istitle()):
                 return False
+
         return True

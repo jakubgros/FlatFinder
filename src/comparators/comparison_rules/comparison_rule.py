@@ -2,7 +2,7 @@ from comparators.morphologic_comparator import MorphologicComparator
 
 
 class ComparisonRule:
-    def __init__(self, subject, rule_type, *, comparator=MorphologicComparator.equals):
+    def __init__(self, subject, rule_type, *, comparator=MorphologicComparator().equals):
         self.subject = subject
         self.rule_type = rule_type
         self._comparator = comparator
