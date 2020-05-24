@@ -2,6 +2,7 @@ import json
 import unittest
 from collections import Counter
 from itertools import chain
+from unittest.mock import MagicMock
 
 from data_provider.address_provider import AddressProvider
 from env_utils.base_dir import base_dir
@@ -56,6 +57,22 @@ class AddressExtractorTest(unittest.TestCase):
         *_, found_address = self.extractor("Zamoyskiego")
         self.assertIn("Jana Zamoyskiego", list(chain(found_address.district, found_address.estate, found_address.street)))
 
+    def test_extract_address_with_unit_number(self):
+        streets = [{
+            "official": "Jana Zamoyskiego",
+            "colloquial": [],
+        }]
+
+        mocked_address_provider = MagicMock(**{
+            'streets': iter(streets),
+            'districts': iter([]),
+            'estates': iter([]),
+        })
+
+        extractor = AddressExtractor(mocked_address_provider)
+        *_, found_address = extractor("Zamoyskiego 15")
+        self.assertIn("Jana Zamoyskiego 15", found_address.street)
+        self.assertTrue(len(found_address.district) == len(found_address.estate) == 0)
 
 if __name__ == "__main__":
     unittest.main()
