@@ -30,7 +30,7 @@ class MorphologicComparator:
             force_case_insensitivity \
                 = ignore_case_sensitivity_if_actual_is_all_upper_case and actual.isupper() \
                   or exception_rules and exception_rules.does_apply(actual_word,
-                                                                    ComparisonRuleType.FORCE_CASE_INSENTIVITIY)
+                                                                    ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
 
             test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
 

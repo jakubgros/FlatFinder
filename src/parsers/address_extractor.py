@@ -18,7 +18,7 @@ class AddressExtractor:
         self.attribute_name = "address"
 
         self.comparison_rules = ComparisonRulesContainer([
-            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENTIVITIY)
+            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
         ])
 
     def _extract_street_number(self, words_list, matched_location_slice_pos):
