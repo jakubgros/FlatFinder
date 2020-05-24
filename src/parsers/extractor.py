@@ -5,10 +5,10 @@ from comparators.morphologic_comparator import MorphologicComparator
 from text.analysis.Tagger import Tagger
 from comparators.name_comparator import NameComparator
 from text.TextSearcher import TextSearcher
-from comparators.comparison_rules.exception_rule import ExceptionRule
+from comparators.comparison_rules.exception_rule import ComparisonRule
 from comparators.comparison_rules.exception_rule_type import ExceptionRuleType
 
-from comparators.comparison_rules.exception_rules_container import ExceptionRulesContainer
+from comparators.comparison_rules.exception_rules_container import ComparisonRulesContainer
 from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
@@ -20,22 +20,20 @@ class AddressExtractor:
         self.morfeusz = MorphologicAnalyser.Instance()
         self.attribute_name = "address"
 
-        self.exception_rules = ExceptionRulesContainer([
-            ExceptionRule("osiedle", ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
+        self.comparison_rules = ComparisonRulesContainer([
+            ComparisonRule("osiedle", ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
         ])
 
-    def _extract_street_number(self, all_words, matched_location_slice_pos):
-        slice_start, slice_end = matched_location_slice_pos
-        if len(all_words) < slice_end+1:
-            return False, None
-
-        elem_after_slice = all_words[slice_end]
+    def _extract_street_number(self, words_list, matched_location_slice_pos):
+        _, slice_end = matched_location_slice_pos
 
         try:
+            elem_after_slice = words_list[slice_end]
             street_number = int(elem_after_slice)
-            return True, street_number
-        except ValueError:
+        except (IndexError, ValueError):
             return False, None
+        else:
+            return True, street_number
 
     def _match_locations(self, all_locations, description):
         all_matched_locations = []
@@ -50,7 +48,7 @@ class AddressExtractor:
                     equality_comparator = name_equals
                 else:
                     def morphologic_equals(expected, actual):
-                        return MorphologicComparator.equals(expected, actual, exception_rules=self.exception_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
+                        return MorphologicComparator.equals(expected, actual, exception_rules=self.comparison_rules, title_case_sensitive=True, ignore_case_sensitivity_if_actual_is_all_upper_case=True)
                     equality_comparator = morphologic_equals
 
                 does_contain, (matched_location_name_slice_pos, all_words) \

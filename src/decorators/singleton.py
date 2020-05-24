@@ -5,13 +5,13 @@ class Singleton:
     def __init__(self, cls):
         self._cls = cls
         update_wrapper(self, cls)
+        self._instance = None
 
     def Instance(self):
-        try:
-            return self._instance
-        except AttributeError:
+        if self._instance is None:
             self._instance = self._cls()
-            return self._instance
+
+        return self._instance
 
     def __call__(self):
         raise TypeError('Singletons must be accessed through `Instance()`.')

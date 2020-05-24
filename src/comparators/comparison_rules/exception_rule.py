@@ -1,7 +1,7 @@
 from comparators.morphologic_comparator import MorphologicComparator
 
 
-class ExceptionRule:
+class ComparisonRule:
     def __init__(self, subject, rule_type, *, match_to_lemma=True):
         self.subject = subject
         self.match_to_lemma = match_to_lemma

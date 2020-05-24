@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 
-class ExceptionRulesContainer:
+class ComparisonRulesContainer:
     def __init__(self, rules_list):
         self.rules_dict = defaultdict(lambda: list())
         for rule in rules_list:

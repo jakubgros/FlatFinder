@@ -74,5 +74,6 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Jana Zamoyskiego 15", found_address.street)
         self.assertTrue(len(found_address.district) == len(found_address.estate) == 0)
 
+
 if __name__ == "__main__":
     unittest.main()
