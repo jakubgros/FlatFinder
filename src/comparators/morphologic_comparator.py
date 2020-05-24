@@ -1,7 +1,7 @@
 import functools
 import re
 
-from comparators.comparison_rules.exception_rule_type import ExceptionRuleType
+from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 
@@ -30,7 +30,7 @@ class MorphologicComparator:
             force_case_insensitivity \
                 = ignore_case_sensitivity_if_actual_is_all_upper_case and actual.isupper() \
                   or exception_rules and exception_rules.does_apply(actual_word,
-                                                                    ExceptionRuleType.FORCE_CASE_INSENTIVITIY)
+                                                                    ComparisonRuleType.FORCE_CASE_INSENTIVITIY)
 
             test_case_sensitivity = not force_case_insensitivity and title_case_sensitive
 

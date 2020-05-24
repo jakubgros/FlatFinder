@@ -1,5 +1,5 @@
 from data_provider.address_provider import AddressProvider
-from parsers.extractor import AddressExtractor
+from parsers.address_extractor import AddressExtractor
 from containers.flat import Flat
 from data_provider.flat_provider import FlatProvider
 from other.driver import driver

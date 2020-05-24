@@ -1,5 +1,5 @@
 from enum import Enum, auto
 
 
-class ExceptionRuleType(Enum):
+class ComparisonRuleType(Enum):
     FORCE_CASE_INSENTIVITIY = auto()

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 from data_provider.address_provider import AddressProvider
 from env_utils.base_dir import base_dir
-from parsers.extractor import AddressExtractor
+from parsers.address_extractor import AddressExtractor
 
 
 class AddressExtractorTest(unittest.TestCase):
