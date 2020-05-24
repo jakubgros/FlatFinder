@@ -1,6 +1,7 @@
 import re
 
 from text.text_frame import TextFrame
+from utilities.utilities import split_on_special_characters_and_preserve_them
 
 
 class TextSearcher:
@@ -11,7 +12,7 @@ class TextSearcher:
                  title_case_sensitive=False,
                  equality_comparator=lambda lhs, rhs: lhs == rhs):
 
-        word_list = re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', text)
+        word_list = split_on_special_characters_and_preserve_them(text)
         word_list = [word.strip() for word in word_list if word and word.strip()]
 
         max_frame_size = len(phrase.split())

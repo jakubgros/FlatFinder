@@ -3,6 +3,7 @@ import re
 
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from text.analysis.morphologic_analyser import MorphologicAnalyser
+from utilities.utilities import split_on_special_characters_and_preserve_them
 
 
 class MorphologicComparator:
@@ -13,8 +14,8 @@ class MorphologicComparator:
                ignore_case_sensitivity_if_actual_is_all_upper_case=False):
 
         morf_analyser = MorphologicAnalyser.Instance()
-        expected_split = MorphologicComparator._split(expected)
-        actual_split = MorphologicComparator._split(actual)
+        expected_split = split_on_special_characters_and_preserve_them(expected)
+        actual_split = split_on_special_characters_and_preserve_them(actual)
 
         expected_amount_of_words = len(expected_split)
         actual_amount_of_words = len(actual_split)
@@ -38,11 +39,3 @@ class MorphologicComparator:
                     (test_case_sensitivity and actual_word.istitle() != expected_word.istitle()):
                 return False
         return True
-
-    @staticmethod
-    @functools.lru_cache(maxsize=10000) # _split is widely used in different classes, extract to improve cache performance
-    def _split(text):
-        text_split = re.split('(\+|\(|\)| |-|:|;|!|,|\.|\n)', text)
-        text_split = [word.strip() for word in text_split if word and word.strip()]
-
-        return text_split

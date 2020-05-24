@@ -21,7 +21,8 @@ class AddressExtractor:
             ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
         ])
 
-    def _extract_street_number(self, words_list, matched_location_slice_pos):
+    @staticmethod
+    def _extract_street_number(words_list, matched_location_slice_pos):
         _, slice_end = matched_location_slice_pos
 
         try:
