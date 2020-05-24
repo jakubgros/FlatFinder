@@ -21,10 +21,6 @@ class AddressExtractorTest(unittest.TestCase):
     def setUp(self):
         self.extractor = AddressExtractor(AddressProvider.Instance())
 
-    def test_case_matters(self):
-        status, *_ = self.extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe") # won't match "Śliczna" street
-        self.assertFalse(status)
-
     def _compare_address_results(self, flat, found_address):
         expected = flat['locations']
         actual = found_address.street + found_address.estate + found_address.district
@@ -42,6 +38,17 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
 
+    def _get_mocked_address_provider(self, *, streets=[], estates=[], districts=[]):
+        return MagicMock(**{
+            'streets': iter(streets),
+            'estates': iter(estates),
+            'districts': iter(districts)
+        })
+
+    def test_case_matters(self):
+        status, *_ = self.extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe") # won't match "Śliczna" street
+        self.assertFalse(status)
+
     def test_regression(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
@@ -58,21 +65,86 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Jana Zamoyskiego", list(chain(found_address.district, found_address.estate, found_address.street)))
 
     def test_extract_address_with_unit_number(self):
+        mocked_address_provider = self._get_mocked_address_provider(
+            streets=[{
+                "official": "Jana Zamoyskiego",
+                "colloquial": [],
+            }])
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor("Zamoyskiego 15")
+        self.assertIn("Jana Zamoyskiego 15", found_address.street)
+
+    def test_address_extractor_returns_official_name_if_colloquial_name_matched(self):
+        mocked_address_provider = self._get_mocked_address_provider(
+            estates=[{
+                "official": "Osiedle Na Kozłówce",
+                "colloquial": ["Kozłówek"],
+            }])
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor("Kozłówek")
+        self.assertIn("Osiedle Na Kozłówce", found_address.estate)
+
+    def test_address_extractor_correctly_compares_names(self):
         streets = [{
-            "official": "Jana Zamoyskiego",
+            "official": "Tadeusza Kościuszki",
             "colloquial": [],
         }]
 
-        mocked_address_provider = MagicMock(**{
-            'streets': iter(streets),
-            'districts': iter([]),
-            'estates': iter([]),
-        })
+        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        *_, found_address = extractor("Kościuszki")
+        self.assertIn("Tadeusza Kościuszki", found_address.street)
+
+        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        *_, found_address = extractor("Tadeusza Kościuszki")
+        self.assertIn("Tadeusza Kościuszki", found_address.street)
+
+        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        *_, found_address = extractor("Tadeusza")
+        self.assertNotIn("Tadeusza Kościuszki", found_address.street)
+
+    def test_address_extractor_performs_morphological_comparison(self):
+        mocked_address_provider = self._get_mocked_address_provider(
+            streets=[{
+                "official": "Stanisława",
+                "colloquial": [],
+            }])
 
         extractor = AddressExtractor(mocked_address_provider)
-        *_, found_address = extractor("Zamoyskiego 15")
-        self.assertIn("Jana Zamoyskiego 15", found_address.street)
-        self.assertTrue(len(found_address.district) == len(found_address.estate) == 0)
+        *_, found_address = extractor("Stanisławowi")
+        self.assertIn("Stanisława", found_address.street)
+
+    def test_address_extractor_correctly_recognize_location_type(self):
+
+        mocked_address_provider = self._get_mocked_address_provider(
+            streets=[{
+                "official": "Stanisława",
+                "colloquial": [],
+            }],
+            estates=[{
+                "official": "Grzegorza",
+                "colloquial": [],
+            }],
+            districts=[{
+                "official": "Piotra",
+                "colloquial": [],
+            }])
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor("blah blah Piotra blah Grzegorza blah Stanisława")
+
+        self.assertTrue(len(found_address.street) == 1)
+        self.assertIn("Stanisława", found_address.street)
+
+        self.assertTrue(len(found_address.estate) == 1)
+        self.assertIn("Grzegorza", found_address.estate)
+
+        self.assertTrue(len(found_address.district) == 1)
+        self.assertIn("Piotra", found_address.district)
 
 
 if __name__ == "__main__":
