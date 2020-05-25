@@ -1,19 +1,17 @@
 from data_provider.address_provider import AddressProvider
 from parsers.address_extractor import AddressExtractor
 from containers.flat import Flat
-from data_provider.flat_provider import FlatProvider
 from other.driver import driver
 
 
-class GumtreeFlatProvider(FlatProvider):
+class GumtreeFlatProvider:
     def __init__(self, **kwargs):
-        '''
+        """
         :param kwargs:
         kwargs[price_low]
         kwargs[price_high]
-        kwargs[from] = {agncy, ownr}
-
-        '''
+        kwargs[from]: 'agncy' or 'ownr'
+        """
         self.web_url \
             = f'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/mieszkanie/v1c9008l3200208a1dwp1?pr={kwargs["price_low"]},' \
             f'{kwargs["price_high"]}&fr={kwargs["from"]}&priceType=FIXED'
