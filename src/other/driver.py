@@ -13,6 +13,6 @@ class SelfCloseableWebdriver:
     def __del__(self):
         self.driver.close()
 
+_self_closeable_webdriver = SelfCloseableWebdriver()
 
-self_closeable_webdriver = SelfCloseableWebdriver()
-driver = self_closeable_webdriver.driver
+driver = _self_closeable_webdriver.driver
