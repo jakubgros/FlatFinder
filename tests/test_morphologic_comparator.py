@@ -35,6 +35,14 @@ class MorphologicComparatorTest(unittest.TestCase):
         self.assertFalse(comparator.equals("Stanisława Kowalska", "stanisławy kowalskiej"))
         self.assertFalse(comparator.equals("Stanisława Kowalska", "STANISŁAWY KOWALSKIEJ"))
 
+    def test_ignore_title_case_sensitive_comparison_if_actual_is_upper_case(self):
+        c = MorphologicComparator(title_case_sensitive=True,
+                                  ignore_case_sensitivity_if_actual_upper_case=True)
+
+        self.assertFalse(c.equals("Stanisława Kowalska", "stanisławy kowalskiej"))
+        self.assertTrue(c.equals("Stanisława Kowalska", "STANISŁAWY KOWALSKIEJ"))
+        self.assertFalse(c.equals("STANISŁAWY KOWALSKIEJ", "Stanisława Kowalska"))  # only works if actual is uppercase
+
     def test_comparison_ignores_white_spaces(self):
         self.assertTrue(self.comparator.equals("jakieś słowo  ", "    jakieś    słowo"))
 

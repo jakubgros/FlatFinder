@@ -4,14 +4,16 @@ from comparators.name_comparator import NameComparator
 
 
 class NameComparatorTest(unittest.TestCase):
+
     def _test_all_cases(self, *, true_cases=[], false_cases=[]):
+        comparator = NameComparator()
         for i, (lhs, rhs) in enumerate(true_cases):
             with self.subTest(i=i, lhs=lhs, rhs=rhs):
-                self.assertTrue(NameComparator.equals(lhs, rhs))
+                self.assertTrue(comparator.equals(lhs, rhs))
 
         for i, (lhs, rhs) in enumerate(false_cases):
             with self.subTest(i=i, lhs=lhs, rhs=rhs):
-                self.assertFalse(NameComparator.equals(lhs, rhs))
+                self.assertFalse(comparator.equals(lhs, rhs))
 
     def test_title_ignoring_comparison_of_first_name_and_surname(self):
         test_cases = [
@@ -69,7 +71,6 @@ class NameComparatorTest(unittest.TestCase):
         ]
 
         self._test_all_cases(true_cases=test_cases)
-
 
     def test_title_ignoring_comparison_of_first_name_only(self):
         test_cases = [
@@ -142,16 +143,19 @@ class NameComparatorTest(unittest.TestCase):
 
         self._test_all_cases(true_cases=test_cases)
 
-    def test_comparison_of_first_name_and_surname_vs_surname_only(self):
+    def test_mixed_combinations(self):
 
         true_cases = [
             ("dr Jana Kowalskiego", "dr Kowalskiego"),
-            ("dr Jana Kowalskiego", "dr Jana Kowalskiego"),
             ("dr Jana Kowalskiego", "Jana Kowalskiego"),
             ("dr Jana Kowalskiego", "Kowalskiego"),
             ("dr Kowalskiego", "Kowalskiego"),
             ("dr Kowalskiego", "dr Kowalskiego"),
             ("Jana Kowalskiego", "Kowalskiego"),
+            ("Jakub Gros", "Jakub Gros"),
+            ("Gros", "Jakub Gros"),
+            ("Jakub Gros", "Gros"),
+            ("Gros", "Gros"),
         ]
 
         false_cases = [
@@ -159,18 +163,25 @@ class NameComparatorTest(unittest.TestCase):
             ("dr Jana Kowalskiego", "Jana"),
             ("Jana Kowalskiego", "Jana"),
             ("Kowalskiego", "Jana"),
+            ("Jakub", "Gros"),
+            ("Gros", "Jakub"),
+            ("Jakub", "Jakub Gros"),
+            ("Jakub Gros", "Jakub"),
         ]
 
         self._test_all_cases(true_cases=true_cases, false_cases=false_cases)
 
     def test_comma_bug(self):
-        self.assertFalse(NameComparator.equals('Kazimierz', ','))
+        self.assertFalse(NameComparator().equals('Kazimierz', ','))
 
     def test_al_title_bug(self):
-        self.assertFalse(NameComparator.equals('Al. gen. Tadeusza Bora-Komorowskiego', '. Trasy rowerowo -'))
+        self.assertFalse(NameComparator().equals('Al. gen. Tadeusza Bora-Komorowskiego', '. Trasy rowerowo -'))
 
     def test_hyphen_bug(self):
-        self.assertFalse(NameComparator.equals('Tadeusza Bora-Komorowskiego', ', - balkon -'))
+        self.assertFalse(NameComparator().equals('Tadeusza Bora-Komorowskiego', ', - balkon -'))
+
+    def test_titles_are_ignored_during_comparison(self):
+        self.assertTrue(NameComparator().equals("dr inż. Jakub Gros", "ks. abp. Jakub Gros"))
 
 
 if __name__ == "__main__":

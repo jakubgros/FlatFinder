@@ -35,19 +35,13 @@ class AddressExtractor:
 
     def _get_comparator(self, location_name):
         if Tagger.Instance().does_contain_person_first_name(location_name):
-            def name_equals(expected, actual):
-                return NameComparator.equals(expected, actual,
-                                             ignore_case_sensitivity_if_actual_is_all_upper_case=True)
-
-            equality_comparator = name_equals
+            comparator = NameComparator(ignore_case_sensitivity_if_actual_upper_case=True)
         else:
             comparator = MorphologicComparator(comparison_rules=self.comparison_rules,
                                                title_case_sensitive=True,
                                                ignore_case_sensitivity_if_actual_upper_case=True)
 
-            equality_comparator = comparator.equals
-
-        return equality_comparator
+        return comparator.equals
 
     def _match_locations(self, all_locations, description):
         all_matched_locations = []

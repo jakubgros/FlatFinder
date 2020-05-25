@@ -3,6 +3,7 @@ import unittest
 from comparators.comparison_rules.comparison_rule import ComparisonRule
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from comparators.comparison_rules.comparison_rules_container import ComparisonRulesContainer
+from comparators.morphologic_comparator import MorphologicComparator
 
 
 class TestComparisonRule(unittest.TestCase):
@@ -36,6 +37,17 @@ class TestComparisonRule(unittest.TestCase):
         self.assertTrue(rules_container.does_apply("ulica", "other_mock_rule_type"))
         self.assertFalse(rules_container.does_apply("ulica", "mock_rule_type"))
         self.assertFalse(rules_container.does_apply("ulica", ComparisonRuleType.FORCE_CASE_INSENSITIVITY))
+
+    def test_comparison_rule_with_morphologic_comparator(self):
+        comparator = MorphologicComparator(title_case_sensitive=True)
+
+        self.assertFalse(comparator.equals("Osiedle Kowalskiego", "osiedle Kowalskiego"))
+
+        rules = [ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)]
+        comparator = MorphologicComparator(title_case_sensitive=True,
+                                           comparison_rules=ComparisonRulesContainer(rules))
+
+        self.assertTrue(comparator.equals("Osiedle Kowalskiego", "osiedle Kowalskiego"))
 
 
 if __name__ == '__main__':
