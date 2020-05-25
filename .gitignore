@@ -76,5 +76,5 @@ third parties/
 debug.log
 src/___notepad.py
 temp/
-*/__pycache__/*
+__pycache__/
 ~$*.xlsx
