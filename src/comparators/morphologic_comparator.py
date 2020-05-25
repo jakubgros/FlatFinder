@@ -2,7 +2,7 @@ import functools
 
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from text.analysis.morphologic_analyser import MorphologicAnalyser
-from utilities.utilities import split_on_special_characters_and_preserve_them
+from utilities.utilities import split_on_special_characters
 
 
 class MorphologicComparator:
@@ -24,8 +24,8 @@ class MorphologicComparator:
 
     @functools.lru_cache(maxsize=10000)
     def equals(self, expected, actual):
-        expected_split = split_on_special_characters_and_preserve_them(expected)
-        actual_split = split_on_special_characters_and_preserve_them(actual)
+        expected_split = split_on_special_characters(expected)
+        actual_split = split_on_special_characters(actual)
 
         if len(actual_split) != len(expected_split):
             return False

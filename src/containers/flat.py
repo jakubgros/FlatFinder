@@ -1,6 +1,7 @@
-import logging
 from collections import namedtuple
+
 from selenium.common.exceptions import NoSuchElementException
+
 from other.driver import driver
 
 ExtractionResult = namedtuple('ExtractionResult', ['status', 'value'])

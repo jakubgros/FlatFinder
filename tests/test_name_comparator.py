@@ -184,5 +184,6 @@ class NameComparatorTest(unittest.TestCase):
         self.assertTrue(NameComparator().equals("dr inż. Jakub Gros", "ks. abp. Jakub Gros"))
 
 
+
 if __name__ == "__main__":
     unittest.main()

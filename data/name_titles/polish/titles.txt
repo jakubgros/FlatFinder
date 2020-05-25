@@ -20,6 +20,8 @@ pilot
 pil
 imienia
 im
+inż
+inżynier
 harcmistrz
 harc
 profesor

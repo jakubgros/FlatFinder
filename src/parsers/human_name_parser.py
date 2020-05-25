@@ -4,7 +4,7 @@ import re
 from containers.morphologic_set import MorphologicSet
 from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
-from utilities.utilities import split_on_special_characters_and_preserve_them
+from utilities.utilities import split_on_special_characters
 
 
 @Singleton
@@ -20,7 +20,7 @@ class HumanNameParser:
         return loaded_data
 
     def parse(self, name):
-        name = [word for word in split_on_special_characters_and_preserve_them(name) if word.isalpha()]
+        name = split_on_special_characters(name)
 
         title = list()
         given_name = list()

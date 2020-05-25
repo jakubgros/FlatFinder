@@ -60,3 +60,7 @@ class HumanNameParserTest(unittest.TestCase):
         for idx, (name, *result) in enumerate(all_test_cases):
             with self.subTest(i=idx, name=name):
                 self._testParsing(name, *result)
+
+    def test_dots_after_titles_are_ignored(self):
+        self.assertEqual(self.parser.parse("inż Jan Kowalski"), self.parser.parse("inż. Jan Kowalski"))
+
