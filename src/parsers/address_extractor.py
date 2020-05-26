@@ -7,7 +7,7 @@ from comparators.comparison_rules.comparison_rules_container import ComparisonRu
 from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
 from text.TextSearcher import TextSearcher
-from text.analysis.Tagger import Tagger
+from text.analysis.tagger import Tagger
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 

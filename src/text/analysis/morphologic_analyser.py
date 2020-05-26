@@ -14,26 +14,37 @@ class MorphologicAnalyser:
     to use it in multi-thread environment straightaway - see Morfeusz's documentation how to workaround it """
 
     def __init__(self):
-        self.morf = morfeusz2.Morfeusz(dict_path=f'{base_dir}/third parties/morfeusz2-dictionary-polimorf',
-                                       dict_name="polimorf")
+        self._morf = morfeusz2.Morfeusz(dict_path=f'{base_dir}/third parties/morfeusz2-dictionary-polimorf',
+                                        dict_name="polimorf")
 
-        self._base_form_extension = self._invert_dict({
+        self._base_form_extension = None
+        self.reset_base_form_extension()
+
+        self._reinterpret_mapping = None
+        self.reset_reinterpret_mapping()
+
+
+    def reset_base_form_extension(self, value: Dict[str, Tuple[str]] = None):
+        self.get_base_form.cache_clear()
+
+        if value is None:
+            self._base_form_extension = self._invert_dict({
             "Bonerowska": ("Bonerowska", "Bonerowskiej", "Bonerowskiej",
                            "Bonerowską", "Bonerowską", "Bonerowskiej", "Bonerowsko"),
-        })
+            })
+        else:
+            self._base_form_extension = self._invert_dict(value)
 
-        self._reinterpret_mapping = self._invert_dict({
-            "osiedle": ("oś", "os")
-        }, no_duplicates=True)
-
-    def reset_base_form_extension(self, value: Dict[str, Tuple[str]] = {}):
-        self.get_base_form.cache_clear()
-        self._base_form_extension = self._invert_dict(value)
-
-    def reset_reinterpret_mapping(self, value: Dict[str, Tuple[str]] = {}):
+    def reset_reinterpret_mapping(self, value: Dict[str, Tuple[str]] = None):
         """ The dictionary cannot contain any value repetition, even if it's assigned to different key """
         self.get_base_form.cache_clear()
-        self._reinterpret_mapping = self._invert_dict(value, no_duplicates=True)
+
+        if value is None:
+            self._reinterpret_mapping = self._invert_dict({
+                "osiedle": ("oś", "os")
+            }, no_duplicates=True)
+        else:
+            self._reinterpret_mapping = self._invert_dict(value, no_duplicates=True)
 
     @functools.lru_cache(maxsize=10000)
     def get_base_form(self, str_val):
@@ -46,7 +57,7 @@ class MorphologicAnalyser:
         if str_val in self._reinterpret_mapping:
             str_val = self._reinterpret_mapping[str_val]
 
-        base_form = set(base_form for _, _, (_, base_form, *_) in self.morf.analyse(str_val))
+        base_form = set(base_form for _, _, (_, base_form, *_) in self._morf.analyse(str_val))
         assert base_form
 
         extension = self._base_form_extension.get(str_val, set())

@@ -4,6 +4,15 @@ from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 
 class TestMorphologicAnalyser(unittest.TestCase):
+    def setUp(self):
+        # clears the default base form extension and reinterpret mapping
+        MorphologicAnalyser.Instance().reset_base_form_extension({})
+        MorphologicAnalyser.Instance().reset_reinterpret_mapping({})
+
+    def tearDown(self):
+        # restores the default base form extension and reinterpret mapping
+        MorphologicAnalyser.Instance().reset_base_form_extension()
+        MorphologicAnalyser.Instance().reset_reinterpret_mapping()
 
     def test_get_base_form(self):
         analyser = MorphologicAnalyser.Instance()
@@ -23,12 +32,12 @@ class TestMorphologicAnalyser(unittest.TestCase):
         self.assertTrue(base_form == {"profesor"})
 
     def test_reinterpret(self):
-        # The class doesn't recognize some words correctly. For example it doesn't recognize 'oś' as 'osiedle'.
-        # We can force it to reinterpret 'oś' as 'osiedle' and do the analysis against the 'osiedle' word
+        # The class doesn't recognize some words correctly. For example initially it didn't recognize 'oś' as 'osiedle'
+        # We can force it to reinterpret 'oś' as 'osiedle' and do the analysis against the 'osiedle' word - we do it
+        # by default in constructor, but for testing purposes we cleared the reinterpret mapping in setUp method
 
         analyser = MorphologicAnalyser.Instance()
 
-        analyser.reset_reinterpret_mapping()  # clear default mapping
         base_form = analyser.get_base_form("oś")
         self.assertNotEqual(len(base_form), 0)
 
