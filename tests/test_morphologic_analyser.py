@@ -3,33 +3,41 @@ import unittest
 from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 
-class MyTestCase(unittest.TestCase):
+class TestMorphologicAnalyser(unittest.TestCase):
 
-
-    def test_data_extension(self):
+    def test_get_base_form(self):
         analyser = MorphologicAnalyser.Instance()
+        self.assertEqual(analyser.get_base_form("profesora"), {"profesor"})
 
-        # data for Bonerowska flection has been extended manually
-        base_form1 = analyser.get_base_form("Bonerowskiej")
-        self.assertNotEqual(len(base_form1), 0)
+    def test_base_form_extension(self):
+        analyser = MorphologicAnalyser.Instance()
+        analyser.reset_base_form_extension({"manually added base form": ("profesora", "profesorem")})
 
-        base_form2 = analyser.get_base_form("Bonerowska")
-        self.assertNotEqual(len(base_form2), 0)
+        base_form = analyser.get_base_form("profesora")
+        self.assertTrue(base_form == {"profesor", "manually added base form"})
 
-        #TODO uncomment
-        #self.assertEqual(len(base_form1), len(base_form2))
+        base_form = analyser.get_base_form("profesorem")
+        self.assertTrue(base_form == {"profesor", "manually added base form"})
 
-        pass
+        base_form = analyser.get_base_form("profesorowi")
+        self.assertTrue(base_form == {"profesor"})
 
     def test_reinterpret(self):
-        # morfeusz doesn't recognize oś as osiedle. We force it to reinterpret oś as osiedle and do the analysis using Morfeusz library
+        # The class doesn't recognize some words correctly. For example it doesn't recognize 'oś' as 'osiedle'.
+        # We can force it to reinterpret 'oś' as 'osiedle' and do the analysis against the 'osiedle' word
 
         analyser = MorphologicAnalyser.Instance()
 
+        analyser.reset_reinterpret_mapping()  # clear default mapping
         base_form = analyser.get_base_form("oś")
         self.assertNotEqual(len(base_form), 0)
 
-        self.assertEqual(analyser.get_base_form("oś"), analyser.get_base_form("osiedle"))
+        analyser.reset_reinterpret_mapping({"osiedle": ("oś", "os")})
+        base_form1 = analyser.get_base_form("oś")
+        base_form2 = analyser.get_base_form("os")
+        base_form3 = analyser.get_base_form("osiedle")
+        self.assertTrue(base_form1 == base_form2 == base_form3)
+
 
 if __name__ == '__main__':
     unittest.main()
