@@ -9,7 +9,8 @@ class HumanNameParserTest(unittest.TestCase):
     def setUp(self):
         self.parser = HumanNameParser.Instance()
 
-    def _compare_list(self, actual, expected):
+    @staticmethod
+    def _compare_lists(actual, expected):
         actual_counter = Counter(actual)
         expect_counter = Counter(expected)
 
@@ -17,17 +18,17 @@ class HumanNameParserTest(unittest.TestCase):
         expect_counter.subtract(actual_counter)
         return are_equal, expect_counter
 
-    def _testParsing(self,
-                     to_parse,
-                     expected_titles_list=[],
-                     expected_given_names_list=[],
-                     expected_surnames_list=[]):
+    def _test_results(self,
+                      to_parse,
+                      expected_titles_list=[],
+                      expected_given_names_list=[],
+                      expected_surnames_list=[]):
         actual_title, actual_given_name, actual_surname = self.parser.parse(to_parse)
 
-        title_are_equal, title_comparison_result = self._compare_list(actual_title, expected_titles_list)
-        given_name_are_equal, given_name_comparison_result = self._compare_list(actual_given_name,
-                                                                                expected_given_names_list)
-        surname_are_equal, surname_comparison_result = self._compare_list(actual_surname, expected_surnames_list)
+        title_are_equal, title_comparison_result = self._compare_lists(actual_title, expected_titles_list)
+        given_name_are_equal, given_name_comparison_result = self._compare_lists(actual_given_name,
+                                                                                 expected_given_names_list)
+        surname_are_equal, surname_comparison_result = self._compare_lists(actual_surname, expected_surnames_list)
 
         error_msg = ""
         if not title_are_equal:
@@ -46,7 +47,7 @@ class HumanNameParserTest(unittest.TestCase):
         if error_msg:
             self.fail(error_msg)
 
-    def test(self):
+    def test_human_name_parsing(self):
         all_test_cases = [
             ("Jan Kowalski", [], ["Jan"], ["Kowalski"]),
             ("ks. Jana Kowalskiego", ["ks"], ["Jana"], ["Kowalskiego"]),
@@ -59,7 +60,7 @@ class HumanNameParserTest(unittest.TestCase):
 
         for idx, (name, *result) in enumerate(all_test_cases):
             with self.subTest(i=idx, name=name):
-                self._testParsing(name, *result)
+                self._test_results(name, *result)
 
     def test_dots_after_titles_are_ignored(self):
         self.assertEqual(self.parser.parse("inż Jan Kowalski"), self.parser.parse("inż. Jan Kowalski"))

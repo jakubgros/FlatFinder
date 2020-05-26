@@ -13,7 +13,8 @@ class HumanNameParser:
         self._all_valid_titles = MorphologicSet(self._load_data(f"{base_dir}/data/name_titles/polish/titles.txt"))
         self._all_valid_given_names = MorphologicSet(self._load_data(f"{base_dir}/data/first_names/polish.txt"))
 
-    def _load_data(self, file_path):
+    @staticmethod
+    def _load_data(file_path):
         with open(file_path, encoding='UTF-8') as handle:
             loaded_data = [data for data in handle.read().splitlines()]
 
@@ -30,7 +31,7 @@ class HumanNameParser:
         try:
             word = next(word_it)
 
-            #titles
+            # titles
             while True:
                 if word in self._all_valid_titles:
                     title.append(word)
@@ -38,7 +39,7 @@ class HumanNameParser:
                 else:
                     break
 
-            #given names
+            # given names
             while True:
                 if word in self._all_valid_given_names:
                     given_name.append(word)
@@ -46,7 +47,7 @@ class HumanNameParser:
                 else:
                     break
 
-            #the rest is parsed as surname
+            # the rest is parsed as surname
             while True:
                 surname.append(word)
                 word = next(word_it)
@@ -55,8 +56,3 @@ class HumanNameParser:
             pass
 
         return title, given_name, surname
-
-
-
-
-
