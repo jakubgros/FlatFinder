@@ -1,4 +1,3 @@
-import re
 class TextFrame:
     def __init__(self, word_list, frame_size):
         self.word_list = word_list
@@ -14,7 +13,6 @@ class TextFrame:
         if self.frame_size > words_count:
             return
 
-        for i in range(words_count - self.frame_size + 1):
-            start = i
+        for start in range(words_count - self.frame_size + 1):
             end = start + self.frame_size
-            yield ((start, end), " ".join(self.word_list[start:end]))
+            yield (start, end), " ".join(self.word_list[start:end])
