@@ -1,7 +1,7 @@
 from comparators.morphologic_comparator import MorphologicComparator
 from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
-from text.TextSearcher import TextSearcher
+from text.text_searcher import TextSearcher
 from text.analysis.morphologic_analyser import MorphologicAnalyser
 
 
@@ -28,7 +28,9 @@ class Tagger:
         # check contain_exceptions
         for contain_exception, ret_val in self._contain_person_first_name_exceptions.items():
             comparator = MorphologicComparator().equals
-            does_contain, *_ = TextSearcher.contains(contain_exception, text, equality_comparator=comparator)
+            does_contain, *_ = TextSearcher.find(phrase_to_find=contain_exception,
+                                                 text=text,
+                                                 equality_comparator=comparator)
             if does_contain:
                 return ret_val
 

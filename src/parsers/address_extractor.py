@@ -6,7 +6,7 @@ from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from comparators.comparison_rules.comparison_rules_container import ComparisonRulesContainer
 from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
-from text.TextSearcher import TextSearcher
+from text.text_searcher import TextSearcher
 from text.analysis.tagger import Tagger
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
@@ -49,9 +49,9 @@ class AddressExtractor:
         for location in all_locations:
             for location_name in [location["official"], *location["colloquial"]]:
 
-                does_contain, (match_slice_pos, all_words) = TextSearcher.contains(
-                    location_name,
-                    description,
+                does_contain, (match_slice_pos, all_words) = TextSearcher.find(
+                    phrase_to_find=location_name,
+                    text=description,
                     equality_comparator=self._get_comparator(location_name))
 
                 if does_contain:
