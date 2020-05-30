@@ -32,6 +32,7 @@ class MorphologicAnalyser:
         if value is None:
             self._base_form_removals = {
                 "Kraków": ("Krak", "Kraka"),
+                "Krakowie": ("Krak", "Kraka"),
             }
         else:
             self._base_form_removals = value

@@ -180,9 +180,11 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("miasto Kraków")
+        has_found, *_ = extractor("miasto Kraków")
+        self.assertFalse(has_found)
 
-        self.assertEqual(len(found_address.street), 0)
+        has_found, *_ = extractor("w Krakowie")
+        self.assertFalse(has_found)
 
     def test_no_extra_addresses_are_matched(self):
         import logging
@@ -206,7 +208,7 @@ class AddressExtractorTest(unittest.TestCase):
             with self.subTest(i=i):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address, accept_extra_matches=False)
-
+    
     @unittest.skip
     def test_temp(self):
         import logging
