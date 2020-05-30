@@ -188,7 +188,5 @@ class NameComparatorTest(unittest.TestCase):
         self.assertFalse(comparator.equals("Mieszko I", "I"))
 
 
-
-
 if __name__ == "__main__":
     unittest.main()
