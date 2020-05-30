@@ -8,11 +8,13 @@ class TestMorphologicAnalyser(unittest.TestCase):
         # clears the default base form extension and reinterpret mapping
         MorphologicAnalyser.Instance().reset_base_form_extension({})
         MorphologicAnalyser.Instance().reset_reinterpret_mapping({})
+        MorphologicAnalyser.Instance().reset_base_form_removals({})
 
     def tearDown(self):
         # restores the default base form extension and reinterpret mapping
         MorphologicAnalyser.Instance().reset_base_form_extension()
         MorphologicAnalyser.Instance().reset_reinterpret_mapping()
+        MorphologicAnalyser.Instance().reset_base_form_removals()
 
     def test_get_base_form(self):
         analyser = MorphologicAnalyser.Instance()
@@ -20,21 +22,42 @@ class TestMorphologicAnalyser(unittest.TestCase):
 
     def test_base_form_extension(self):
         analyser = MorphologicAnalyser.Instance()
+
+        base_form = analyser.get_base_form("profesora")
+        self.assertNotIn("manually added base form", base_form)
+
+        base_form = analyser.get_base_form("profesorem")
+        self.assertNotIn("manually added base form", base_form)
+
+        base_form = analyser.get_base_form("profesorowi")
+        self.assertNotIn("manually added base form", base_form)
+
         analyser.reset_base_form_extension({"manually added base form": ("profesora", "profesorem")})
 
         base_form = analyser.get_base_form("profesora")
-        self.assertTrue(base_form == {"profesor", "manually added base form"})
+        self.assertIn("manually added base form", base_form)
 
         base_form = analyser.get_base_form("profesorem")
-        self.assertTrue(base_form == {"profesor", "manually added base form"})
+        self.assertIn("manually added base form", base_form)
 
         base_form = analyser.get_base_form("profesorowi")
-        self.assertTrue(base_form == {"profesor"})
+        self.assertNotIn("manually added base form", base_form)
+
+    def test_base_form_removals(self):
+        analyser = MorphologicAnalyser.Instance()
+        base_form = analyser.get_base_form("Kraków")
+        self.assertIn("Krak", base_form)
+
+        analyser.reset_base_form_removals({"Kraków": ("Krak",)})
+
+        base_form = analyser.get_base_form("Kraków")
+        self.assertNotIn("Krak", base_form)
 
     def test_reinterpret(self):
-        # The class doesn't recognize some words correctly. For example initially it didn't recognize 'oś' as 'osiedle'
-        # We can force it to reinterpret 'oś' as 'osiedle' and do the analysis against the 'osiedle' word - we do it
-        # by default in constructor, but for testing purposes we cleared the reinterpret mapping in setUp method
+        """ The class doesn't recognize some words correctly. For example initially it didn't recognize 'oś' as
+        'osiedle'. We can force it to reinterpret 'oś' as 'osiedle' and do the analysis against
+        the 'osiedle' word - we do it by default in constructor, but for testing purposes we cleared
+        the reinterpret mapping in setUp method """
 
         analyser = MorphologicAnalyser.Instance()
 

@@ -20,9 +20,21 @@ class MorphologicAnalyser:
         self._base_form_extension = None
         self.reset_base_form_extension()
 
+        self._base_form_removals = None
+        self.reset_base_form_removals()
+
         self._reinterpret_mapping = None
         self.reset_reinterpret_mapping()
 
+    def reset_base_form_removals(self, value: Dict[str, Tuple[str]] = None):
+        self.get_base_form.cache_clear()
+
+        if value is None:
+            self._base_form_removals = {
+                "Kraków": ("Krak", "Kraka"),
+            }
+        else:
+            self._base_form_removals = value
 
     def reset_base_form_extension(self, value: Dict[str, Tuple[str]] = None):
         self.get_base_form.cache_clear()
@@ -62,6 +74,9 @@ class MorphologicAnalyser:
 
         extension = self._base_form_extension.get(str_val, set())
         base_form.update(extension)
+
+        removals = self._base_form_removals.get(str_val, set())
+        base_form = base_form.difference(removals)
 
         return base_form
 

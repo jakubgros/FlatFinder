@@ -52,9 +52,11 @@ class AddressExtractorTest(unittest.TestCase):
 
         # failing tests are disabled temporarily
         passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
+
+        #not_passing = set(range(len(all_flats))).difference(set(passing_test_indexes))
+
         shuffle(passing_test_indexes)
-        passing_tests = [(i, all_flats[i]) for i
-                         in passing_test_indexes]
+        passing_tests = [(i, all_flats[i]) for i in passing_test_indexes]
         self.assertEqual(len(passing_tests), 21)
 
         extractor = AddressExtractor(AddressProvider.Instance())
@@ -159,14 +161,28 @@ class AddressExtractorTest(unittest.TestCase):
 
         *_, found_address = extractor("blah blah Piotra blah Grzegorza blah Stanisława")
 
-        self.assertTrue(len(found_address.street) == 1)
+        self.assertEqual(len(found_address.street), 1)
         self.assertIn("Stanisława", found_address.street)
 
-        self.assertTrue(len(found_address.estate) == 1)
+        self.assertEqual(len(found_address.estate), 1)
         self.assertIn("Grzegorza", found_address.estate)
 
-        self.assertTrue(len(found_address.district) == 1)
+        self.assertEqual(len(found_address.district), 1)
         self.assertIn("Piotra", found_address.district)
+
+    def test_Krakow_city_is_not_recognized_as_Kraka_street(self):
+        mocked_address_provider = self._get_mocked_address_provider(
+            streets=[{
+                "official": "Kraka",
+                "colloquial": [],
+            }],
+        )
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor("miasto Kraków")
+
+        self.assertEqual(len(found_address.street), 0)
 
     def test_no_extra_addresses_are_matched(self):
         import logging
@@ -178,8 +194,9 @@ class AddressExtractorTest(unittest.TestCase):
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
         # failing tests are disabled temporarily
-        #passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
         passing_test_indexes = [3, 5, 8, 20, 23]
+        #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
+
         shuffle(passing_test_indexes)
         passing_tests = [(i, all_flats[i]) for i
                          in passing_test_indexes]
