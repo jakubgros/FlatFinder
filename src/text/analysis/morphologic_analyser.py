@@ -73,11 +73,13 @@ class MorphologicAnalyser:
         base_form = set(base_form for _, _, (_, base_form, *_) in self._morf.analyse(str_val))
         assert base_form
 
-        extension = self._base_form_extension.get(str_val, set())
-        base_form.update(extension)
+        if str_val in self._base_form_extension:
+            extension = self._base_form_extension[str_val]
+            base_form.update(extension)
 
-        removals = self._base_form_removals.get(str_val, set())
-        base_form = base_form.difference(removals)
+        if str_val in self._base_form_removals:
+            removals = self._base_form_removals[str_val]
+            base_form = base_form.difference(removals)
 
         return base_form
 

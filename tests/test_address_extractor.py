@@ -196,7 +196,7 @@ class AddressExtractorTest(unittest.TestCase):
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
         # failing tests are disabled temporarily
-        passing_test_indexes = [3, 5, 8, 20, 23]
+        passing_test_indexes = [0, 3, 5, 8, 20, 23]
         #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
 
         shuffle(passing_test_indexes)
@@ -208,7 +208,7 @@ class AddressExtractorTest(unittest.TestCase):
             with self.subTest(i=i):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address, accept_extra_matches=False)
-    
+
     @unittest.skip
     def test_temp(self):
         import logging
