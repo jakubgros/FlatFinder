@@ -209,7 +209,6 @@ class AddressExtractorTest(unittest.TestCase):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address, accept_extra_matches=False)
 
-    @unittest.skip
     def test_temp(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
@@ -218,7 +217,7 @@ class AddressExtractorTest(unittest.TestCase):
             json_obj = json.loads(handle.read())
 
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
-        flat = all_flats[0]
+        flat = all_flats[1]
 
         extractor = AddressExtractor(AddressProvider.Instance())
         _, _, found_address = extractor(flat['title'] + flat['description'])

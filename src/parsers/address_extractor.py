@@ -8,6 +8,7 @@ from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
 from text.text_searcher import TextSearcher
 from text.analysis.tagger import Tagger
+from itertools import chain
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 
@@ -23,15 +24,16 @@ class AddressExtractor:
 
     @staticmethod
     def _extract_street_number(words_list, matched_location_slice_pos):
-        _, slice_end = matched_location_slice_pos
+        slice_beg, slice_end = matched_location_slice_pos
 
         try:
-            elem_after_slice = words_list[slice_end]
-            street_number = int(elem_after_slice)
+            unit_number_slice = (slice_end, slice_end + 1)
+            street_number = int(" ".join(words_list[slice(*unit_number_slice)]))
         except (IndexError, ValueError):
-            return False, None
+            return False, None, None
         else:
-            return True, street_number
+
+            return True, unit_number_slice, street_number
 
     def _get_comparator(self, location_name):
         if Tagger.Instance().does_contain_person_first_name(location_name):
@@ -55,18 +57,7 @@ class AddressExtractor:
                     equality_comparator=self._get_comparator(location_name))
 
                 if does_contain:
-                    matched_location = location["official"]
-
-                    success, street_number = self._extract_street_number(all_words, match_slice_pos)
-                    if success:
-                        matched_location += " " + str(street_number)
-
-                    all_matched_locations.append(matched_location)
-
-                    # noinspection PyUnreachableCode
-                    if __debug__:
-                        piece_of_text_that_matched = ' '.join(all_words[slice(*match_slice_pos)])
-                        logging.debug(f"Matched {matched_location} = description:[{piece_of_text_that_matched}]")
+                    all_matched_locations.append((location["official"], match_slice_pos, all_words))
 
         return all_matched_locations
 
@@ -76,8 +67,28 @@ class AddressExtractor:
         matched_estates = self._match_locations(self.address_provider.estates, description)
         matched_streets = self._match_locations(self.address_provider.streets, description)
 
-        address = Address(district=matched_districts,
-                          estate=matched_estates,
-                          street=matched_streets)
+        for i, (street, match_slice_pos, all_words) in enumerate(matched_streets):
+            success, unit_number_slice, street_number = self._extract_street_number(all_words, match_slice_pos)
+            if success:
+                street = street + " " + str(street_number)
+                matched_streets[i] = (street, match_slice_pos, all_words)
 
-        return bool(matched_districts or matched_estates or matched_streets), self.attribute_name, address
+        districts = [location for location, *_ in matched_districts]
+        estates = [location for location, *_ in matched_estates]
+        streets = [location for location, *_ in matched_streets]
+
+        # noinspection PyUnreachableCode
+        if __debug__:
+            for matched_location, match_slice_pos, all_words in chain(matched_districts, matched_estates):
+                match_slice_beg, match_slice_end = match_slice_pos
+                piece_of_text_that_matched = ' '.join(all_words[match_slice_beg:match_slice_end])
+                context_size = 5
+                context = ' '.join(all_words[match_slice_beg-context_size:match_slice_end+context_size])
+                logging.debug(f"\nMatched {matched_location} = description:[{piece_of_text_that_matched}]\n"
+                          f"context: {context}\n")
+
+        address = Address(district=districts,
+                          estate=estates,
+                          street=streets)
+
+        return bool(districts or estates or streets), self.attribute_name, address
