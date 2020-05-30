@@ -65,3 +65,12 @@ class HumanNameParserTest(unittest.TestCase):
     def test_dots_after_titles_are_ignored(self):
         self.assertEqual(self.parser.parse("inż Jan Kowalski"), self.parser.parse("inż. Jan Kowalski"))
 
+    def test_number_epithets_are_parsed_correctly(self):
+        a = self.parser.parse("Mieszko I")
+        self.parser.parse("I")
+        self.parser.parse("Jan Paweł II")
+        self.parser.parse("Jan Paweł XI")
+        self.parser.parse("Jan Paweł IV")
+
+
+

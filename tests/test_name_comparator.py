@@ -183,6 +183,11 @@ class NameComparatorTest(unittest.TestCase):
     def test_titles_are_ignored_during_comparison(self):
         self.assertTrue(NameComparator().equals("dr inż. Jakub Gros", "ks. abp. Jakub Gros"))
 
+    def test_number_epithets_are_not_interpreted_as_surnames(self):
+        comparator = NameComparator()
+        self.assertFalse(comparator.equals("Mieszko I", "I"))
+
+
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import json
 import unittest
 from collections import Counter
+from random import shuffle
 from unittest.mock import MagicMock
 
 from data_provider.address_provider import AddressProvider
@@ -10,7 +11,7 @@ from parsers.address_extractor import AddressExtractor
 
 class AddressExtractorTest(unittest.TestCase):
 
-    def _compare_address_results(self, flat, found_address):
+    def _compare_address_results(self, flat, found_address, *, accept_extra_matches):
         expected = flat['locations']
         actual = found_address.street + found_address.estate + found_address.district
 
@@ -20,7 +21,12 @@ class AddressExtractorTest(unittest.TestCase):
         matched = {key: key in actual for key in expected}
         extra_matches = actual.difference(expected)
 
-        return self.assertTrue(expected.issubset(actual),
+        if accept_extra_matches:
+            is_ok = expected.issubset(actual)
+        else:
+            is_ok = expected == actual
+
+        return self.assertTrue(is_ok,
                                f'\n'
                                + f'[matched from expected] = {matched}\n\n'
                                + f'[extra matches] =\n{extra_matches}\n\n'
@@ -45,15 +51,17 @@ class AddressExtractorTest(unittest.TestCase):
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
         # failing tests are disabled temporarily
-        passing_tests = [all_flats[i] for i
-                         in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]]
+        passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
+        shuffle(passing_test_indexes)
+        passing_tests = [(i, all_flats[i]) for i
+                         in passing_test_indexes]
         self.assertEqual(len(passing_tests), 21)
 
         extractor = AddressExtractor(AddressProvider.Instance())
-        for i, flat in enumerate(passing_tests):
+        for i, flat in passing_tests:
             with self.subTest(i=i):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
-                self._compare_address_results(flat, found_address)
+                self._compare_address_results(flat, found_address, accept_extra_matches=True)
 
     def test_case_matters(self):
         mocked_address_provider = self._get_mocked_address_provider(
@@ -159,6 +167,41 @@ class AddressExtractorTest(unittest.TestCase):
 
         self.assertTrue(len(found_address.district) == 1)
         self.assertIn("Piotra", found_address.district)
+
+    def test_no_extra_addresses_are_matched(self):
+        import logging
+        logging.root.setLevel(logging.NOTSET)
+
+        with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
+            json_obj = json.loads(handle.read())
+
+        all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
+
+        # failing tests are disabled temporarily
+        passing_test_indexes = [8, 20, 23]
+        shuffle(passing_test_indexes)
+        passing_tests = [(i, all_flats[i]) for i
+                         in passing_test_indexes]
+
+        extractor = AddressExtractor(AddressProvider.Instance())
+        for i, flat in passing_tests:
+            with self.subTest(i=i):
+                _, _, found_address = extractor(flat['title'] + flat['description'])
+                self._compare_address_results(flat, found_address, accept_extra_matches=False)
+
+    def test_temp(self):
+        import logging
+        logging.root.setLevel(logging.NOTSET)
+
+        with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
+            json_obj = json.loads(handle.read())
+
+        all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
+        flat = all_flats[0]
+
+        extractor = AddressExtractor(AddressProvider.Instance())
+        _, _, found_address = extractor(flat['title'] + flat['description'])
+        self._compare_address_results(flat, found_address, accept_extra_matches=False)
 
 
 if __name__ == "__main__":
