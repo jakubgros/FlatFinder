@@ -15,13 +15,14 @@ class NameComparator:
 
     def equals(self, expected: str, actual: str) -> bool:
 
-        _, expected_first, expected_last = self.name_parser.parse(expected)
-        _, actual_first, actual_last = self.name_parser.parse(actual)
+        name_expected = self.name_parser.parse(expected)
+        name_actual = self.name_parser.parse(actual)
 
-        any_name_not_provided = not expected_first or not actual_first
-        any_surname_provided = expected_last or actual_last
+        any_name_not_provided = not name_expected.first_name or not name_actual.first_name
+        any_surname_provided = name_expected.last_name or name_actual.last_name
 
         if any_name_not_provided and any_surname_provided:
-            return self._all_equal(expected_last, actual_last)
+            return self._all_equal(name_expected.last_name, name_actual.last_name)
         else:
-            return self._all_equal(expected_first, actual_first) and self._all_equal(expected_last, actual_last)
+            return self._all_equal(name_expected.first_name, name_actual.first_name) \
+                   and self._all_equal(name_expected.last_name, name_actual.last_name)

@@ -1,7 +1,6 @@
 import unittest
-from collections import Counter
 
-from parsers.human_name_parser import HumanNameParser
+from parsers.human_name_parser import HumanNameParser, HumanName
 
 
 class HumanNameParserTest(unittest.TestCase):
@@ -9,68 +8,60 @@ class HumanNameParserTest(unittest.TestCase):
     def setUp(self):
         self.parser = HumanNameParser.Instance()
 
-    @staticmethod
-    def _compare_lists(actual, expected):
-        actual_counter = Counter(actual)
-        expect_counter = Counter(expected)
-
-        are_equal = actual_counter == expect_counter
-        expect_counter.subtract(actual_counter)
-        return are_equal, expect_counter
-
-    def _test_results(self,
-                      to_parse,
-                      expected_titles_list=[],
-                      expected_given_names_list=[],
-                      expected_surnames_list=[]):
-        actual_title, actual_given_name, actual_surname = self.parser.parse(to_parse)
-
-        title_are_equal, title_comparison_result = self._compare_lists(actual_title, expected_titles_list)
-        given_name_are_equal, given_name_comparison_result = self._compare_lists(actual_given_name,
-                                                                                 expected_given_names_list)
-        surname_are_equal, surname_comparison_result = self._compare_lists(actual_surname, expected_surnames_list)
-
-        error_msg = ""
-        if not title_are_equal:
-            error_msg += f"title_are_equal={title_are_equal}: \n"
-            error_msg += str(title_comparison_result)
-            error_msg += "\n"
-        if not given_name_are_equal:
-            error_msg += f"given_name_are_equal={given_name_are_equal}: \n"
-            error_msg += str(given_name_comparison_result)
-            error_msg += "\n"
-        if not surname_are_equal:
-            error_msg += f"surname_are_equal={surname_are_equal}: \n"
-            error_msg += str(surname_comparison_result)
-            error_msg += "\n"
-
-        if error_msg:
-            self.fail(error_msg)
+    def test_human_name_not_provided_fields_are_empty_lists_by_default(self):
+        human_name = HumanName()
+        self.assertIsInstance(human_name.first_name, list)
+        self.assertEqual(len(human_name.first_name), 0)
 
     def test_human_name_parsing(self):
         all_test_cases = [
-            ("Jan Kowalski", [], ["Jan"], ["Kowalski"]),
-            ("ks. Jana Kowalskiego", ["ks"], ["Jana"], ["Kowalskiego"]),
-            ("księdza Jana Kowalskiego", ["księdza"], ["Jana"], ["Kowalskiego"]),
-            ("ks. abp. Jana Zenona Kowalskiego-Nowaka", ["ks", "abp"], ["Jana", "Zenona"], ["Kowalskiego", "Nowaka"]),
-            ("Kowalskiego", [], [], ["Kowalskiego"]),
-            ("ks. Kowalskiego", ["ks"], [], ["Kowalskiego"]),
-            ("ks. Jana", ["ks"], ["Jana"], [])
+            ("Jan Kowalski",
+             HumanName(first_name=["Jan"], last_name=["Kowalski"])),
+
+            ("ks. Jana Kowalskiego",
+             HumanName(title=["ks"], first_name=["Jana"], last_name=["Kowalskiego"])),
+
+            ("księdza Jana Kowalskiego",
+             HumanName(title=["księdza"], first_name=["Jana"], last_name=["Kowalskiego"])),
+
+            ("ks. abp. Jana Zenona Kowalskiego-Nowaka",
+             HumanName(title=["ks", "abp"], first_name=["Jana", "Zenona"], last_name=["Kowalskiego", "Nowaka"])),
+
+            ("Kowalskiego",
+             HumanName(last_name=["Kowalskiego"])),
+
+            ("ks. Kowalskiego",
+             HumanName(title=["ks"], last_name=["Kowalskiego"])),
+
+            ("ks. Jana",
+             HumanName(title=["ks"], first_name=["Jana"]))
         ]
 
-        for idx, (name, *result) in enumerate(all_test_cases):
-            with self.subTest(i=idx, name=name):
-                self._test_results(name, *result)
+        for name, expected_result in all_test_cases:
+            with self.subTest(name=name):
+                self.assertEqual(self.parser.parse(name), expected_result)
 
     def test_dots_after_titles_are_ignored(self):
         self.assertEqual(self.parser.parse("inż Jan Kowalski"), self.parser.parse("inż. Jan Kowalski"))
 
     def test_number_epithets_are_parsed_correctly(self):
-        a = self.parser.parse("Mieszko I")
-        self.parser.parse("I")
-        self.parser.parse("Jan Paweł II")
-        self.parser.parse("Jan Paweł XI")
-        self.parser.parse("Jan Paweł IV")
+        all_test_cases = [
+            ("Mieszko I",
+             HumanName(first_name=["Mieszko"], numerical_epithet=["I"])),
 
+            ("I",
+             HumanName(numerical_epithet=["I"])),
 
+            ("Jan Paweł II",
+             HumanName(first_name=['Jan', 'Paweł'], numerical_epithet=['II'])),
 
+            ("ks. Karol Wojtyła I",
+             HumanName(title=['ks'], first_name=['Karol'], last_name=['Wojtyła'], numerical_epithet=['I'])),
+
+            ("ks. Karol I Wojtyła",
+             HumanName(title=['ks'], first_name=['Karol'], last_name=['Wojtyła'], numerical_epithet=['I'])),
+        ]
+
+        for name, expected_result in all_test_cases:
+            with self.subTest(name=name):
+                self.assertEqual(self.parser.parse(name), expected_result)
