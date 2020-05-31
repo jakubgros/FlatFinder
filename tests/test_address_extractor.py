@@ -186,7 +186,7 @@ class AddressExtractorTest(unittest.TestCase):
         has_found, *_ = extractor("w Krakowie")
         self.assertFalse(has_found)
 
-    def test_no_extra_addresses_are_matched(self):
+    def test_no_extra_addresses_are_matched_regression(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
 
@@ -195,19 +195,25 @@ class AddressExtractorTest(unittest.TestCase):
 
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
-        # failing tests are disabled temporarily
-        passing_test_indexes = [0, 3, 5, 8, 20, 23]
-        #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
-
-        #shuffle(passing_test_indexes)
-        passing_tests = [(i, all_flats[i]) for i
-                         in passing_test_indexes]
-
         extractor = AddressExtractor(AddressProvider.Instance())
+
+        passing_test_indexes = [0, 3, 5, 8, 20, 23]
+        passing_tests = [(i, all_flats[i]) for i in passing_test_indexes]
         for i, flat in passing_tests:
             with self.subTest(i=i):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address, accept_extra_matches=False)
+
+        not_passing_tests_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes)))
+        not_passing_tests = [(i, all_flats[i]) for i in not_passing_tests_indexes]
+        extra_locations_count = 0
+        for i, flat in not_passing_tests:
+            _, _, found_address = extractor(flat['title'] + flat['description'])
+            expected_locations = flat['locations']
+            actual_locations = found_address.street + found_address.estate + found_address.district
+            extra_locations_count += len([extra_location for extra_location in actual_locations if extra_location not in expected_locations])
+
+        self.assertEqual(extra_locations_count, 52)
 
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
         mocked_address_provider = self._get_mocked_address_provider(
@@ -224,21 +230,6 @@ class AddressExtractorTest(unittest.TestCase):
 
         has_found, *_ = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
         self.assertTrue(has_found)
-
-    def test_temp(self):
-        import logging
-        logging.root.setLevel(logging.NOTSET)
-
-        with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
-            json_obj = json.loads(handle.read())
-
-        all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
-        flat = all_flats[1]
-
-        extractor = AddressExtractor(AddressProvider.Instance())
-        _, _, found_address = extractor(flat['title'] + flat['description'])
-        self._compare_address_results(flat, found_address, accept_extra_matches=False)
-
 
 if __name__ == "__main__":
     unittest.main()
