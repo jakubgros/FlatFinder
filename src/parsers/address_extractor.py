@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from colorama import Fore, Back, Style
 
 from comparators.comparison_rules.comparison_rule import ComparisonRule
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
@@ -79,13 +80,14 @@ class AddressExtractor:
 
         # noinspection PyUnreachableCode
         if __debug__:
-            for matched_location, match_slice_pos, all_words in chain(matched_districts, matched_estates):
+            for matched_location, match_slice_pos, all_words in chain(matched_districts, matched_estates, matched_streets):
+                all_words = all_words[:]
                 match_slice_beg, match_slice_end = match_slice_pos
                 piece_of_text_that_matched = ' '.join(all_words[match_slice_beg:match_slice_end])
-                context_size = 5
-                context = ' '.join(all_words[match_slice_beg-context_size:match_slice_end+context_size])
-                logging.debug(f"\nMatched {matched_location} = description:[{piece_of_text_that_matched}]\n"
-                          f"context: {context}\n")
+                all_words[match_slice_beg:match_slice_end] = [Fore.GREEN + ' '.join(all_words[match_slice_beg:match_slice_end]) + Style.RESET_ALL]
+                description = ' '.join(all_words)
+                logging.debug(f"\nMatched db location '{matched_location}' to '{piece_of_text_that_matched}'\n"
+                          f"description: {description}\n")
 
         address = Address(district=districts,
                           estate=estates,

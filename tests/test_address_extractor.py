@@ -199,7 +199,7 @@ class AddressExtractorTest(unittest.TestCase):
         passing_test_indexes = [0, 3, 5, 8, 20, 23]
         #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
 
-        shuffle(passing_test_indexes)
+        #shuffle(passing_test_indexes)
         passing_tests = [(i, all_flats[i]) for i
                          in passing_test_indexes]
 
@@ -208,6 +208,22 @@ class AddressExtractorTest(unittest.TestCase):
             with self.subTest(i=i):
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 self._compare_address_results(flat, found_address, accept_extra_matches=False)
+
+    def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
+        mocked_address_provider = self._get_mocked_address_provider(
+            streets=[{
+                "official": "Piękna",
+                "colloquial": [],
+            }],
+        )
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
+        self.assertFalse(has_found)
+
+        has_found, *_ = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
+        self.assertTrue(has_found)
 
     def test_temp(self):
         import logging
