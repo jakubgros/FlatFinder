@@ -1,6 +1,9 @@
 import json
 import unittest
 from collections import Counter
+from contextlib import contextmanager
+
+import multiprocess as mp
 from random import shuffle
 
 from data_provider.address_provider import address_provider
@@ -12,6 +15,7 @@ class MockedAddressProvider:
         self.districts = districts
         self.estates = estates
         self.streets = streets
+
 
 class AddressExtractorTest(unittest.TestCase):
 
@@ -37,6 +41,8 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
 
+
+
     def test_regression(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
@@ -50,16 +56,28 @@ class AddressExtractorTest(unittest.TestCase):
         passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
 
         #not_passing = set(range(len(all_flats))).difference(set(passing_test_indexes))
-
         shuffle(passing_test_indexes)
-        passing_tests = [(i, all_flats[i]) for i in passing_test_indexes]
+        passing_tests = [all_flats[i] for i in passing_test_indexes]
         self.assertEqual(len(passing_tests), 21)
 
-        extractor = AddressExtractor(address_provider)
-        for i, flat in passing_tests:
-            with self.subTest(i=i):
+        def runner(flat):
+            try:
+                extractor = AddressExtractor(address_provider)
+
                 _, _, found_address = extractor(flat['title'] + flat['description'])
-                self._compare_address_results(flat, found_address, accept_extra_matches=True)
+                return flat, found_address
+            except Exception as e:
+                return None, e
+
+        with mp.Pool() as pool:
+            results = pool.map(runner, passing_tests)
+
+        for i, (input, subtest_result) in enumerate(results):
+            with self.subTest(i=i):
+                if isinstance(subtest_result, Exception):
+                    self.fail(subtest_result)
+                else:
+                    self._compare_address_results(input, subtest_result, accept_extra_matches=True)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
