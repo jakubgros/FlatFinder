@@ -3,12 +3,10 @@ from typing import Tuple, Dict
 
 import morfeusz2
 
-from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
 from exception.exception import FFE_InvalidArgument
 
 
-@Singleton
 class MorphologicAnalyser:
     """ The used Morfeusz library doesn't have any synchronisation mechanisms, so it's not safe
     to use it in multi-thread environment straightaway - see Morfeusz's documentation how to workaround it """
@@ -97,3 +95,6 @@ class MorphologicAnalyser:
                 else:
                     inv_map.setdefault(v, set()).add(key)
         return inv_map
+
+
+morphologic_analyser = MorphologicAnalyser()

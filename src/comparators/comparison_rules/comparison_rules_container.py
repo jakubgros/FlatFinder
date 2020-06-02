@@ -3,7 +3,7 @@ from collections import defaultdict
 
 class ComparisonRulesContainer:
     def __init__(self, rules):
-        self.all_rules = defaultdict(lambda: list())
+        self.all_rules = defaultdict(list)
 
         for rule in rules:
             self.all_rules[rule.rule_type].append(rule)

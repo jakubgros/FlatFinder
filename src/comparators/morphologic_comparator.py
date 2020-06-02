@@ -1,7 +1,7 @@
 import functools
 
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
-from text.analysis.morphologic_analyser import MorphologicAnalyser
+from text.analysis.morphologic_analyser import MorphologicAnalyser, morphologic_analyser
 from utilities.utilities import split_on_special_characters
 
 
@@ -30,7 +30,7 @@ class MorphologicComparator:
         if len(actual_split) != len(expected_split):
             return False
 
-        analyser = MorphologicAnalyser.Instance()
+        analyser = morphologic_analyser
         expected_base_form = [analyser.get_base_form(word) for word in expected_split]
         actual_base_form = [analyser.get_base_form(word) for word in actual_split]
 
