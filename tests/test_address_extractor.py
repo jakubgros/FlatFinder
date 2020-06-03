@@ -9,6 +9,8 @@ from random import shuffle
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
+from text.analysis.context_analyser import ContextNotFirstWordOfSentence
+
 
 class MockedAddressProvider:
     def __init__(self, districts=[], estates=[], streets=[]):
@@ -215,13 +217,12 @@ class AddressExtractorTest(unittest.TestCase):
         extractor = AddressExtractor(address_provider)
 
         passing_test_indexes = [0, 3, 5, 8, 20, 23]
-        #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
-
-        passing_tests = [ all_flats[i] for i in passing_test_indexes]
+        passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
+        passing_tests = [all_flats[i] for i in passing_test_indexes]
 
         def runner(flat):
             try:
-                extractor = AddressExtractor(address_provider)
+                extractor = AddressExtractor(address_provider, context_analysers=[ContextNotFirstWordOfSentence])
 
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 return flat, found_address
@@ -238,7 +239,6 @@ class AddressExtractorTest(unittest.TestCase):
                 else:
                     self._compare_address_results(input, subtest_result, accept_extra_matches=False)
 
-    @unittest.skip
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
         mocked_address_provider = MockedAddressProvider(
             streets=[{
@@ -247,13 +247,14 @@ class AddressExtractorTest(unittest.TestCase):
             }],
         )
 
-        extractor = AddressExtractor(mocked_address_provider)
+        extractor = AddressExtractor(mocked_address_provider, context_analysers=[ContextNotFirstWordOfSentence])
 
         has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
         self.assertFalse(has_found)
 
         has_found, *_ = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
         self.assertTrue(has_found)
+
 
 if __name__ == "__main__":
     unittest.main()

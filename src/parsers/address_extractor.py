@@ -1,29 +1,34 @@
 import logging
 from collections import namedtuple
-from colorama import Fore, Back, Style
+from dataclasses import dataclass
+from typing import List, Tuple
+
+from colorama import Fore, Style
 
 from comparators.comparison_rules.comparison_rule import ComparisonRule
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from comparators.comparison_rules.comparison_rules_container import ComparisonRulesContainer
 from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
+from containers.address_match import AddressMatch
 from text.text_searcher import TextSearcher
 
 from itertools import chain
 from text.analysis.tagger import tagger
 
-
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 
 
 class AddressExtractor:
-    def __init__(self, address_provider):
+    def __init__(self, address_provider, context_analysers=[]):
         self.address_provider = address_provider
         self.attribute_name = "address"
 
         self.comparison_rules = ComparisonRulesContainer([
             ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
         ])
+
+        self.context_analysers = context_analysers
 
     @staticmethod
     def _extract_street_number(words_list, matched_location_slice_pos):
@@ -60,36 +65,46 @@ class AddressExtractor:
                     equality_comparator=self._get_comparator(location_name))
 
                 if does_contain:
-                    all_matched_locations.append((location["official"], match_slice_pos, all_words))
+                    match = AddressMatch(
+                        location=location['official'],
+                        match_slice_position=match_slice_pos,
+                        source=all_words)
+
+                    all_matched_locations.append(match)
 
         return all_matched_locations
 
     def __call__(self, description):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
-        matched_districts = self._match_locations(self.address_provider.districts, description)
-        matched_estates = self._match_locations(self.address_provider.estates, description)
-        matched_streets = self._match_locations(self.address_provider.streets, description)
+        matched_districts = [match for match in self._match_locations(self.address_provider.districts, description)
+                             if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
+        matched_estates = [match for match in self._match_locations(self.address_provider.estates, description)
+                           if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
+        matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
+                           if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
 
-        for i, (street, match_slice_pos, all_words) in enumerate(matched_streets):
-            success, unit_number_slice, street_number = self._extract_street_number(all_words, match_slice_pos)
+        streets = []
+        for i, match in enumerate(matched_streets):
+            success, unit_number_slice, street_number \
+                = self._extract_street_number(match.source, match.match_slice_position)
             if success:
-                street = street + " " + str(street_number)
-                matched_streets[i] = (street, match_slice_pos, all_words)
+                street_and_unit_number = match.location + " " + str(street_number)
+                streets.append(street_and_unit_number)
+            else:
+                streets.append(match.location)
 
-        districts = [location for location, *_ in matched_districts]
-        estates = [location for location, *_ in matched_estates]
-        streets = [location for location, *_ in matched_streets]
+        districts = [match.location for match in matched_districts]
+        estates = [match.location for match in matched_estates]
 
         # noinspection PyUnreachableCode
         if __debug__:
-            for matched_location, match_slice_pos, all_words in chain(matched_districts, matched_estates, matched_streets):
-                all_words = all_words[:]
-                match_slice_beg, match_slice_end = match_slice_pos
-                piece_of_text_that_matched = ' '.join(all_words[match_slice_beg:match_slice_end])
-                all_words[match_slice_beg:match_slice_end] = [Fore.GREEN + ' '.join(all_words[match_slice_beg:match_slice_end]) + Style.RESET_ALL]
-                description = ' '.join(all_words)
-                logging.debug(f"\nMatched db location '{matched_location}' to '{piece_of_text_that_matched}'\n"
-                          f"description: {description}\n")
+            for match in chain(matched_districts, matched_estates, matched_streets):
+                source = match.source[:]
+                source[slice(*match.match_slice_position)] = [
+                    Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
+                description = ' '.join(source)
+                logging.debug(f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
+                              f"description: {description}\n")
 
         address = Address(district=districts,
                           estate=estates,
