@@ -1,11 +1,8 @@
 import json
 
-from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
 from exception.exception import FlatFinderException
 
-
-@Singleton
 class AddressProvider:
 
     def __init__(self, city_name="Kraków"):
@@ -21,3 +18,6 @@ class AddressProvider:
         self.districts = locations["districts"]
         self.estates = locations["estates"]
         self.streets = locations["streets"]
+
+
+address_provider = AddressProvider()

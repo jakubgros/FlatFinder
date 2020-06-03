@@ -1,12 +1,12 @@
 from itertools import zip_longest
 
 from comparators.morphologic_comparator import MorphologicComparator
-from parsers.human_name_parser import HumanNameParser
+from parsers.human_name_parser import human_name_parser
 
 
 class NameComparator:
     def __init__(self, ignore_case_sensitivity_if_actual_upper_case=False):
-        self.name_parser = HumanNameParser.Instance()
+        self.name_parser = human_name_parser
         self.comparator = MorphologicComparator(
             ignore_case_sensitivity_if_actual_upper_case=ignore_case_sensitivity_if_actual_upper_case)
 

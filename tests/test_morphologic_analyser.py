@@ -1,27 +1,27 @@
 import unittest
 
-from text.analysis.morphologic_analyser import MorphologicAnalyser
+from text.analysis.morphologic_analyser import morphologic_analyser
 
 
 class TestMorphologicAnalyser(unittest.TestCase):
     def setUp(self):
         # clears the default base form extension and reinterpret mapping
-        MorphologicAnalyser.Instance().reset_base_form_extension({})
-        MorphologicAnalyser.Instance().reset_reinterpret_mapping({})
-        MorphologicAnalyser.Instance().reset_base_form_removals({})
+        morphologic_analyser.reset_base_form_extension({})
+        morphologic_analyser.reset_reinterpret_mapping({})
+        morphologic_analyser.reset_base_form_removals({})
 
     def tearDown(self):
         # restores the default base form extension and reinterpret mapping
-        MorphologicAnalyser.Instance().reset_base_form_extension()
-        MorphologicAnalyser.Instance().reset_reinterpret_mapping()
-        MorphologicAnalyser.Instance().reset_base_form_removals()
+        morphologic_analyser.reset_base_form_extension()
+        morphologic_analyser.reset_reinterpret_mapping()
+        morphologic_analyser.reset_base_form_removals()
 
     def test_get_base_form(self):
-        analyser = MorphologicAnalyser.Instance()
+        analyser = morphologic_analyser
         self.assertEqual(analyser.get_base_form("profesora"), {"profesor"})
 
     def test_base_form_extension(self):
-        analyser = MorphologicAnalyser.Instance()
+        analyser = morphologic_analyser
 
         base_form = analyser.get_base_form("profesora")
         self.assertNotIn("manually added base form", base_form)
@@ -44,7 +44,7 @@ class TestMorphologicAnalyser(unittest.TestCase):
         self.assertNotIn("manually added base form", base_form)
 
     def test_base_form_removals(self):
-        analyser = MorphologicAnalyser.Instance()
+        analyser = morphologic_analyser
         base_form = analyser.get_base_form("Kraków")
         self.assertIn("Krak", base_form)
 
@@ -59,7 +59,7 @@ class TestMorphologicAnalyser(unittest.TestCase):
         the 'osiedle' word - we do it by default in constructor, but for testing purposes we cleared
         the reinterpret mapping in setUp method """
 
-        analyser = MorphologicAnalyser.Instance()
+        analyser = morphologic_analyser
 
         base_form = analyser.get_base_form("oś")
         self.assertNotEqual(len(base_form), 0)

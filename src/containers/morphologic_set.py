@@ -2,7 +2,7 @@ import functools
 from collections import defaultdict
 
 from comparators.morphologic_comparator import MorphologicComparator
-from text.analysis.morphologic_analyser import MorphologicAnalyser
+from text.analysis.morphologic_analyser import MorphologicAnalyser, morphologic_analyser
 
 
 class MorphologicSet:
@@ -17,7 +17,7 @@ class MorphologicSet:
 
     def __init__(self, list_of_words):
 
-        self.analyser = MorphologicAnalyser.Instance()
+        self.analyser = morphologic_analyser
 
         self.data = defaultdict(set)
         self.comparator = MorphologicComparator()

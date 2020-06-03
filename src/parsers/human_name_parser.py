@@ -1,7 +1,4 @@
-from collections import namedtuple
-
 from containers.morphologic_set import MorphologicSet
-from decorators.singleton import Singleton
 from env_utils.base_dir import base_dir
 from parsers.roman_numerals_parser import RomanNumeralsParser
 from utilities.utilities import split_on_special_characters
@@ -17,7 +14,6 @@ class HumanName:
     numerical_epithet: List[str] = field(default_factory=list)
 
 
-@Singleton
 class HumanNameParser:
     def __init__(self):
         self._all_valid_titles = MorphologicSet(self._load_data(f"{base_dir}/data/name_titles/polish/titles.txt"))
@@ -68,3 +64,6 @@ class HumanNameParser:
             pass
 
         return human_name
+
+
+human_name_parser = HumanNameParser()

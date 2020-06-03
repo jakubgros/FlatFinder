@@ -8,8 +8,10 @@ from comparators.comparison_rules.comparison_rules_container import ComparisonRu
 from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
 from text.text_searcher import TextSearcher
-from text.analysis.tagger import Tagger
+
 from itertools import chain
+from text.analysis.tagger import tagger
+
 
 Address = namedtuple('Address', ['district', 'estate', 'street'])
 
@@ -37,7 +39,7 @@ class AddressExtractor:
             return True, unit_number_slice, street_number
 
     def _get_comparator(self, location_name):
-        if Tagger.Instance().does_contain_person_first_name(location_name):
+        if tagger.does_contain_person_first_name(location_name):
             comparator = NameComparator(ignore_case_sensitivity_if_actual_upper_case=True)
         else:
             comparator = MorphologicComparator(comparison_rules=self.comparison_rules,

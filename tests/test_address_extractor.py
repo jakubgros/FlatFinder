@@ -1,12 +1,20 @@
 import json
 import unittest
 from collections import Counter
-from random import shuffle
-from unittest.mock import MagicMock
+from contextlib import contextmanager
 
-from data_provider.address_provider import AddressProvider
+import multiprocess as mp
+from random import shuffle
+
+from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
+
+class MockedAddressProvider:
+    def __init__(self, districts=[], estates=[], streets=[]):
+        self.districts = districts
+        self.estates = estates
+        self.streets = streets
 
 
 class AddressExtractorTest(unittest.TestCase):
@@ -33,13 +41,7 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
 
-    @staticmethod
-    def _get_mocked_address_provider(streets=[], estates=[], districts=[]):
-        return MagicMock(**{
-            'streets': iter(streets),
-            'estates': iter(estates),
-            'districts': iter(districts)
-        })
+
 
     def test_regression(self):
         import logging
@@ -54,19 +56,31 @@ class AddressExtractorTest(unittest.TestCase):
         passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
 
         #not_passing = set(range(len(all_flats))).difference(set(passing_test_indexes))
-
         shuffle(passing_test_indexes)
-        passing_tests = [(i, all_flats[i]) for i in passing_test_indexes]
+        passing_tests = [all_flats[i] for i in passing_test_indexes]
         self.assertEqual(len(passing_tests), 21)
 
-        extractor = AddressExtractor(AddressProvider.Instance())
-        for i, flat in passing_tests:
-            with self.subTest(i=i):
+        def runner(flat):
+            try:
+                extractor = AddressExtractor(address_provider)
+
                 _, _, found_address = extractor(flat['title'] + flat['description'])
-                self._compare_address_results(flat, found_address, accept_extra_matches=True)
+                return flat, found_address
+            except Exception as e:
+                return None, e
+
+        with mp.Pool() as pool:
+            results = pool.map(runner, passing_tests)
+
+        for i, (input, subtest_result) in enumerate(results):
+            with self.subTest(i=i):
+                if isinstance(subtest_result, Exception):
+                    self.fail(subtest_result)
+                else:
+                    self._compare_address_results(input, subtest_result, accept_extra_matches=True)
 
     def test_case_matters(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Śliczna",
                 "colloquial": [],
@@ -78,7 +92,7 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertFalse(status)
 
     def test_case_does_not_matter_phrase_in_text_is_all_upper_case(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Śliczna",
                 "colloquial": [],
@@ -90,7 +104,7 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Śliczna", found_address.street)
 
     def test_extract_address_with_unit_number(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Jana Zamoyskiego",
                 "colloquial": [],
@@ -102,7 +116,7 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Jana Zamoyskiego 15", found_address.street)
 
     def test_address_extractor_returns_official_name_if_colloquial_name_matched(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             estates=[{
                 "official": "Osiedle Na Kozłówce",
                 "colloquial": ["Kozłówek"],
@@ -119,20 +133,20 @@ class AddressExtractorTest(unittest.TestCase):
             "colloquial": [],
         }]
 
-        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        extractor = AddressExtractor(MockedAddressProvider(streets=streets))
         *_, found_address = extractor("Kościuszki")
         self.assertIn("Tadeusza Kościuszki", found_address.street)
 
-        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        extractor = AddressExtractor(MockedAddressProvider(streets=streets))
         *_, found_address = extractor("Tadeusza Kościuszki")
         self.assertIn("Tadeusza Kościuszki", found_address.street)
 
-        extractor = AddressExtractor(self._get_mocked_address_provider(streets=streets))
+        extractor = AddressExtractor(MockedAddressProvider(streets=streets))
         *_, found_address = extractor("Tadeusza")
         self.assertNotIn("Tadeusza Kościuszki", found_address.street)
 
     def test_address_extractor_performs_morphological_comparison(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Stanisława",
                 "colloquial": [],
@@ -143,7 +157,7 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Stanisława", found_address.street)
 
     def test_address_extractor_correctly_recognize_location_type(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Stanisława",
                 "colloquial": [],
@@ -170,13 +184,16 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertEqual(len(found_address.district), 1)
         self.assertIn("Piotra", found_address.district)
 
+
+
     def test_Krakow_city_is_not_recognized_as_Kraka_street(self):
-        mocked_address_provider = self._get_mocked_address_provider(
-            streets=[{
+
+        mocked_address_provider = MockedAddressProvider(streets=[{
                 "official": "Kraka",
                 "colloquial": [],
             }],
         )
+
 
         extractor = AddressExtractor(mocked_address_provider)
 
@@ -195,28 +212,35 @@ class AddressExtractorTest(unittest.TestCase):
 
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
-        extractor = AddressExtractor(AddressProvider.Instance())
+        extractor = AddressExtractor(address_provider)
 
         passing_test_indexes = [0, 3, 5, 8, 20, 23]
-        passing_tests = [(i, all_flats[i]) for i in passing_test_indexes]
-        for i, flat in passing_tests:
-            with self.subTest(i=i):
+        #passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
+
+        passing_tests = [ all_flats[i] for i in passing_test_indexes]
+
+        def runner(flat):
+            try:
+                extractor = AddressExtractor(address_provider)
+
                 _, _, found_address = extractor(flat['title'] + flat['description'])
-                self._compare_address_results(flat, found_address, accept_extra_matches=False)
+                return flat, found_address
+            except Exception as e:
+                return None, e
 
-        not_passing_tests_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes)))
-        not_passing_tests = [(i, all_flats[i]) for i in not_passing_tests_indexes]
-        extra_locations_count = 0
-        for i, flat in not_passing_tests:
-            _, _, found_address = extractor(flat['title'] + flat['description'])
-            expected_locations = flat['locations']
-            actual_locations = found_address.street + found_address.estate + found_address.district
-            extra_locations_count += len([extra_location for extra_location in actual_locations if extra_location not in expected_locations])
+        with mp.Pool() as pool:
+            results = pool.map(runner, passing_tests)
 
-        self.assertEqual(extra_locations_count, 52)
+        for i, (input, subtest_result) in enumerate(results):
+            with self.subTest(i=i):
+                if isinstance(subtest_result, Exception):
+                    self.fail(subtest_result)
+                else:
+                    self._compare_address_results(input, subtest_result, accept_extra_matches=False)
 
+    @unittest.skip
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
-        mocked_address_provider = self._get_mocked_address_provider(
+        mocked_address_provider = MockedAddressProvider(
             streets=[{
                 "official": "Piękna",
                 "colloquial": [],

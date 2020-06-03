@@ -1,12 +1,12 @@
 import unittest
 
-from parsers.human_name_parser import HumanNameParser, HumanName
+from parsers.human_name_parser import HumanName, human_name_parser
 
 
 class HumanNameParserTest(unittest.TestCase):
 
     def setUp(self):
-        self.parser = HumanNameParser.Instance()
+        self.parser = human_name_parser
 
     def test_human_name_not_provided_fields_are_empty_lists_by_default(self):
         human_name = HumanName()
