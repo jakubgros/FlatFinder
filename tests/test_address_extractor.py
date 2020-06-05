@@ -54,11 +54,30 @@ class AddressExtractorTest(unittest.TestCase):
 
         return passing_tests
 
+    @staticmethod
+    def _get_amount_of_extra_matches(flat, found_address):
+        expected = flat['locations']
+        actual = found_address.street + found_address.estate + found_address.district
+
+        exp_counter = Counter(expected)
+        act_counter = Counter(actual)
+
+        act_counter.subtract(exp_counter)
+
+        extra_matches = 0
+        for count in act_counter.values():
+            if count > 0:
+                extra_matches += count
+
+        return extra_matches
+
     def test_regression(self):
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
+
+        extra_matches_count = 0
 
         def runner(flat):
             try:
@@ -78,6 +97,9 @@ class AddressExtractorTest(unittest.TestCase):
                     self.fail(subtest_result)
                 else:
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
+                    extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
+
+        self.assertEqual(extra_matches_count, 58)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -184,8 +206,6 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertEqual(len(found_address.district), 1)
         self.assertIn("Piotra", found_address.district)
 
-
-
     def test_Krakow_city_is_not_recognized_as_Kraka_street(self):
 
         mocked_address_provider = MockedAddressProvider(streets=[{
@@ -194,7 +214,6 @@ class AddressExtractorTest(unittest.TestCase):
             }],
         )
 
-
         extractor = AddressExtractor(mocked_address_provider)
 
         has_found, *_ = extractor("miasto Kraków")
@@ -202,61 +221,6 @@ class AddressExtractorTest(unittest.TestCase):
 
         has_found, *_ = extractor("w Krakowie")
         self.assertFalse(has_found)
-
-    def test_no_extra_addresses_are_matched_regression(self):
-        import logging
-        logging.root.setLevel(logging.NOTSET)
-
-        with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
-            json_obj = json.loads(handle.read())
-
-        all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
-
-        passing_test_indexes = [0, 3, 5, 8, 20, 23]
-        passing_tests = [all_flats[i] for i in passing_test_indexes]
-
-        def runner(flat):
-            try:
-                extractor = AddressExtractor(address_provider, context_analysers=[FirstWordOfSentenceContext(negate=True)])
-
-                _, _, found_address = extractor(flat['title'] + flat['description'])
-                return flat, found_address
-            except Exception as e:
-                return None, e
-
-        with mp.Pool() as pool:
-            results = pool.map(runner, passing_tests)
-
-        for i, (input, subtest_result) in enumerate(results):
-            with self.subTest(i=i):
-                if isinstance(subtest_result, Exception):
-                    self.fail(subtest_result)
-                else:
-                    self._compare_address_results(input, subtest_result, accept_extra_matches=False)
-
-
-        #extra matches count
-        with mp.Pool() as pool:
-            results = pool.map(runner, all_flats.values())
-
-        extra_matches_count = 0
-        for i, (input, subtest_result) in enumerate(results):
-            if isinstance(subtest_result, Exception):
-                self.fail(subtest_result)
-            else:
-                flat, found_address = input, subtest_result
-                expected = flat['locations']
-                actual = found_address.street + found_address.estate + found_address.district
-
-                expected = set(Counter(expected).keys())
-                actual = set(Counter(actual).keys())
-
-                extra_matches = actual.difference(expected)
-                extra_matches_count += len(extra_matches)
-
-        self.assertEqual(extra_matches_count, 64)
-
-
 
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
         mocked_address_provider = MockedAddressProvider(
