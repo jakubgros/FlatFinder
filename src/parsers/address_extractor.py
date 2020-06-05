@@ -77,11 +77,11 @@ class AddressExtractor:
     def __call__(self, description):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
         matched_districts = [match for match in self._match_locations(self.address_provider.districts, description)
-                             if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
+                             if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
         matched_estates = [match for match in self._match_locations(self.address_provider.estates, description)
-                           if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
+                           if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
         matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
-                           if all([ctx_analyser.does_apply(match) for ctx_analyser in self.context_analysers])]
+                           if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
 
         streets = []
         for i, match in enumerate(matched_streets):

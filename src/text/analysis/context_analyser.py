@@ -1,31 +1,49 @@
 from containers.address_match import AddressMatch
 
 
-def _safe_list_get(the_list, idx, default):
-    if idx < 0:
-        return default
+def get_elements_before_ignoring_newline(idx, amount, the_list, default):
+    sliced = the_list[:idx]
+    without_newline = [e for e in sliced if e != '\n']
+    reversed_slice = without_newline[::-1]
 
-    try:
-        return the_list[idx]
-    except IndexError:
-        return default
+    elements_before = reversed_slice[:amount]
+
+    return elements_before
 
 
 class Context:
+
     @staticmethod
     def does_apply(context, subject):
         pass
 
 
-class ContextNotFirstWordOfSentence(Context):
-    @staticmethod
-    def does_apply(match: AddressMatch):
+class FirstWordOfSentenceContext(Context):
+
+    def __init__(self, negate=False):
+        self.negate = negate
+
+    def __call__(self, match: AddressMatch):
         subject_pos_beg, subject_pos_end = match.match_slice_position
 
-        elem_one_before = _safe_list_get(match.source, subject_pos_beg - 1, None)
-        elem_two_before = _safe_list_get(match.source, subject_pos_beg - 2, None)
+        elements_before = get_elements_before_ignoring_newline(subject_pos_beg, 2, match.source, None)
+        elements_before = [e.lower() for e in elements_before]
+        elements_before.extend([None] * (2 - len(elements_before))) # fill up to have length 2
 
-        if elem_one_before == '.':
-            return False
+        abbreviations = {'ul', 'os', 'oś'}
+
+        if elements_before[0] in ('.', None):
+            ret = elements_before[1] not in abbreviations
         else:
-            return [elem_two_before, elem_one_before] not in ([None, None], [None, '\n'], ['.', '\n'])
+            ret = False
+
+        if self.negate:
+            return not ret
+        else:
+            return ret
+
+        # TODO tomorrow fix test_address_extractor and test_context_analyser
+        # polaczyc regression test z regression_extra_matches, bo context filtry moga wywalac dobre rzeczy
+        # wywalic failujace testy z aktualnego regression zeby nie bylo tego smietnika z wylaczaniem testow
+        # dodac extra matches counter do regression
+

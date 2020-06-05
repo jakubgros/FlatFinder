@@ -9,7 +9,7 @@ from random import shuffle
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
-from text.analysis.context_analyser import ContextNotFirstWordOfSentence
+from text.analysis.context_analyser import FirstWordOfSentenceContext
 
 
 class MockedAddressProvider:
@@ -214,15 +214,12 @@ class AddressExtractorTest(unittest.TestCase):
 
         all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
 
-        extractor = AddressExtractor(address_provider)
-
         passing_test_indexes = [0, 3, 5, 8, 20, 23]
-        passing_test_indexes = list(set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]).difference(set(passing_test_indexes))) # not passing
         passing_tests = [all_flats[i] for i in passing_test_indexes]
 
         def runner(flat):
             try:
-                extractor = AddressExtractor(address_provider, context_analysers=[ContextNotFirstWordOfSentence])
+                extractor = AddressExtractor(address_provider, context_analysers=[FirstWordOfSentenceContext(negate=True)])
 
                 _, _, found_address = extractor(flat['title'] + flat['description'])
                 return flat, found_address
@@ -239,6 +236,30 @@ class AddressExtractorTest(unittest.TestCase):
                 else:
                     self._compare_address_results(input, subtest_result, accept_extra_matches=False)
 
+
+        #extra matches count
+        with mp.Pool() as pool:
+            results = pool.map(runner, all_flats.values())
+
+        extra_matches_count = 0
+        for i, (input, subtest_result) in enumerate(results):
+            if isinstance(subtest_result, Exception):
+                self.fail(subtest_result)
+            else:
+                flat, found_address = input, subtest_result
+                expected = flat['locations']
+                actual = found_address.street + found_address.estate + found_address.district
+
+                expected = set(Counter(expected).keys())
+                actual = set(Counter(actual).keys())
+
+                extra_matches = actual.difference(expected)
+                extra_matches_count += len(extra_matches)
+
+        self.assertEqual(extra_matches_count, 64)
+
+
+
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
         mocked_address_provider = MockedAddressProvider(
             streets=[{
@@ -247,7 +268,7 @@ class AddressExtractorTest(unittest.TestCase):
             }],
         )
 
-        extractor = AddressExtractor(mocked_address_provider, context_analysers=[ContextNotFirstWordOfSentence])
+        extractor = AddressExtractor(mocked_address_provider, context_analysers=[FirstWordOfSentenceContext(negate=True)])
 
         has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
         self.assertFalse(has_found)
