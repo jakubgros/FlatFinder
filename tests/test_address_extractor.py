@@ -1,7 +1,6 @@
 import json
 import unittest
 from collections import Counter
-from contextlib import contextmanager
 
 import multiprocess as mp
 from random import shuffle
@@ -42,13 +41,8 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[extra matches] =\n{extra_matches}\n\n'
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
-
-
-
-    def test_regression(self):
-        import logging
-        logging.root.setLevel(logging.NOTSET)
-
+    @staticmethod
+    def _load_regression_cases():
         with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
 
@@ -56,11 +50,15 @@ class AddressExtractorTest(unittest.TestCase):
 
         # failing tests are disabled temporarily
         passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 20, 21, 23, 24, 25, 27]
-
-        #not_passing = set(range(len(all_flats))).difference(set(passing_test_indexes))
-        shuffle(passing_test_indexes)
         passing_tests = [all_flats[i] for i in passing_test_indexes]
-        self.assertEqual(len(passing_tests), 21)
+
+        return passing_tests
+
+    def test_regression(self):
+        import logging
+        logging.root.setLevel(logging.NOTSET)
+
+        all_test_cases = self._load_regression_cases()
 
         def runner(flat):
             try:
@@ -72,14 +70,14 @@ class AddressExtractorTest(unittest.TestCase):
                 return None, e
 
         with mp.Pool() as pool:
-            results = pool.map(runner, passing_tests)
+            results = pool.map(runner, all_test_cases)
 
-        for i, (input, subtest_result) in enumerate(results):
+        for i, (test_case, subtest_result) in enumerate(results):
             with self.subTest(i=i):
                 if isinstance(subtest_result, Exception):
                     self.fail(subtest_result)
                 else:
-                    self._compare_address_results(input, subtest_result, accept_extra_matches=True)
+                    self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
