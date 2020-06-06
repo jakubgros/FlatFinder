@@ -4,12 +4,11 @@ import unittest
 from collections import Counter
 
 import multiprocess as mp
-from random import shuffle
 
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
-from text.analysis.context_analyser import FirstWordOfSentenceContext
+from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 
 
 class MockedAddressProvider:
