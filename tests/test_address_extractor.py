@@ -102,7 +102,7 @@ class AddressExtractorTest(unittest.TestCase):
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
-        self.assertEqual(extra_matches_count, 46)
+        self.assertEqual(43, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
