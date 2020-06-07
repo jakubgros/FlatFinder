@@ -74,7 +74,7 @@ class AddressExtractor:
 
         return all_matched_locations
 
-    def __call__(self, description):
+    def __call__(self, description: str):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
         matched_districts = [match for match in self._match_locations(self.address_provider.districts, description)
                              if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]

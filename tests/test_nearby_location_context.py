@@ -29,10 +29,15 @@ class TestNearbyLocationContext(unittest.TestCase):
         self.assertEqual(negated_ctx_analyser(match), not expected_result)
 
     def test_nearby_location_context(self):
-
         self._test_nearby_location_context_helper(
-            "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Centrum Kongresowego ICE Kraków ( liczne i dogodne połączenia komunikacją miejską , ok 3 min do przystanku ) .",
+            "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
             "Ronda Grunwaldzkiego",
+            True)
+
+    def test_nearby_location_context_with_conjunction(self):
+        self._test_nearby_location_context_helper(
+            "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
+            "Wawelu",
             True)
 
         "W pobliżu Ikea i Galeria Bronowicka"
