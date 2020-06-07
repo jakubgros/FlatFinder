@@ -34,11 +34,22 @@ class TestNearbyLocationContext(unittest.TestCase):
             "Ronda Grunwaldzkiego",
             True)
 
+        self._test_nearby_location_context_helper(
+            "W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
+            "Rondo Grunwaldzkie",
+            False)
+
     def test_nearby_location_context_with_conjunction(self):
         self._test_nearby_location_context_helper(
             "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
             "Wawelu",
             True)
+
+        self._test_nearby_location_context_helper(
+            "W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
+            "Wawel",
+            False)
+
 
         "W pobliżu Ikea i Galeria Bronowicka"
         "nieopodal MS AGH , Błonia , 3 minuty do biurowców Galileo , Newton , Edison , za oknem basen AGH ."
