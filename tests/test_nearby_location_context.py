@@ -1,17 +1,17 @@
 import unittest
 
 from containers.address_match import AddressMatch
-from tests.testing_utilities import find_slice
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
-from utilities.utilities import split_on_special_characters
+from utilities.utilities import split_on_special_characters, find_slice_beg
 
 
 class TestNearbyLocationContext(unittest.TestCase):
-    def _test_nearby_location_context_helper(self, sentence, analysis_subject, expected_result):
-        source = split_on_special_characters(sentence, preserve_special_characters=True)
-        analysis_subject = split_on_special_characters(analysis_subject, preserve_special_characters=True)
 
-        slice_beg = find_slice(source, analysis_subject)
+    def _test_nearby_location_context_helper(self, *, sentence, subject, expected_result, conjunctions, introducers):
+        source = split_on_special_characters(sentence, preserve_special_characters=True)
+        analysis_subject = split_on_special_characters(subject, preserve_special_characters=True)
+
+        slice_beg = find_slice_beg(source, analysis_subject)
         assert slice_beg is not None
 
         slice_end = slice_beg + len(analysis_subject)
@@ -22,33 +22,87 @@ class TestNearbyLocationContext(unittest.TestCase):
         )
         assert match.matched_phrase == ' '.join(analysis_subject)
 
-        ctx_analyser = NearbyLocationContext()
-        self.assertEqual(ctx_analyser(match), expected_result)
+        ctx_analyser = NearbyLocationContext(introducers=introducers, conjunctions=conjunctions)
+        self.assertEqual(expected_result, ctx_analyser(match))
 
-        negated_ctx_analyser = NearbyLocationContext(negate=True)
-        self.assertEqual(negated_ctx_analyser(match), not expected_result)
+        negated_ctx_analyser = NearbyLocationContext(introducers=introducers, conjunctions=conjunctions, negate=True)
+        self.assertEqual(not expected_result, negated_ctx_analyser(match))
 
     def test_nearby_location_context(self):
-        self._test_nearby_location_context_helper(
-            "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
-            "Ronda Grunwaldzkiego",
-            True)
+        introducers = {'w sąsiedztwie'}
+        conjunctions = {'i'}
 
         self._test_nearby_location_context_helper(
-            "W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
-            "Rondo Grunwaldzkie",
-            False)
+            sentence="Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
+            subject="Ronda Grunwaldzkiego",
+            expected_result=True,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+        self._test_nearby_location_context_helper(
+            sentence="W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
+            subject="Rondo Grunwaldzkie",
+            expected_result=False,
+            introducers=introducers,
+            conjunctions=conjunctions)
 
     def test_nearby_location_context_with_conjunction(self):
-        self._test_nearby_location_context_helper(
-            "Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
-            "Wawelu",
-            True)
+        introducers = {'w sąsiedztwie'}
+        conjunctions = {'i'}
 
         self._test_nearby_location_context_helper(
-            "W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
-            "Wawel",
-            False)
+            sentence="Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego i Wawelu",
+            subject="Wawelu",
+            expected_result=True,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+        self._test_nearby_location_context_helper(
+            sentence="W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
+            subject="Wawel",
+            expected_result=False,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+        self._test_nearby_location_context_helper(
+            sentence="Mieszkanie w sąsiedztwie Wawelu. Ulica Karmelicka.",
+            subject="Karmelicka",
+            expected_result=False,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+    def test_conjuncted_multiple_locations(self):
+        introducers = {'w sąsiedztwie'}
+        conjunctions = {','}
+
+        self._test_nearby_location_context_helper(
+            sentence="Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego, Wawelu, Karmelickiej",
+            subject="Wawelu",
+            expected_result=True,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+        self._test_nearby_location_context_helper(
+            sentence="Znakomita lokalizacja w sąsiedztwie Ronda Grunwaldzkiego, Wawelu, Karmelickiej",
+            subject="Karmelickiej",
+            expected_result=True,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+        self._test_nearby_location_context_helper(
+            sentence="W Krakowie znajduje się Rondo Grunwaldzkie i Wawel",
+            subject="Wawel",
+            expected_result=False,
+            introducers=introducers,
+            conjunctions=conjunctions)
+
+    def test_nearby_locations_that_are_not_addresses(self):
+        #nearby_location_introducer + non_address_location + conjunction + address
+        "W pobliżu Ikea i Wawel"
+        "W pobliżu Galeria Bronowicka i Bronowice"
+
+
+
 
 
         "W pobliżu Ikea i Galeria Bronowicka"

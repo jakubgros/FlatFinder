@@ -1,9 +1,8 @@
 import unittest
 
 from parsers.address_extractor import AddressMatch
-from tests.testing_utilities import find_slice
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
-from utilities.utilities import split_on_special_characters
+from utilities.utilities import split_on_special_characters, find_slice_beg
 
 
 class TestFirstWordOfSentenceContext(unittest.TestCase):
@@ -12,7 +11,7 @@ class TestFirstWordOfSentenceContext(unittest.TestCase):
         source = split_on_special_characters(sentence, preserve_special_characters=True)
         analysis_subject = split_on_special_characters(analysis_subject, preserve_special_characters=True)
 
-        slice_beg = find_slice(source, analysis_subject)
+        slice_beg = find_slice_beg(source, analysis_subject)
         assert slice_beg is not None
 
         slice_end = slice_beg + len(analysis_subject)

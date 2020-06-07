@@ -1,55 +1,72 @@
 import logging
+from collections import defaultdict
 from itertools import chain
+from typing import List
 
 from containers.address_match import AddressMatch
 from data_provider.address_provider import address_provider
 from parsers.address_extractor import AddressExtractor
-from utilities.utilities import get_elements_before, split_on_special_characters
+from utilities.utilities import get_elements_before, split_on_special_characters, find_slice_beg, neighbourhood
 
 
 class NearbyLocationContext:
-    def __init__(self, negate=False):
+    def __init__(self, *, introducers=None, conjunctions=None, negate=False):
         self.negate = negate
+
+        if introducers:
+            self.introducers = introducers
+        else:
+            self.introducers = {'w sąsiedztwie'}
+
+        if conjunctions:
+            self.conjunctions = conjunctions
+        else:
+            self.conjunctions = {'i', 'oraz'}
 
     def __call__(self, match: AddressMatch):
         context_end, _ = match.match_slice_position
 
-        nearby_location_introducers = {'w sąsiedztwie'}
+        considered_context = match.source[:context_end]
+        found_introducers = []
+        for introducer in self.introducers:
+            introducer = split_on_special_characters(introducer, preserve_special_characters=True)
+            found_indexes = find_slice_beg(considered_context, introducer, find_all=True)
+            found_introducers.extend([(idx, introducer) for idx in found_indexes])
 
-        possible_conjunctions = {'i', 'oraz'}
+        found_introducers.sort(key=lambda idx_introducer: idx_introducer[0])
+        if not found_introducers:
+            return False if not self.negate else True
 
-        conjunction_found = False
-        for conjuntion in possible_conjunctions:
-            conjuntion = split_on_special_characters(conjuntion, preserve_special_characters=True)
-            elements_before = get_elements_before(idx=context_end, amount=len(conjuntion), the_list=match.source,
-                                                  ignored_values=['\n'])
-            if conjuntion == elements_before:
-                conjunction_found = True
-                break
+        idx_introducer_before, introducer_before = found_introducers[-1]
+        idx_past_the_introducer_before = idx_introducer_before + len(introducer_before)
 
-        possible_context_ends = [context_end]
-        if conjunction_found:
-            address_extractor = AddressExtractor(address_provider)
+        conjuncted_locations = considered_context[idx_past_the_introducer_before:]
+        if not conjuncted_locations:  # nearby location introducer is right before the processed location
+            return True if not self.negate else False
 
-            has_found, _, conjuncted_addresses = address_extractor(' '.join(match.source[:context_end]))
+        # check if the introducer before refers to the currently processed location
+        address_extractor = AddressExtractor(address_provider)  # TODO expose address_provider in ctor
 
-            if not has_found:
-                logging.debug(f"conjunction found but could not match location before:\n{match.source[:context_end]}")
-                return False
+        *_, matches = address_extractor(' '.join(conjuncted_locations))
+        found_addresses = chain(matches.street, matches.estate, matches.district)
 
-            possible_context_ends.extend(
-                [context_end - len(location) for location in
-                 chain(conjuncted_addresses.district, conjuncted_addresses.estate, conjuncted_addresses.street)])
+        match_slices = (address.match_slice_position for address in found_addresses)
 
-        for context_end in possible_context_ends:
-            for introducer in nearby_location_introducers:
-                introducer = split_on_special_characters(introducer, preserve_special_characters=True)
 
-                elements_before = get_elements_before(idx=context_end, amount=len(introducer), the_list=match.source,
-                                                      ignored_values=['\n'])
+        is_the_word_an_address_part_or_conjunction = [False] * len(conjuncted_locations)
 
-                if elements_before == introducer:
-                    return True if not self.negate else False
+        #locations
+        for beg, end in match_slices:
+            for i in range(beg, end):
+                is_the_word_an_address_part_or_conjunction[i] = True
 
-        return False if not self.negate else True
+        #conjunctions
+        for i in range(len(conjuncted_locations)):
+            if is_the_word_an_address_part_or_conjunction[i]: #already matched to location
+                continue
+            else:
+                if conjuncted_locations[i] in self.conjunctions:
+                    is_the_word_an_address_part_or_conjunction[i] = True
 
+        are_all_true = all(is_the_word_an_address_part_or_conjunction)
+        return are_all_true if not self.negate else not are_all_true

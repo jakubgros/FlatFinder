@@ -83,18 +83,10 @@ class AddressExtractor:
         matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
                            if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
 
-        streets = []
-        for i, match in enumerate(matched_streets):
-            success, unit_number_slice, street_number \
-                = self._extract_street_number(match.source, match.match_slice_position)
+        for match in matched_streets:
+            success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
             if success:
-                street_and_unit_number = match.location + " " + str(street_number)
-                streets.append(street_and_unit_number)
-            else:
-                streets.append(match.location)
-
-        districts = [match.location for match in matched_districts]
-        estates = [match.location for match in matched_estates]
+                match.location += " " + str(street_number)
 
         # noinspection PyUnreachableCode
         if __debug__:
@@ -106,8 +98,8 @@ class AddressExtractor:
                 logging.debug(f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
                               f"description: {description}\n")
 
-        address = Address(district=districts,
-                          estate=estates,
-                          street=streets)
+        address = Address(district=matched_districts,
+                          estate=matched_estates,
+                          street=matched_streets)
 
-        return bool(districts or estates or streets), self.attribute_name, address
+        return bool(matched_districts or matched_estates or matched_streets), self.attribute_name, address
