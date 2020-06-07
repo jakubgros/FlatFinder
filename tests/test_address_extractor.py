@@ -9,14 +9,10 @@ import multiprocess as mp
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
+from tests.testing_utilities import MockedAddressProvider
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 
 
-class MockedAddressProvider:
-    def __init__(self, districts=[], estates=[], streets=[]):
-        self.districts = districts
-        self.estates = estates
-        self.streets = streets
 
 
 class AddressExtractorTest(unittest.TestCase):

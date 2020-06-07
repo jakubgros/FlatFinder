@@ -10,8 +10,9 @@ from utilities.utilities import get_elements_before, split_on_special_characters
 
 
 class NearbyLocationContext:
-    def __init__(self, *, introducers=None, conjunctions=None, negate=False):
+    def __init__(self, *, introducers=None, conjunctions=None, negate=False, address_provider):
         self.negate = negate
+        self.address_provider = address_provider
 
         if introducers:
             self.introducers = introducers
@@ -25,7 +26,7 @@ class NearbyLocationContext:
         else:
             self.conjunctions = {'i', 'oraz'}
 
-    def __call__(self, match: AddressMatch):
+    def __call__(self, match: AddressMatch): #TODO cleanup
         context_end, _ = match.match_slice_position
 
         considered_context = match.source[:context_end]
@@ -47,7 +48,7 @@ class NearbyLocationContext:
             return True if not self.negate else False
 
         # check if the introducer before refers to the currently processed location
-        address_extractor = AddressExtractor(address_provider)  # TODO expose address_provider in ctor
+        address_extractor = AddressExtractor(self.address_provider)
 
         *_, matches = address_extractor(' '.join(conjuncted_locations))
         found_addresses = chain(matches.street, matches.estate, matches.district)
