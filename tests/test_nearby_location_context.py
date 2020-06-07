@@ -96,6 +96,22 @@ class TestNearbyLocationContext(unittest.TestCase):
             introducers=introducers,
             conjunctions=conjunctions)
 
+    def test_multiple_consecutive_contexts(self):
+        introducers = {"W pobliżu", "Niedaleko"}
+        conjunctions = {'i'}
+
+        for subject in ["Rondo Grunwaldzkie", "Wawel", "Stare Miasto", "Nowa Huta"]:
+            with self.subTest(subject=subject):
+                self._test_nearby_location_context_helper(
+                    sentence="W pobliżu Rondo Grunwaldzkie i Wawel. Niedaleko Stare Miasto i Nowa Huta",
+                    subject=subject,
+                    expected_result=True,
+                    introducers=introducers,
+                    conjunctions=conjunctions)
+
+    def test_introducers_are_case_insensitive(self):
+        pass
+
     def test_nearby_locations_that_are_not_addresses(self):
         #nearby_location_introducer + non_address_location + conjunction + address
         "W pobliżu Ikea i Wawel"
