@@ -1,6 +1,6 @@
 import unittest
 
-from utilities.utilities import split_on_special_characters, find_slice_beg, neighbourhood
+from utilities.utilities import split_on_special_characters, find_slice_beg
 
 
 class TestSplitOnSpecialCharacters(unittest.TestCase):
@@ -41,26 +41,8 @@ class TestFindSlice(unittest.TestCase):
         self.assertEqual([], find_slice_beg([1, 2, 3, 4, 5], [6], find_all=True))
         self.assertEqual([], find_slice_beg([1, 2, 3, 4, 5], [6, 7], find_all=True))
 
-
-class TestNeighbourhood(unittest.TestCase):
-
-    def test_no_elements(self):
-        self.assertEqual([], list(neighbourhood([])))
-
-    def test_one_element(self):
-        self.assertEqual([(None, 1, None)], list(neighbourhood([1])))
-
-    def test_one_element(self):
-        self.assertEqual([(None, 1, None)], list(neighbourhood([1])))
-
-    def test_two_elements(self):
-        self.assertEqual([(None, 1, 2), (1, 2, None)], list(neighbourhood([1, 2])))
-
-    def test_three_elements(self):
-        self.assertEqual([(None, 1, 2), (1, 2, 3), (2, 3, None)], list(neighbourhood([1, 2, 3])))
-
-    def test_four_elements(self):
-        self.assertEqual([(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, None)], list(neighbourhood([1, 2, 3, 4])))
+    def test_find_case_insensitive(self):
+        self.assertIsNotNone(find_slice_beg(["Nieopodal"], ["nieopodal"], case_insensitive=True))
 
 
 if __name__ == '__main__':

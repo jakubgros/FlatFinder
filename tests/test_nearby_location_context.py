@@ -110,7 +110,14 @@ class TestNearbyLocationContext(unittest.TestCase):
                     conjunctions=conjunctions)
 
     def test_introducers_are_case_insensitive(self):
-        pass
+        introducers = {"w pobliżu"}
+
+        self._test_nearby_location_context_helper(
+            sentence="W pobliżu Wawel.",
+            subject="Wawel",
+            expected_result=True,
+            introducers=introducers,
+            conjunctions={})
 
     def test_nearby_locations_that_are_not_addresses(self):
         #nearby_location_introducer + non_address_location + conjunction + address

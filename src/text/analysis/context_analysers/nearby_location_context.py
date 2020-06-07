@@ -6,7 +6,7 @@ from typing import List
 from containers.address_match import AddressMatch
 from data_provider.address_provider import address_provider
 from parsers.address_extractor import AddressExtractor
-from utilities.utilities import get_elements_before, split_on_special_characters, find_slice_beg, neighbourhood
+from utilities.utilities import get_elements_before, split_on_special_characters, find_slice_beg
 
 
 class NearbyLocationContext:
@@ -17,6 +17,8 @@ class NearbyLocationContext:
             self.introducers = introducers
         else:
             self.introducers = {'w sąsiedztwie'}
+
+        self.introducers = {e.lower() for e in self.introducers}
 
         if conjunctions:
             self.conjunctions = conjunctions
@@ -30,7 +32,7 @@ class NearbyLocationContext:
         found_introducers = []
         for introducer in self.introducers:
             introducer = split_on_special_characters(introducer, preserve_special_characters=True)
-            found_indexes = find_slice_beg(considered_context, introducer, find_all=True)
+            found_indexes = find_slice_beg(considered_context, introducer, find_all=True, case_insensitive=True)
             found_introducers.extend([(idx, introducer) for idx in found_indexes])
 
         found_introducers.sort(key=lambda idx_introducer: idx_introducer[0])

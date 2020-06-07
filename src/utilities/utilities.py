@@ -36,7 +36,7 @@ def get_elements_before(*, idx, amount, the_list, ignored_values=[], fill_up=Tru
     return n_elements_before
 
 
-def find_slice_beg(a_list, the_slice: List, *, find_all=False):
+def find_slice_beg(a_list, the_slice: List, *, find_all=False, case_insensitive=False):
     if find_all:
         found = []
     else:
@@ -45,16 +45,17 @@ def find_slice_beg(a_list, the_slice: List, *, find_all=False):
     slice_len = len(the_slice)
     if slice_len > 0:
         for i in range(len(a_list)):
-            if a_list[i:i+slice_len] == the_slice:
+            lhs = a_list[i:i+slice_len]
+            rhs = the_slice
+
+            if case_insensitive:
+                lhs = [e.lower() for e in lhs]
+                rhs = [e.lower() for e in rhs]
+
+            if lhs == rhs:
                 if not find_all:
                     return i
                 else:
                     found.append(i)
 
     return found
-
-
-def neighbourhood(iterable):
-    """yields tuple (previous, current, next) and sets previous and next to None if they're out of boundaries"""
-    iterable = [None, *iterable, None]
-    yield from zip(iterable, iterable[1:], iterable[2:])
