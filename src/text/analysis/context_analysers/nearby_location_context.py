@@ -51,7 +51,7 @@ class NearbyLocationContext:
         address_extractor = AddressExtractor(self.address_provider)
 
         *_, matches = address_extractor(' '.join(conjuncted_locations))
-        found_addresses = chain(matches.street, matches.estate, matches.district)
+        found_addresses = chain(matches.street, matches.estate, matches.district, matches.place)
 
         match_slices = (address.match_slice_position for address in found_addresses)
 

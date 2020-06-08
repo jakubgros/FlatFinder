@@ -1,6 +1,12 @@
 {
   "Kraków": {
     "locations": {
+      "places": [
+        {
+          "official": "Ikea",
+          "colloquial": []
+        }
+      ],
       "districts": [
         {
           "official": "Stare Miasto",

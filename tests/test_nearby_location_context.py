@@ -206,12 +206,21 @@ class TestNearbyLocationContext(unittest.TestCase):
         conjunctions = {"i"}
 
         mocked_address_provider = MockedAddressProvider(
-            streets=[
-                {
+            streets=[{
                     "official": "Wawel",
                     "colloquial": [],
+            }],
+            places=[
+                {
+                    "official": "Ikea",
+                    "colloquial": [],
                 },
-            ])
+                {
+                    "official": "Galeria Bronowicka",
+                    "colloquial": [],
+                },
+            ]
+            )
 
         with self.subTest():
             self._test_nearby_location_context_helper(
@@ -225,12 +234,18 @@ class TestNearbyLocationContext(unittest.TestCase):
         with self.subTest():
             self._test_nearby_location_context_helper(
                 sentence="W pobliżu Galeria Bronowicka i Bronowice",
-                subject="Wawel",
+                subject="Bronowice",
                 expected_result=True,
                 introducers=introducers,
                 conjunctions=conjunctions,
                 address_provider=mocked_address_provider)
 
-
+        """ TODO:
+            - cleanup on the branch
+            - update default list of introducers and conjunctions to contain all needed values
+            - integrate context to regression
+            - profile if significant speed decrease
+            
+        """
 if __name__ == '__main__':
     unittest.main()

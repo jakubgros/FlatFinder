@@ -18,6 +18,7 @@ class AddressProvider:
         self.districts = locations["districts"]
         self.estates = locations["estates"]
         self.streets = locations["streets"]
+        self.places = locations["places"]
 
 
 address_provider = AddressProvider()

@@ -16,7 +16,7 @@ from text.text_searcher import TextSearcher
 from itertools import chain
 from text.analysis.tagger import tagger
 
-Address = namedtuple('Address', ['district', 'estate', 'street'])
+Address = namedtuple('Address', ['district', 'estate', 'street', 'place'])
 
 
 class AddressExtractor:
@@ -82,6 +82,8 @@ class AddressExtractor:
                            if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
         matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
                            if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
+        matched_places = [match for match in self._match_locations(self.address_provider.places, description)
+                          if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
 
         for match in matched_streets:
             success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
@@ -100,6 +102,8 @@ class AddressExtractor:
 
         address = Address(district=matched_districts,
                           estate=matched_estates,
-                          street=matched_streets)
+                          street=matched_streets,
+                          place=matched_places)
 
-        return bool(matched_districts or matched_estates or matched_streets), self.attribute_name, address
+        return bool(matched_districts or matched_estates or matched_streets or matched_places), \
+               self.attribute_name, address
