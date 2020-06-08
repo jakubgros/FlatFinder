@@ -241,11 +241,9 @@ class TestNearbyLocationContext(unittest.TestCase):
                 address_provider=mocked_address_provider)
 
         """ TODO:
-            - cleanup on the branch
             - update default list of introducers and conjunctions to contain all needed values
             - integrate context to regression
             - profile if significant speed decrease
-            
         """
 if __name__ == '__main__':
     unittest.main()

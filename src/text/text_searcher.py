@@ -1,3 +1,5 @@
+from typing import Union, List
+
 from text.text_frame import TextFrame
 from utilities.utilities import split_on_special_characters
 
@@ -8,10 +10,13 @@ class TextSearcher:
     def find(
             *,
             phrase_to_find,
-            text,
+            text: Union[List[str], str],
             equality_comparator=lambda lhs, rhs: lhs == rhs):
 
-        word_list = split_on_special_characters(text, preserve_special_characters=True)
+        if isinstance(text, str):
+            word_list = split_on_special_characters(text, preserve_special_characters=True)
+        else:
+            word_list = text
 
         max_frame_size = len(phrase_to_find.split())
         all_text_frames = (TextFrame(word_list, frame_size) for frame_size in range(1, max_frame_size + 1))
