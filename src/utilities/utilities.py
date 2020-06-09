@@ -36,17 +36,17 @@ def get_elements_before(*, idx, amount, the_list, ignored_values=[], fill_up=Tru
     return n_elements_before
 
 
-def find_slice_beg(a_list, the_slice: List, *, find_all=False, case_insensitive=False):
+def find_slice_beg(source, *, slice_to_find: List, find_all=False, case_insensitive=False):
     if find_all:
         found = []
     else:
         found = None
 
-    slice_len = len(the_slice)
+    slice_len = len(slice_to_find)
     if slice_len > 0:
-        for i in range(len(a_list)):
-            lhs = a_list[i:i+slice_len]
-            rhs = the_slice
+        for i in range(len(source)):
+            lhs = source[i:i + slice_len]
+            rhs = slice_to_find
 
             if case_insensitive:
                 lhs = [e.lower() for e in lhs]

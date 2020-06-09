@@ -6,7 +6,13 @@ from parsers.address_extractor import AddressExtractor
 from utilities.utilities import split_on_special_characters, find_slice_beg
 
 class NearbyLocationContext:
-    def __init__(self, *, introducers=None, conjunctions=None, negate=False, address_provider):
+    def __init__(self, *,
+                    introducers=None,
+                    conjunctions=None,
+                    location_type_prefixes=None,
+                    negate=False,
+                    address_provider):
+
         self.negate = negate
         self.address_provider = address_provider
 
@@ -22,12 +28,17 @@ class NearbyLocationContext:
         else:
             self.conjunctions = {'i', 'oraz'}
 
+        if location_type_prefixes:
+            self.location_type_prefixes = location_type_prefixes
+        else:
+            self.location_type_prefixes = {'ul', 'os', 'oś'}
+
     def _find_all_introducers(self, source: List[str]):
         found_introducers = []
 
         for introducer in self.introducers:
             introducer = split_on_special_characters(introducer, preserve_special_characters=True)
-            found_indexes = find_slice_beg(source, introducer, find_all=True, case_insensitive=True)
+            found_indexes = find_slice_beg(source, slice_to_find=introducer, find_all=True, case_insensitive=True)
             found_introducers.extend([(idx, introducer) for idx in found_indexes])
 
         found_introducers.sort(key=lambda idx_introducer: idx_introducer[0])
@@ -56,11 +67,24 @@ class NearbyLocationContext:
 
         # conjunctions
         for i in range(len(introducer_subject)):
-            if is_the_word_an_address_part_or_conjunction[i]:  # already matched to location
+            if is_the_word_an_address_part_or_conjunction[i]:  # already matched
                 continue
             else:
                 if introducer_subject[i] in self.conjunctions:
                     is_the_word_an_address_part_or_conjunction[i] = True
+
+        #location types
+        for i in range(len(introducer_subject)):
+            if is_the_word_an_address_part_or_conjunction[i]:  # already matched
+                continue
+            else:
+                if introducer_subject[i] in self.location_type_prefixes:
+                    is_the_word_an_address_part_or_conjunction[i] = True
+                    try:
+                        if introducer_subject[i+1] == '.':
+                            is_the_word_an_address_part_or_conjunction[i+1] = True
+                    except IndexError:
+                        pass
 
         return all(is_the_word_an_address_part_or_conjunction)
 

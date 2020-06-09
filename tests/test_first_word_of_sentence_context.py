@@ -11,7 +11,7 @@ class TestFirstWordOfSentenceContext(unittest.TestCase):
         source = split_on_special_characters(sentence, preserve_special_characters=True)
         analysis_subject = split_on_special_characters(analysis_subject, preserve_special_characters=True)
 
-        slice_beg = find_slice_beg(source, analysis_subject)
+        slice_beg = find_slice_beg(source, slice_to_find=analysis_subject)
         assert slice_beg is not None
 
         slice_end = slice_beg + len(analysis_subject)

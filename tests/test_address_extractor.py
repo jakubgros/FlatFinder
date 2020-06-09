@@ -11,8 +11,7 @@ from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
 from tests.testing_utilities import MockedAddressProvider
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
-
-
+from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 
 
 class AddressExtractorTest(unittest.TestCase):
@@ -38,6 +37,7 @@ class AddressExtractorTest(unittest.TestCase):
                                + f'[extra matches] =\n{extra_matches}\n\n'
                                + f'[title] =\n{flat["title"]}\n\n'
                                + f'[description] =\n {flat["description"]}\n\n')
+
     @staticmethod
     def _load_regression_cases():
         with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
@@ -208,9 +208,9 @@ class AddressExtractorTest(unittest.TestCase):
     def test_Krakow_city_is_not_recognized_as_Kraka_street(self):
 
         mocked_address_provider = MockedAddressProvider(streets=[{
-                "official": "Kraka",
-                "colloquial": [],
-            }],
+            "official": "Kraka",
+            "colloquial": [],
+        }],
         )
 
         extractor = AddressExtractor(mocked_address_provider)
@@ -229,13 +229,40 @@ class AddressExtractorTest(unittest.TestCase):
             }],
         )
 
-        extractor = AddressExtractor(mocked_address_provider, context_analysers=[FirstWordOfSentenceContext(negate=True)])
+        extractor = AddressExtractor(mocked_address_provider,
+                                     context_analysers=[FirstWordOfSentenceContext(negate=True)])
 
         has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
         self.assertFalse(has_found)
 
         has_found, *_ = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
         self.assertTrue(has_found)
+
+    def test_location_is_not_matched_if_it_is_not_flat_address(self):
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Szeroka",
+                    "colloquial": [],
+                },
+                {
+                    "official": "Karmelicka",
+                    "colloquial": [],
+                }
+            ],
+            places=[{
+                "official": "Ikea",
+                "colloquial": [],
+            }
+            ]
+        )
+
+        ctx_analyser = NearbyLocationContext(introducers={'w sąsiedztwie'}, conjunctions={'i'})
+        extractor = AddressExtractor(mocked_address_provider, context_analysers=[ctx_analyser])
+
+        *_, found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")
+        self.assertIn("Karmelicka", [match.location for match in found_address.street])
+        self.assertEqual(1, len(found_address.all))
 
 
 if __name__ == "__main__":

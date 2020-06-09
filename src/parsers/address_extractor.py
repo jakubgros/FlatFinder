@@ -1,7 +1,8 @@
 import logging
+import typing
 from collections import namedtuple
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from colorama import Fore, Style
 
@@ -16,8 +17,16 @@ from text.text_searcher import TextSearcher
 from itertools import chain
 from text.analysis.tagger import tagger
 
-Address = namedtuple('Address', ['district', 'estate', 'street', 'place'])
+@dataclass
+class Address:
+    district: typing.Any
+    estate: typing.Any
+    street: typing.Any
+    place: typing.Any
 
+    @property
+    def all(self):
+        return chain(self.district, self.estate, self.street, self.place)
 
 class AddressExtractor:
     def __init__(self, address_provider, context_analysers=[]):
