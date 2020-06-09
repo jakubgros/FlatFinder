@@ -85,7 +85,6 @@ class NearbyLocationContext:
                             is_the_word_an_address_part_or_conjunction[i+1] = True
                     except IndexError:
                         pass
-
         return all(is_the_word_an_address_part_or_conjunction)
 
     def __call__(self, match: AddressMatch):

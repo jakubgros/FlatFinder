@@ -1,10 +1,10 @@
 import json
+import logging
 import traceback
 import unittest
 from collections import Counter
 from itertools import chain
 
-import multiprocess as mp
 
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
@@ -12,6 +12,12 @@ from parsers.address_extractor import AddressExtractor
 from tests.testing_utilities import MockedAddressProvider
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
+
+DISABLE_PARALLELIZED_COMPUTATION = True
+if DISABLE_PARALLELIZED_COMPUTATION:
+    import multiprocess.dummy as mp
+else:
+    import multiprocess as mp
 
 
 class AddressExtractorTest(unittest.TestCase):
@@ -31,12 +37,15 @@ class AddressExtractorTest(unittest.TestCase):
         else:
             is_ok = expected == actual
 
-        return self.assertTrue(is_ok,
-                               f'\n'
-                               + f'[matched from expected] = {matched}\n\n'
-                               + f'[extra matches] =\n{extra_matches}\n\n'
-                               + f'[title] =\n{flat["title"]}\n\n'
-                               + f'[description] =\n {flat["description"]}\n\n')
+        msg = f'\n' \
+               + f'[matched from expected] = {matched}\n\n'\
+               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n'\
+               + f'[title] =\n{flat["title"]}\n\n'\
+               + f'[description] =\n {flat["description"]}\n\n'\
+
+        logging.debug(msg)
+
+        self.assertTrue(is_ok)
 
     @staticmethod
     def _load_regression_cases():
@@ -79,9 +88,12 @@ class AddressExtractorTest(unittest.TestCase):
         def runner(flat):
             try:
                 extractor \
-                    = AddressExtractor(address_provider, context_analysers=[FirstWordOfSentenceContext(negate=True)])
+                    = AddressExtractor(address_provider, excluded_contexts=[
+                        FirstWordOfSentenceContext(),
+                        NearbyLocationContext(address_provider=address_provider)
+                    ])
 
-                _, _, found_address = extractor(flat['title'] + flat['description'])
+                _, _, found_address = extractor(flat['title'] + '.\n' + flat['description'])
                 return flat, found_address
             except Exception as e:
                 trace = traceback.format_exc()
@@ -97,8 +109,7 @@ class AddressExtractorTest(unittest.TestCase):
                 else:
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
-
-        self.assertEqual(43, extra_matches_count)
+        self.assertEqual(42, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -230,7 +241,7 @@ class AddressExtractorTest(unittest.TestCase):
         )
 
         extractor = AddressExtractor(mocked_address_provider,
-                                     context_analysers=[FirstWordOfSentenceContext(negate=True)])
+                                     excluded_contexts=[FirstWordOfSentenceContext()])
 
         has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
         self.assertFalse(has_found)
@@ -259,13 +270,28 @@ class AddressExtractorTest(unittest.TestCase):
 
         ctx_analyser = NearbyLocationContext(introducers={'w sąsiedztwie'},
                                              conjunctions={'i'},
-                                             address_provider=mocked_address_provider,
-                                             negate=True)
-        extractor = AddressExtractor(mocked_address_provider, context_analysers=[ctx_analyser])
+                                             address_provider=mocked_address_provider)
+        extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[ctx_analyser])
 
         *_, found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")
         self.assertIn("Karmelicka", [match.location for match in found_address.street])
         self.assertEqual(1, len(found_address.all))
+
+
+    def test_temp(self): # TODO remove
+        import logging
+        logging.root.setLevel(logging.NOTSET)
+
+        all_test_cases = self._load_regression_cases()
+        flat = all_test_cases[2]
+
+        extractor = AddressExtractor(address_provider, excluded_contexts=[
+            FirstWordOfSentenceContext(),
+            NearbyLocationContext(address_provider=address_provider)
+            ])
+
+        *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
+        self._compare_address_results(flat, found_address, accept_extra_matches=True)
 
 
 if __name__ == "__main__":

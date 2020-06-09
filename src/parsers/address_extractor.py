@@ -1,6 +1,5 @@
 import logging
 import typing
-from collections import namedtuple
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -29,7 +28,7 @@ class Address:
         return self.district + self.estate + self.street + self.place
 
 class AddressExtractor:
-    def __init__(self, address_provider, context_analysers=[]):
+    def __init__(self, address_provider, excluded_contexts=[]):
         self.address_provider = address_provider
         self.attribute_name = "address"
 
@@ -37,7 +36,7 @@ class AddressExtractor:
             ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
         ])
 
-        self.context_analysers = context_analysers
+        self.excluded_contexts = excluded_contexts
 
     @staticmethod
     def _extract_street_number(words_list, matched_location_slice_pos):
@@ -83,16 +82,24 @@ class AddressExtractor:
 
         return all_matched_locations
 
+    def _should_be_excluded(self, match):
+        for ctx_analyser in self.excluded_contexts:
+            if ctx_analyser(match):
+                logging.debug(f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n\n")
+                return True
+
+        return False
+
     def __call__(self, description: Union[List[str], str]):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
         matched_districts = [match for match in self._match_locations(self.address_provider.districts, description)
-                             if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
+                             if not self._should_be_excluded(match)]
         matched_estates = [match for match in self._match_locations(self.address_provider.estates, description)
-                           if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
+                           if not self._should_be_excluded(match)]
         matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
-                           if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
+                           if not self._should_be_excluded(match)]
         matched_places = [match for match in self._match_locations(self.address_provider.places, description)
-                          if all([ctx_analyser(match) for ctx_analyser in self.context_analysers])]
+                          if not self._should_be_excluded(match)]
 
         for match in matched_streets:
             success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
