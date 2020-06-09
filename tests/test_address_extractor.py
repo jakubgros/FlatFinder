@@ -257,7 +257,10 @@ class AddressExtractorTest(unittest.TestCase):
             ]
         )
 
-        ctx_analyser = NearbyLocationContext(introducers={'w sąsiedztwie'}, conjunctions={'i'})
+        ctx_analyser = NearbyLocationContext(introducers={'w sąsiedztwie'},
+                                             conjunctions={'i'},
+                                             address_provider=mocked_address_provider,
+                                             negate=True)
         extractor = AddressExtractor(mocked_address_provider, context_analysers=[ctx_analyser])
 
         *_, found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")

@@ -26,7 +26,7 @@ class Address:
 
     @property
     def all(self):
-        return chain(self.district, self.estate, self.street, self.place)
+        return self.district + self.estate + self.street + self.place
 
 class AddressExtractor:
     def __init__(self, address_provider, context_analysers=[]):
