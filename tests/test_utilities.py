@@ -1,6 +1,6 @@
 import unittest
 
-from utilities.utilities import split_on_special_characters, find_slice_beg
+from utilities.utilities import split_on_special_characters, find_slice_beg, do_slices_overlap
 
 
 class TestSplitOnSpecialCharacters(unittest.TestCase):
@@ -43,6 +43,27 @@ class TestFindSlice(unittest.TestCase):
 
     def test_find_case_insensitive(self):
         self.assertIsNotNone(find_slice_beg(["Nieopodal"], slice_to_find=["nieopodal"], case_insensitive=True))
+
+
+class TestDoSlicesOverlap(unittest.TestCase):
+
+    def test_empty_slices(self):
+        self.assertFalse(do_slices_overlap((0, 0), (0, 0)))
+        self.assertFalse(do_slices_overlap((1, 1), (1, 1)))
+
+    def test_comparison_is_commutative(self):
+        self.assertTrue(do_slices_overlap((0, 2), (1, 2)))
+        self.assertTrue(do_slices_overlap((1, 2), (0, 2)))
+
+    def test_overlapping_slices(self):
+        self.assertTrue(do_slices_overlap((0, 2), (1, 2)))
+        self.assertTrue(do_slices_overlap((0, 4), (1, 2)))
+        self.assertTrue(do_slices_overlap((0, 4), (0, 4)))
+
+    def test_not_overlapping_slices(self):
+        self.assertFalse(do_slices_overlap((0, 4), (3, 3)))
+        self.assertFalse(do_slices_overlap((0, 4), (4, 4)))
+        self.assertFalse(do_slices_overlap((0, 4), (4, 5)))
 
 
 if __name__ == '__main__':

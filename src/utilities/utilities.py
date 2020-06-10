@@ -59,3 +59,16 @@ def find_slice_beg(source, *, slice_to_find: List, find_all=False, case_insensit
                     found.append(i)
 
     return found
+
+
+def do_slices_overlap(lhs, rhs):
+    ordered = [lhs, rhs]
+    ordered.sort()
+
+    first_beg, first_end = ordered[0]
+    latter_beg, latter_end = ordered[1]
+
+    if first_beg == first_end or latter_beg == latter_end:
+        return False
+    else:
+        return first_end > latter_beg
