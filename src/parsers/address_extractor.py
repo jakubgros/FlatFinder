@@ -16,6 +16,7 @@ from text.text_searcher import TextSearcher
 from itertools import chain
 from text.analysis.tagger import tagger
 
+
 @dataclass
 class Address:
     district: typing.Any
@@ -90,29 +91,40 @@ class AddressExtractor:
     def _should_be_excluded(self, match):
         for ctx_analyser in self.excluded_contexts:
             if ctx_analyser(match):
-                logging.debug(f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n {match.source[slice(*match.match_slice_position)]}\n")
+                logging.debug(
+                    f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n {match.source[slice(*match.match_slice_position)]}\n")
                 return True
 
         return False
 
+    def _filter_by_context(self, address):
+        # filter by context analysers
+        address.district = [match for match in address.district if not self._should_be_excluded(match)]
+        address.estate = [match for match in address.estate if not self._should_be_excluded(match)]
+        address.street = [match for match in address.street if not self._should_be_excluded(match)]
+
+    def _filter_overlapping(self, address):
+        pass
+
     def __call__(self, description: Union[List[str], str]):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
-        matched_districts = [match for match in self._match_locations(self.address_provider.districts, description)
-                             if not self._should_be_excluded(match)]
-        matched_estates = [match for match in self._match_locations(self.address_provider.estates, description)
-                           if not self._should_be_excluded(match)]
-        matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
-                           if not self._should_be_excluded(match)]
-        matched_places = [match for match in self._match_locations(self.address_provider.places, description)]
+        # extract all
+        address = Address(district=self._match_locations(self.address_provider.districts, description),
+                          estate=self._match_locations(self.address_provider.estates, description),
+                          street=self._match_locations(self.address_provider.streets, description),
+                          place=self._match_locations(self.address_provider.places, description))
 
-        for match in matched_streets:
+        self._filter_overlapping(address)
+        self._filter_by_context(address)
+
+        for match in address.street:
             success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
             if success:
                 match.location += " " + str(street_number)
 
         # noinspection PyUnreachableCode
         if __debug__:
-            for match in chain(matched_districts, matched_estates, matched_streets, matched_places):
+            for match in chain(address.district, address.estate, address.street, address.place):
                 source = match.source[:]
                 source[slice(*match.match_slice_position)] = [
                     Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
@@ -120,10 +132,4 @@ class AddressExtractor:
                 logging.debug(f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
                               f"description: {description}\n")
 
-        address = Address(district=matched_districts,
-                          estate=matched_estates,
-                          street=matched_streets,
-                          place=matched_places)
-
-        return bool(matched_districts or matched_estates or matched_streets or matched_places), \
-               self.attribute_name, address
+        return len(address.all) > 0, self.attribute_name, address
