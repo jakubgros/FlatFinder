@@ -27,6 +27,11 @@ class Address:
     def all(self):
         return self.district + self.estate + self.street + self.place
 
+    @property
+    def all_addresses(self):
+        return self.district + self.estate + self.street
+
+
 class AddressExtractor:
     def __init__(self, address_provider, excluded_contexts=[]):
         self.address_provider = address_provider
@@ -85,7 +90,7 @@ class AddressExtractor:
     def _should_be_excluded(self, match):
         for ctx_analyser in self.excluded_contexts:
             if ctx_analyser(match):
-                logging.debug(f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n\n")
+                logging.debug(f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n {match.source[slice(*match.match_slice_position)]}\n")
                 return True
 
         return False
@@ -98,8 +103,7 @@ class AddressExtractor:
                            if not self._should_be_excluded(match)]
         matched_streets = [match for match in self._match_locations(self.address_provider.streets, description)
                            if not self._should_be_excluded(match)]
-        matched_places = [match for match in self._match_locations(self.address_provider.places, description)
-                          if not self._should_be_excluded(match)]
+        matched_places = [match for match in self._match_locations(self.address_provider.places, description)]
 
         for match in matched_streets:
             success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
@@ -108,7 +112,7 @@ class AddressExtractor:
 
         # noinspection PyUnreachableCode
         if __debug__:
-            for match in chain(matched_districts, matched_estates, matched_streets):
+            for match in chain(matched_districts, matched_estates, matched_streets, matched_places):
                 source = match.source[:]
                 source[slice(*match.match_slice_position)] = [
                     Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]

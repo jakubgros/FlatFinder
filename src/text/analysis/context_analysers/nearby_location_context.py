@@ -19,19 +19,20 @@ class NearbyLocationContext:
         if introducers:
             self.introducers = introducers
         else:
-            self.introducers = {'w sąsiedztwie'}
-
+            self.introducers = {'w sąsiedztwie', 'w pobliżu', 'nieopodal'}
         self.introducers = {e.lower() for e in self.introducers}
 
         if conjunctions:
             self.conjunctions = conjunctions
         else:
-            self.conjunctions = {'i', 'oraz'}
+            self.conjunctions = {'i', 'oraz', ','}
 
         if location_type_prefixes:
             self.location_type_prefixes = location_type_prefixes
         else:
             self.location_type_prefixes = {'ul', 'os', 'oś'}
+        self.location_type_prefixes = {e.lower() for e in self.location_type_prefixes}
+
 
     def _find_all_introducers(self, source: List[str]):
         found_introducers = []
@@ -78,7 +79,7 @@ class NearbyLocationContext:
             if is_the_word_an_address_part_or_conjunction[i]:  # already matched
                 continue
             else:
-                if introducer_subject[i] in self.location_type_prefixes:
+                if introducer_subject[i].lower() in self.location_type_prefixes:
                     is_the_word_an_address_part_or_conjunction[i] = True
                     try:
                         if introducer_subject[i+1] == '.':

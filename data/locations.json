@@ -5,6 +5,18 @@
         {
           "official": "Ikea",
           "colloquial": []
+        },
+        {
+          "official": "MS AGH",
+          "colloquial": [
+            "Miasteczko Studenckie",
+            "Miasteczko Studenckie AGH",
+            "Miasteczko AGH"
+          ]
+        },
+        {
+          "official": "Galeria Bronowicka",
+          "colloquial": []
         }
       ],
       "districts": [

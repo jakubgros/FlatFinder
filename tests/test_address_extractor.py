@@ -13,7 +13,7 @@ from tests.testing_utilities import MockedAddressProvider
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 
-DISABLE_PARALLELIZED_COMPUTATION = True
+DISABLE_PARALLELIZED_COMPUTATION = False
 if DISABLE_PARALLELIZED_COMPUTATION:
     import multiprocess.dummy as mp
 else:
@@ -109,7 +109,7 @@ class AddressExtractorTest(unittest.TestCase):
                 else:
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
-        self.assertEqual(42, extra_matches_count)
+        self.assertEqual(41, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -275,7 +275,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         *_, found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")
         self.assertIn("Karmelicka", [match.location for match in found_address.street])
-        self.assertEqual(1, len(found_address.all))
+        self.assertEqual(1, len(found_address.all_addresses))
 
 
     def test_temp(self): # TODO remove
@@ -283,7 +283,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[2]
+        flat = all_test_cases[4]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
