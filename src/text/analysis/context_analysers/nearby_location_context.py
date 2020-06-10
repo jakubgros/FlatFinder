@@ -19,7 +19,7 @@ class NearbyLocationContext:
         if introducers:
             self.introducers = introducers
         else:
-            self.introducers = {'w sąsiedztwie', 'w pobliżu', 'nieopodal'}
+            self.introducers = {'w sąsiedztwie', 'w pobliżu', 'nieopodal', 'W niedalekiej odległości znajduje się'}
         self.introducers = {e.lower() for e in self.introducers}
 
         if conjunctions:

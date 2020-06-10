@@ -17,6 +17,22 @@
         {
           "official": "Galeria Bronowicka",
           "colloquial": []
+        },
+        {
+          "official": "Centrum Handlowe Bonarka",
+          "colloquial": [
+            "CH Bonarka"
+          ]
+        },
+        {
+          "official": "Biedronka",
+          "colloquial": []
+        },
+        {
+          "official": "Galeria Kazimierz",
+          "colloquial": [
+            "CH Galeria Kazimierz"
+          ]
         }
       ],
       "districts": [

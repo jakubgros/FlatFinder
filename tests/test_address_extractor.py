@@ -283,7 +283,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[4]
+        flat = all_test_cases[7]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
