@@ -15,14 +15,15 @@ from text.text_searcher import TextSearcher
 
 from itertools import chain
 from text.analysis.tagger import tagger
+from utilities.utilities import do_slices_overlap, slice_span
 
 
 @dataclass
 class Address:
-    district: typing.Any
-    estate: typing.Any
-    street: typing.Any
-    place: typing.Any
+    district: List[AddressMatch]
+    estate: List[AddressMatch]
+    street: List[AddressMatch]
+    place: List[AddressMatch]
 
     @property
     def all(self):
@@ -103,18 +104,39 @@ class AddressExtractor:
         address.estate = [match for match in address.estate if not self._should_be_excluded(match)]
         address.street = [match for match in address.street if not self._should_be_excluded(match)]
 
+    @staticmethod
+    def _overlaps_with_bigger_match(the_match, all_matches):
+        for other_match in all_matches:
+            the_match_slice = the_match.match_slice_position
+            other_match_slice = other_match.match_slice_position
+
+            if do_slices_overlap(the_match_slice, other_match_slice) \
+                    and slice_span(the_match_slice) < slice_span(other_match_slice):
+                return True
+        return False
+
     def _filter_overlapping(self, address):
-        pass
+        address.street = [match for match in address.street
+                          if not self._overlaps_with_bigger_match(match, address.all)]
+        address.estate = [match for match in address.estate
+                          if not self._overlaps_with_bigger_match(match, address.all)]
+        address.district = [match for match in address.district
+                            if not self._overlaps_with_bigger_match(match, address.all)]
+        address.place = [match for match in address.place
+                         if not self._overlaps_with_bigger_match(match, address.all)]
 
     def __call__(self, description: Union[List[str], str]):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
-        # extract all
         address = Address(district=self._match_locations(self.address_provider.districts, description),
                           estate=self._match_locations(self.address_provider.estates, description),
                           street=self._match_locations(self.address_provider.streets, description),
                           place=self._match_locations(self.address_provider.places, description))
 
+        ''' in case two addresses were matched to the same piece of text we accept the longer 
+        e.g. "Galeria Bronowicka" might be matched to both "Bronowicka" street and "Galeria Bronowicka" place. 
+        By doing the overlap filtering we remove the unwanted street match '''
         self._filter_overlapping(address)
+
         self._filter_by_context(address)
 
         for match in address.street:

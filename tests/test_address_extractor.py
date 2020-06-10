@@ -5,7 +5,6 @@ import unittest
 from collections import Counter
 from itertools import chain
 
-
 from data_provider.address_provider import address_provider
 from env_utils.base_dir import base_dir
 from parsers.address_extractor import AddressExtractor
@@ -38,10 +37,10 @@ class AddressExtractorTest(unittest.TestCase):
             is_ok = expected == actual
 
         msg = f'\n' \
-               + f'[matched from expected] = {matched}\n\n'\
-               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n'\
-               + f'[title] =\n{flat["title"]}\n\n'\
-               + f'[description] =\n {flat["description"]}\n\n'\
+              + f'[matched from expected] = {matched}\n\n' \
+              + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
+              + f'[title] =\n{flat["title"]}\n\n' \
+              + f'[description] =\n {flat["description"]}\n\n' \
 
         logging.debug(msg)
 
@@ -89,9 +88,9 @@ class AddressExtractorTest(unittest.TestCase):
             try:
                 extractor \
                     = AddressExtractor(address_provider, excluded_contexts=[
-                        FirstWordOfSentenceContext(),
-                        NearbyLocationContext(address_provider=address_provider)
-                    ])
+                    FirstWordOfSentenceContext(),
+                    NearbyLocationContext(address_provider=address_provider)
+                ])
 
                 _, _, found_address = extractor(flat['title'] + '.\n' + flat['description'])
                 return flat, found_address
@@ -109,7 +108,9 @@ class AddressExtractorTest(unittest.TestCase):
                 else:
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
-        self.assertEqual(41, extra_matches_count)
+
+        with self.subTest("extra matches"):
+            self.assertEqual(27, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -277,8 +278,26 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Karmelicka", [match.location for match in found_address.street])
         self.assertEqual(1, len(found_address.all_addresses))
 
+    def test_only_longest_location_from_overlapping_matches_is_returned(self):
+        mocked_address_provider = MockedAddressProvider(
+            streets=[{
+                "official": "Bronowicka",
+                "colloquial": [],
+            }],
+            places=[{
+                "official": "Galeria Bronowicka",
+                "colloquial": [],
+            }]
+        )
 
-    def test_temp(self): # TODO remove
+        extractor = AddressExtractor(mocked_address_provider)
+        *_, found_address = extractor("Galeria Bronowicka")
+        names_of_matched_locations = [match.location for match in found_address.all]
+
+        self.assertIn("Galeria Bronowicka", names_of_matched_locations)
+        self.assertNotIn("Bronowicka", names_of_matched_locations)
+
+    def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
@@ -288,7 +307,7 @@ class AddressExtractorTest(unittest.TestCase):
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
             NearbyLocationContext(address_provider=address_provider)
-            ])
+        ])
 
         *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
         self._compare_address_results(flat, found_address, accept_extra_matches=True)

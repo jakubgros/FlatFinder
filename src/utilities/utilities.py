@@ -72,3 +72,8 @@ def do_slices_overlap(lhs, rhs):
         return False
     else:
         return first_end > latter_beg
+
+
+def slice_span(a_slice):
+    beg, end = a_slice
+    return end - beg
