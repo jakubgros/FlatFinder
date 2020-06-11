@@ -29,7 +29,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         matched = {key: key in actual for key in expected}
         extra_matches = actual.difference(expected)
-        
+
         msg = f'\n' \
               + f'[matched from expected] = {matched}\n\n' \
               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
@@ -56,7 +56,7 @@ class AddressExtractorTest(unittest.TestCase):
         json_obj['2']['extra_matches'] = {'Osiedle'}
         json_obj['5']['extra_matches'] = {'Mogilska'}
         json_obj['9']['extra_matches'] = {'Park Bednarskiego', 'Kazimierz'}
-        json_obj['11']['extra_matches'] = {'Kobierzyńska', 'Osiedle', 'Szybka'}
+        json_obj['11']['extra_matches'] = {'Osiedle', 'Szybka'}
         json_obj['12']['extra_matches'] = {'św. Jana', 'Jana XXIII', 'Izydora Stella-Sawickiego', 'Jana Sawickiego', 'Lotnicza'}
         json_obj['13']['extra_matches'] = {'Osiedle'}
         json_obj['14']['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
@@ -128,7 +128,7 @@ class AddressExtractorTest(unittest.TestCase):
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(66, extra_matches_count)
+            self.assertEqual(65, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -347,7 +347,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[11]
+        flat = all_test_cases[1] #11
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),

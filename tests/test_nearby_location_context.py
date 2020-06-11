@@ -201,7 +201,7 @@ class TestNearbyLocationContext(unittest.TestCase):
 
         self._test_nearby_location_context_helper(
             sentence="W pobliżu Wawel.",
-            subject_slice_beg_end=(2, 3), # "Wawel"
+            subject_slice_beg_end=(2, 3),  # "Wawel"
             expected_result=True,
             introducers={"w pobliżu"},
             conjunctions={},
@@ -233,7 +233,7 @@ class TestNearbyLocationContext(unittest.TestCase):
         with self.subTest():
             self._test_nearby_location_context_helper(
                 sentence="W pobliżu Ikea i Wawel",
-                subject_slice_beg_end=(4, 5), # "Wawel"
+                subject_slice_beg_end=(4, 5),  # "Wawel"
                 expected_result=True,
                 introducers=introducers,
                 conjunctions=conjunctions,
@@ -242,7 +242,7 @@ class TestNearbyLocationContext(unittest.TestCase):
         with self.subTest():
             self._test_nearby_location_context_helper(
                 sentence="W pobliżu Galeria Bronowicka i Bronowice",
-                subject_slice_beg_end=(5, 6), #"Bronowice",
+                subject_slice_beg_end=(5, 6),  # "Bronowice",
                 expected_result=True,
                 introducers=introducers,
                 conjunctions=conjunctions,
@@ -266,10 +266,10 @@ class TestNearbyLocationContext(unittest.TestCase):
             ("W pobliżu Ikea i ul. Szeroka", (4, 7)),  # 'ul. Szeroka'
             ("W pobliżu Ikea i ul. Szeroka", (2, 3)),  # 'Ikea'
 
-            ("W pobliżu ul. Szeroka i Ikea", (4, 5)), # 'Szeroka'
+            ("W pobliżu ul. Szeroka i Ikea", (4, 5)),  # 'Szeroka'
             ("W pobliżu ul. Szeroka i Ikea", (2, 5)),  # 'ul. Szeroka'
-            ("W pobliżu ul. Szeroka i Ikea", (6, 7)), # 'Ikea'
-         ]:
+            ("W pobliżu ul. Szeroka i Ikea", (6, 7)),  # 'Ikea'
+        ]:
             sentence, subject = test_case
             self._test_nearby_location_context_helper(
                 sentence=sentence,
@@ -277,6 +277,34 @@ class TestNearbyLocationContext(unittest.TestCase):
                 expected_result=True,
                 introducers={"w pobliżu"},
                 conjunctions={"i"},
+                address_provider=mocked_address_provider)
+
+    @unittest.skip #TODO FLAT-33
+    def test_sentence_with_newline_character_in_context(self):
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Kobierzyńska",
+                    "colloquial": [],
+                },
+                {
+                    "official": "prof.Michała Bobrzyńskiego",
+                    "colloquial": [],
+                }
+            ],
+
+        )
+        for sentence in [
+            "Blisko przystanek autobusowy \nprzy ul. Bobrzyńskiego  lub ul. Kobierzyńskiej.",
+            "Blisko przystanek autobusowy przy ul. Bobrzyńskiego  lub\nul. Kobierzyńskiej.",
+            "Blisko przystanek autobusowy przy ul. Bobrzyńskiego  lub ul.\nKobierzyńskiej.",
+        ]:
+            self._test_nearby_location_context_helper(
+                sentence=sentence,
+                subject_slice_beg_end=(11, 12),  # "Kobierzyńskiej"
+                expected_result=True,
+                introducers={"przystanek autobusowy przy"},
+                conjunctions={"lub"},
                 address_provider=mocked_address_provider)
 
         """ TODO:

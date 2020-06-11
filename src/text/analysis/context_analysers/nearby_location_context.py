@@ -74,17 +74,13 @@ class NearbyLocationContext:
 
         # conjunctions
         for i in range(len(introducer_subject)):
-            if is_the_word_an_address_part_or_conjunction[i]:  # already matched
-                continue
-            else:
+            if not is_the_word_an_address_part_or_conjunction[i]:
                 if introducer_subject[i] in self.conjunctions:
                     is_the_word_an_address_part_or_conjunction[i] = True
 
-        #location types
+        # location types
         for i in range(len(introducer_subject)):
-            if is_the_word_an_address_part_or_conjunction[i]:  # already matched
-                continue
-            else:
+            if not is_the_word_an_address_part_or_conjunction[i]:
                 if introducer_subject[i].lower() in self.location_type_prefixes:
                     is_the_word_an_address_part_or_conjunction[i] = True
                     try:
@@ -92,11 +88,18 @@ class NearbyLocationContext:
                             is_the_word_an_address_part_or_conjunction[i+1] = True
                     except IndexError:
                         pass
+
+        # newline character
+        for i in range(len(introducer_subject)):
+            if not is_the_word_an_address_part_or_conjunction[i]:
+                if introducer_subject[i] == '\n':
+                    is_the_word_an_address_part_or_conjunction[i] = True
+
+
         return all(is_the_word_an_address_part_or_conjunction)
 
     def __call__(self, match: AddressMatch):
         context_end, _ = match.match_slice_position
-
         considered_context = match.source[:context_end]
         found_introducers = self._find_all_introducers(considered_context)
         if not found_introducers:
