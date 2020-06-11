@@ -29,24 +29,49 @@ class AddressExtractorTest(unittest.TestCase):
 
         matched = {key: key in actual for key in expected}
         extra_matches = actual.difference(expected)
-
-        if accept_extra_matches:
-            is_ok = expected.issubset(actual)
-        else:
-            is_ok = expected == actual
-
+        
         msg = f'\n' \
               + f'[matched from expected] = {matched}\n\n' \
               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
               + f'[title] =\n{flat["title"]}\n\n' \
               + f'[description] =\n {flat["description"]}\n\n'
 
-        self.assertTrue(is_ok, msg)
+        if accept_extra_matches:
+            self.assertTrue(expected.issubset(actual), msg)
+        else:
+            self.assertTrue(expected == actual, msg)
+
+        self.assertEqual(extra_matches, flat['extra_matches'], "EXTRA MATCHES ARE NOT CORRECT\n"+msg)
+
 
     @staticmethod
     def _load_regression_cases():
         with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
+
+        # TODO REMOVE
+        for test_case in json_obj.values():
+            test_case['extra_matches'] = set()
+
+        json_obj['2']['extra_matches'] = {'Osiedle'}
+        json_obj['5']['extra_matches'] = {'Mogilska'}
+        json_obj['9']['extra_matches'] = {'Park Bednarskiego', 'Kazimierz'}
+        json_obj['11']['extra_matches'] = {'Kobierzyńska', 'Osiedle', 'Szybka'}
+        json_obj['12']['extra_matches'] = {'św. Jana', 'Jana XXIII', 'Izydora Stella-Sawickiego', 'Jana Sawickiego', 'Lotnicza'}
+        json_obj['13']['extra_matches'] = {'Osiedle'}
+        json_obj['14']['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
+        json_obj['15']['extra_matches'] = {'Bieżanów', 'Nowa'}
+        json_obj['16']['extra_matches'] = {'Dworzec', 'Rynek Główny', 'Kazimierz'}
+        json_obj['17']['extra_matches'] = {'Osiedle', 'Władysława Łokietka', 'Wrocławska'}
+        json_obj['18']['extra_matches'] = {'Osiedle', 'Władysława Łokietka', 'Wrocławska 2'}
+        json_obj['19']['extra_matches'] = {'Sołtysowska'}
+        json_obj['22']['extra_matches'] = {'Osiedle', 'Władysława Łokietka', 'Wrocławska 2'}
+        json_obj['25']['extra_matches'] = {'Dworzec', 'Zakrzówek', 'Czerwone Maki'}
+        json_obj['26']['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Rondo Mogilskie', 'Złota'}
+        json_obj['27']['extra_matches'] = {'Seweryna Udzieli', 'Osiedle', 'Krakowska'}
+        json_obj['28']['extra_matches'] = {'Kapelanka', 'Rozdroże'}
+        # TODO END REMOVE
+
         disabled_cases = [12, 15, 19, 28]
         test_cases = [value for (key, value) in json_obj.items() if int(key) not in disabled_cases]
 
