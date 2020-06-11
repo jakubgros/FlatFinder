@@ -23,14 +23,15 @@ class NearbyLocationContext:
                                 'niedaleko', 'z widokiem na', 'przy samym', 'widok na', 'w bezpośrednim sąsiedztwie'
                                 'metrów do', 'metry do', 'metrów od', 'metrów do',
                                 'kilometrów do', 'kilometry do', 'kilometrów od', 'kilometry od',
-                                'minuty do', 'minut do', 'minuty od', 'minut od', 'boczna od'}
+                                'minuty do', 'minut do', 'minuty od', 'minut od', 'boczna od',
+                                'Blisko przystanek autobusowy przy'}
 
         self.introducers = {e.lower() for e in self.introducers}
 
         if conjunctions:
             self.conjunctions = conjunctions
         else:
-            self.conjunctions = {'i', 'oraz', ','}
+            self.conjunctions = {'i', 'oraz', ',', 'lub'}
 
         if location_type_prefixes:
             self.location_type_prefixes = location_type_prefixes
