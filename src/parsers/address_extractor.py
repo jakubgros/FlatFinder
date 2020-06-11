@@ -74,18 +74,19 @@ class AddressExtractor:
         for location in all_locations:
             for location_name in [location["official"], *location["colloquial"]]:
 
-                does_contain, (match_slice_pos, all_words) = TextSearcher.find(
+                found, all_words = TextSearcher.find(
                     phrase_to_find=location_name,
                     text=description,
                     equality_comparator=self._get_comparator(location_name))
 
-                if does_contain:
-                    match = AddressMatch(
-                        location=location['official'],
-                        match_slice_position=match_slice_pos,
-                        source=all_words)
+                if found:
+                    for match_slice_pos in found:
+                        match = AddressMatch(
+                            location=location['official'],
+                            match_slice_position=match_slice_pos,
+                            source=all_words)
 
-                    all_matched_locations.append(match)
+                        all_matched_locations.append(match)
 
         return all_matched_locations
 

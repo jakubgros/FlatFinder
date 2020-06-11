@@ -44,7 +44,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         logging.debug(msg)
 
-        self.assertTrue(is_ok)
+        self.assertTrue(is_ok, msg)
 
     @staticmethod
     def _load_regression_cases():
@@ -110,7 +110,7 @@ class AddressExtractorTest(unittest.TestCase):
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(27, extra_matches_count)
+            self.assertEqual(62, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(

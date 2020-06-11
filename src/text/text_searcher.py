@@ -21,8 +21,10 @@ class TextSearcher:
         max_frame_size = len(phrase_to_find.split())
         all_text_frames = (TextFrame(word_list, frame_size) for frame_size in range(1, max_frame_size + 1))
 
+        found = []
         for text_frame in all_text_frames:
             for slice_position, frame in text_frame:
                 if equality_comparator(phrase_to_find, frame):
-                    return True, (slice_position, text_frame.all_words)
-        return False, (None, text_frame.all_words)
+                    found.append(slice_position)
+
+        return found, text_frame.all_words
