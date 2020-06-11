@@ -40,7 +40,8 @@ class AddressExtractor:
         self.attribute_name = "address"
 
         self.comparison_rules = ComparisonRulesContainer([
-            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY), #TODO extract to config file
+            ComparisonRule("kopiec", ComparisonRuleType.FORCE_CASE_INSENSITIVITY),
         ])
 
         self.excluded_contexts = excluded_contexts

@@ -40,9 +40,7 @@ class AddressExtractorTest(unittest.TestCase):
               + f'[matched from expected] = {matched}\n\n' \
               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
               + f'[title] =\n{flat["title"]}\n\n' \
-              + f'[description] =\n {flat["description"]}\n\n' \
-
-        logging.debug(msg)
+              + f'[description] =\n {flat["description"]}\n\n'
 
         self.assertTrue(is_ok, msg)
 
@@ -110,7 +108,7 @@ class AddressExtractorTest(unittest.TestCase):
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(62, extra_matches_count)
+            self.assertEqual(49, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -279,23 +277,50 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertEqual(1, len(found_address.all_addresses))
 
     def test_only_longest_location_from_overlapping_matches_is_returned(self):
-        mocked_address_provider = MockedAddressProvider(
-            streets=[{
-                "official": "Bronowicka",
-                "colloquial": [],
-            }],
-            places=[{
-                "official": "Galeria Bronowicka",
-                "colloquial": [],
-            }]
-        )
 
-        extractor = AddressExtractor(mocked_address_provider)
-        *_, found_address = extractor("Galeria Bronowicka")
-        names_of_matched_locations = [match.location for match in found_address.all]
+        with self.subTest():
+            mocked_address_provider = MockedAddressProvider(
+                streets=[
+                    {
+                        "official": "Zygmunta Starego",
+                        "colloquial": [],
+                    },
+                    {
+                        "official": "Stare Podgórze",
+                        "colloquial": [],
+                    }
+                ],
+            )
 
-        self.assertIn("Galeria Bronowicka", names_of_matched_locations)
-        self.assertNotIn("Bronowicka", names_of_matched_locations)
+            extractor = AddressExtractor(mocked_address_provider)
+            *_, found_address = extractor(
+                "\nDo wynajęcia 1-pokojowe funkcjonalne mieszkanie w spokojnej, dobrze skomunikowanej"
+                " okolicy - Stare Podgórze przy ulicy Zamoyskiego, bardzo dobry dojazd do każdej części miasta.")
+            names_of_matched_locations = [match.location for match in found_address.all]
+
+            self.assertIn("Stare Podgórze", names_of_matched_locations)
+            self.assertNotIn("Zygmunta Starego", names_of_matched_locations)
+
+        with self.subTest():
+            mocked_address_provider = MockedAddressProvider(
+                streets=[{
+                    "official": "Bronowicka",
+                    "colloquial": [],
+                }],
+                places=[{
+                    "official": "Galeria Bronowicka",
+                    "colloquial": [],
+                }]
+            )
+
+            extractor = AddressExtractor(mocked_address_provider)
+            *_, found_address = extractor("Galeria Bronowicka")
+            names_of_matched_locations = [match.location for match in found_address.all]
+
+            self.assertIn("Galeria Bronowicka", names_of_matched_locations)
+            self.assertNotIn("Bronowicka", names_of_matched_locations)
+
+
 
     def test_temp(self):  # TODO remove
         import logging
@@ -310,7 +335,7 @@ class AddressExtractorTest(unittest.TestCase):
         ])
 
         *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
-        self._compare_address_results(flat, found_address, accept_extra_matches=True)
+        self._compare_address_results(flat, found_address, accept_extra_matches=False)
 
 
 if __name__ == "__main__":
