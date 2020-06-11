@@ -2,6 +2,8 @@ import functools
 
 from roman import fromRoman, InvalidRomanNumeralError
 
+from env_utils.config import config
+
 
 class RomanNumeralsParser:
     @staticmethod
@@ -12,7 +14,7 @@ class RomanNumeralsParser:
         return fromRoman(roman_as_str)
 
     @staticmethod
-    @functools.lru_cache(maxsize=100)
+    @functools.lru_cache(maxsize=config["cache_size"])
     def is_roman_number(roman_as_str):
         """ returns True in case provided value is valid roman number, False otherwise """
         try:

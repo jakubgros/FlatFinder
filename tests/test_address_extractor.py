@@ -1,5 +1,4 @@
 import json
-import logging
 import traceback
 import unittest
 from collections import Counter
@@ -48,14 +47,10 @@ class AddressExtractorTest(unittest.TestCase):
     def _load_regression_cases():
         with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
+        disabled_cases = [12, 15, 19, 28]
+        test_cases = [value for (key, value) in json_obj.items() if int(key) not in disabled_cases]
 
-        all_flats = {int(identifier): json_obj[identifier] for identifier in json_obj}
-
-        # failing tests are disabled temporarily
-        passing_test_indexes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 16, 20, 21, 23, 24, 25, 27]
-        passing_tests = [all_flats[i] for i in passing_test_indexes]
-
-        return passing_tests
+        return test_cases
 
     @staticmethod
     def _get_amount_of_extra_matches(flat, found_address):
@@ -108,7 +103,7 @@ class AddressExtractorTest(unittest.TestCase):
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(49, extra_matches_count)
+            self.assertEqual(72, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(

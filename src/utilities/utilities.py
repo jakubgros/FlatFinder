@@ -1,10 +1,11 @@
 import functools
 import re
-from itertools import chain
 from typing import List
 
+from env_utils.config import config
 
-@functools.lru_cache(maxsize=10000)
+
+@functools.lru_cache(maxsize=config["cache_size"])
 def _split_on_special_characters_and_preserve(text, ignore_spaces):
     text_split = re.split('(\W)', text)
     if ignore_spaces:
@@ -13,7 +14,7 @@ def _split_on_special_characters_and_preserve(text, ignore_spaces):
     return text_split
 
 
-@functools.lru_cache(maxsize=10000)
+@functools.lru_cache(maxsize=config["cache_size"])
 def split_on_special_characters(text, *, preserve_special_characters=False, ignore_spaces=True):
     text_split = _split_on_special_characters_and_preserve(text, ignore_spaces)
 

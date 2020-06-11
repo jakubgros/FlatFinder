@@ -2,6 +2,7 @@ import functools
 from collections import defaultdict
 
 from comparators.morphologic_comparator import MorphologicComparator
+from env_utils.config import config
 from text.analysis.morphologic_analyser import MorphologicAnalyser, morphologic_analyser
 
 
@@ -29,7 +30,7 @@ class MorphologicSet:
             internal_key = self._get_internal_key(elem)
             self.data[internal_key].add(elem)
 
-    @functools.lru_cache(maxsize=10000)
+    @functools.lru_cache(maxsize=config["cache_size"])
     def __contains__(self, key):
         internal_key = self._get_internal_key(key)
         data = self.data[internal_key]

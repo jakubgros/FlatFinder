@@ -4,6 +4,7 @@ from typing import Tuple, Dict
 import morfeusz2
 
 from env_utils.base_dir import base_dir
+from env_utils.config import config
 from exception.exception import FFE_InvalidArgument
 
 
@@ -57,7 +58,7 @@ class MorphologicAnalyser:
         else:
             self._reinterpret_mapping = self._invert_dict(value, no_duplicates=True)
 
-    @functools.lru_cache(maxsize=10000)
+    @functools.lru_cache(maxsize=config["cache_size"])
     def get_base_form(self, str_val):
         """ Returns base form for a given word. To improve cache hits, value passed to the function has to
         be a single word. If you have a sentence you have to call the function many times """

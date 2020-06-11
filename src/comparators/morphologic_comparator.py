@@ -1,6 +1,7 @@
 import functools
 
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
+from env_utils.config import config
 from text.analysis.morphologic_analyser import MorphologicAnalyser, morphologic_analyser
 from utilities.utilities import split_on_special_characters
 
@@ -22,7 +23,7 @@ class MorphologicComparator:
 
         return not force_case_insensitivity and self.title_case_sensitive
 
-    @functools.lru_cache(maxsize=10000)
+    @functools.lru_cache(maxsize=config["cache_size"])
     def equals(self, expected, actual):
         expected_split = split_on_special_characters(expected)
         actual_split = split_on_special_characters(actual)
