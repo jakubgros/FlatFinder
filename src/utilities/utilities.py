@@ -77,3 +77,25 @@ def do_slices_overlap(lhs, rhs):
 def slice_span(a_slice):
     beg, end = a_slice
     return end - beg
+
+
+def strip_list(the_list, *, strip_if_in):
+
+    beg = 0
+    for elem in the_list:
+        if elem in strip_if_in:
+            beg += 1
+        else:
+            break
+
+    end = len(the_list)
+    for elem in reversed(the_list):
+        if elem in strip_if_in:
+            end -= 1
+        else:
+            break
+
+    if beg < end:
+        return the_list[beg:end]
+    else:
+        return []

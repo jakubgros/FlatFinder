@@ -1,6 +1,6 @@
 import unittest
 
-from utilities.utilities import split_on_special_characters, find_slice_beg, do_slices_overlap
+from utilities.utilities import split_on_special_characters, find_slice_beg, do_slices_overlap, strip_list
 
 
 class TestSplitOnSpecialCharacters(unittest.TestCase):
@@ -64,6 +64,43 @@ class TestDoSlicesOverlap(unittest.TestCase):
         self.assertFalse(do_slices_overlap((0, 4), (3, 3)))
         self.assertFalse(do_slices_overlap((0, 4), (4, 4)))
         self.assertFalse(do_slices_overlap((0, 4), (4, 5)))
+
+
+class TestStripList(unittest.TestCase):
+
+    def test_strip(self):
+        self.assertEqual([True],
+                         strip_list([False, False, True, False], strip_if_in=[False]))
+
+        self.assertEqual([True, True],
+                         strip_list([False, True, True, False], strip_if_in=[False]))
+
+        self.assertEqual([True, True, True],
+                         strip_list([False, True, True, True], strip_if_in=[False]))
+
+        self.assertEqual([True, True, True],
+                         strip_list([True, True, True, False], strip_if_in=[False]))
+
+        self.assertEqual([True, True, True],
+                         strip_list([True, True, True, False], strip_if_in=[False]))
+
+        self.assertEqual([True, True, True, True],
+                         strip_list([True, True, True, True], strip_if_in=[False]))
+
+    def test_strip_all(self):
+        self.assertEqual([],
+                         strip_list([False, False, False, False], strip_if_in=[False]))
+
+    def test_empty_list(self):
+        self.assertEqual([],
+                         strip_list([], strip_if_in=[False]))
+
+        self.assertEqual([],
+                         strip_list([], strip_if_in=[]))
+
+    def test_strip_multiple_values(self):
+        self.assertEqual([3, 4, 5, 6],
+                         strip_list([1, 2, 3, 4, 5, 6, 1, 2], strip_if_in=[1, 2]))
 
 
 if __name__ == '__main__':
