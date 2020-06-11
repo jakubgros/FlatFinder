@@ -1,7 +1,8 @@
 from containers.morphologic_set import MorphologicSet
 from env_utils.base_dir import base_dir
+from exception.exception import FFE_InvalidArgument
 from parsers.roman_numerals_parser import RomanNumeralsParser
-from utilities.utilities import split_on_special_characters
+from utilities.utilities import split_on_special_characters, strip_list
 from dataclasses import dataclass, field
 from typing import List
 
@@ -13,6 +14,8 @@ class HumanName:
     last_name: List[str] = field(default_factory=list)
     numerical_epithet: List[str] = field(default_factory=list)
 
+    def to_list(self):
+        return self.title + self.first_name + self.last_name + self.numerical_epithet
 
 class HumanNameParser:
     def __init__(self):
@@ -27,11 +30,11 @@ class HumanNameParser:
         return loaded_data
 
     def parse(self, name):
-        name = split_on_special_characters(name)
+        name_split = split_on_special_characters(name)
 
         human_name = HumanName()
 
-        word_it = iter(name)
+        word_it = iter(name_split)
         try:
             word = next(word_it)
 
@@ -62,6 +65,14 @@ class HumanNameParser:
 
         except StopIteration:
             pass
+
+        name_split_with_special_characters_preserved \
+            = split_on_special_characters(name, preserve_special_characters=True)
+        all_matched = human_name.to_list()
+        has_matched = [elem in all_matched for elem in name_split_with_special_characters_preserved]
+        stripped_has_matched = strip_list(has_matched, strip_if_in=[False])
+        if len(has_matched) != len(stripped_has_matched):
+            raise FFE_InvalidArgument("Provided string contains leading or trailing special characters")
 
         return human_name
 

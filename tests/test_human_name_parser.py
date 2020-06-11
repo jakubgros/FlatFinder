@@ -1,5 +1,6 @@
 import unittest
 
+from exception.exception import FFE_InvalidArgument
 from parsers.human_name_parser import HumanName, human_name_parser
 
 
@@ -65,3 +66,9 @@ class HumanNameParserTest(unittest.TestCase):
         for name, expected_result in all_test_cases:
             with self.subTest(name=name):
                 self.assertEqual(self.parser.parse(name), expected_result)
+
+    def test_no_extra_special_characters_are_accepted(self):
+        with self.assertRaises(FFE_InvalidArgument) as ctx_mng:
+            self.parser.parse('- Zygmunta Starego')
+
+        self.assertEqual("Provided string contains leading or trailing special characters", str(ctx_mng.exception))

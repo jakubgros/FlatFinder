@@ -1,6 +1,7 @@
 from itertools import zip_longest
 
 from comparators.morphologic_comparator import MorphologicComparator
+from exception.exception import FFE_InvalidArgument
 from parsers.human_name_parser import human_name_parser
 
 
@@ -15,8 +16,11 @@ class NameComparator:
 
     def equals(self, expected: str, actual: str) -> bool:
 
-        name_expected = self.name_parser.parse(expected)
-        name_actual = self.name_parser.parse(actual)
+        try:
+            name_expected = self.name_parser.parse(expected)
+            name_actual = self.name_parser.parse(actual)
+        except FFE_InvalidArgument:
+            return False
 
         any_name_not_provided = not name_expected.first_name or not name_actual.first_name
         any_surname_provided = name_expected.last_name or name_actual.last_name
