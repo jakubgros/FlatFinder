@@ -333,12 +333,13 @@ class AddressExtractorTest(unittest.TestCase):
             self.assertIn("Galeria Bronowicka", names_of_matched_locations)
             self.assertNotIn("Bronowicka", names_of_matched_locations)
 
+    @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[22]
+        flat = all_test_cases[23]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
