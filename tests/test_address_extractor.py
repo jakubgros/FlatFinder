@@ -38,9 +38,9 @@ class AddressExtractorTest(unittest.TestCase):
 
         if accept_extra_matches:
             self.assertTrue(expected.issubset(actual), msg)
+            self.assertEqual(extra_matches, flat['extra_matches'], "EXTRA MATCHES ARE NOT CORRECT\n" + msg)
         else:
             self.assertTrue(expected == actual, msg)
-            self.assertEqual(extra_matches, flat['extra_matches'], "EXTRA MATCHES ARE NOT CORRECT\n" + msg)
 
     @staticmethod
     def _load_regression_cases():
@@ -57,13 +57,13 @@ class AddressExtractorTest(unittest.TestCase):
 
         test_cases[2]['extra_matches'] = {'Osiedle'}
         test_cases[5]['extra_matches'] = {'Mogilska'}
-        test_cases[9]['extra_matches'] = {'Park Bednarskiego', 'Kazimierz'}
+        test_cases[9]['extra_matches'] = {'Kazimierz', 'Bednarska'}
         test_cases[11]['extra_matches'] = {'Osiedle', 'Szybka'}
         test_cases[12]['extra_matches'] = {'Osiedle'}
         test_cases[13]['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
         test_cases[15]['extra_matches'] = {'Wrocławska', 'Władysława Łokietka', 'Osiedle'}
         test_cases[16]['extra_matches'] = {'Wrocławska 2', 'Władysława Łokietka', 'Osiedle'}
-        test_cases[20]['extra_matches'] = {'Dworzec', 'Czerwone Maki', 'Zakrzówek'}
+        test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
         test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Złota', 'Rondo Mogilskie'}
         test_cases[22]['extra_matches'] = {'Seweryna Udzieli', 'Osiedle', 'Krakowska'}
         # TODO END REMOVE
@@ -333,14 +333,12 @@ class AddressExtractorTest(unittest.TestCase):
             self.assertIn("Galeria Bronowicka", names_of_matched_locations)
             self.assertNotIn("Bronowicka", names_of_matched_locations)
 
-
-
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[14] # 11
+        flat = all_test_cases[20]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),

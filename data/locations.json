@@ -47,6 +47,18 @@
         {
           "official": "Park im. Wojciecha Bednarskiego",
           "colloquial": []
+        },
+        {
+          "official": "Błonia",
+          "colloquial": [
+            "Błonia Krakowskie"
+          ]
+        },
+        {
+          "official": "Dworzec Główny",
+          "colloquial": [
+            "Dworzec"
+          ]
         }
       ],
       "districts": [
@@ -3354,10 +3366,6 @@
         },
         {
           "official": "Bursztynowa",
-          "colloquial": []
-        },
-        {
-          "official": "Dworzec",
           "colloquial": []
         },
         {
@@ -9744,10 +9752,6 @@
         },
         {
           "official": "Jagodowa",
-          "colloquial": []
-        },
-        {
-          "official": "Park Bednarskiego",
           "colloquial": []
         },
         {
