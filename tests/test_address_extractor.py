@@ -64,7 +64,7 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases[15]['extra_matches'] = {'Wrocławska', 'Władysława Łokietka', 'Osiedle'}
         test_cases[16]['extra_matches'] = {'Wrocławska 2', 'Władysława Łokietka', 'Osiedle'}
         test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
-        test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Złota', 'Rondo Mogilskie'}
+        test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Złota'}
         test_cases[22]['extra_matches'] = {'Seweryna Udzieli', 'Osiedle', 'Krakowska'}
         # TODO END REMOVE
 
@@ -118,10 +118,10 @@ class AddressExtractorTest(unittest.TestCase):
                     self.fail(subtest_result)
                 else:
                     self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
-                    extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
+            extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(56, extra_matches_count)
+            self.assertEqual(55, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -338,7 +338,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[20]
+        flat = all_test_cases[21]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
