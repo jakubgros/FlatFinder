@@ -61,7 +61,6 @@ class AddressExtractorTest(unittest.TestCase):
         json_obj['13']['extra_matches'] = {'Osiedle'}
         json_obj['14']['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
         json_obj['15']['extra_matches'] = {'Bieżanów', 'Nowa'}
-        json_obj['16']['extra_matches'] = {'Dworzec', 'Rynek Główny', 'Kazimierz'}
         json_obj['17']['extra_matches'] = {'Osiedle', 'Władysława Łokietka', 'Wrocławska'}
         json_obj['18']['extra_matches'] = {'Osiedle', 'Władysława Łokietka', 'Wrocławska 2'}
         json_obj['19']['extra_matches'] = {'Sołtysowska'}
@@ -128,7 +127,7 @@ class AddressExtractorTest(unittest.TestCase):
                     extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(65, extra_matches_count)
+            self.assertEqual(62, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -347,7 +346,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[1] #11
+        flat = all_test_cases[14] # 11
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
