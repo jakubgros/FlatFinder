@@ -333,6 +333,22 @@ class AddressExtractorTest(unittest.TestCase):
             self.assertIn("Galeria Bronowicka", names_of_matched_locations)
             self.assertNotIn("Bronowicka", names_of_matched_locations)
 
+    def test_osiedle_street_is_not_matched_to_osiedle_location_prefix(self):
+        with self.subTest():
+            mocked_address_provider = MockedAddressProvider(
+                streets=[
+                    {
+                        "official": "Osiedle",
+                        "colloquial": [],
+                    },
+                ],
+            )
+
+            extractor = AddressExtractor(mocked_address_provider)
+
+            *_, found_address = extractor("Duże osiedle.")
+            self.assertNotIn("Osiedle", [match.location for match in found_address.all])
+
     @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
