@@ -5,6 +5,7 @@ from containers.address_match import AddressMatch
 from parsers.address_extractor import AddressExtractor
 from utilities.utilities import split_on_special_characters, find_slice_beg
 
+
 class NearbyLocationContext:
     def __init__(self, *,
                     introducers=None,

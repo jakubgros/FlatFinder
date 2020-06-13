@@ -347,6 +347,22 @@ class AddressExtractorTest(unittest.TestCase):
             *_, found_address = extractor("Duże osiedle.")
             self.assertNotIn("Osiedle", [match.location for match in found_address.all])
 
+    def test_zl_is_not_matched_to_zlota_street(self):
+        with self.subTest():
+            mocked_address_provider = MockedAddressProvider(
+                streets=[
+                    {
+                        "official": "Złota",
+                        "colloquial": [],
+                    },
+                ],
+            )
+
+            extractor = AddressExtractor(mocked_address_provider)
+
+            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
+            self.assertNotIn("Złota", [match.location for match in found_address.all])
+
     @unittest.skip
     def test_temp(self):  # TODO remove
         import logging

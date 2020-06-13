@@ -70,6 +70,5 @@ class TestMorphologicAnalyser(unittest.TestCase):
         base_form3 = analyser.get_base_form("osiedle")
         self.assertTrue(base_form1 == base_form2 == base_form3)
 
-
 if __name__ == '__main__':
     unittest.main()
