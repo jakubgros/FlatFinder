@@ -55,17 +55,15 @@ class AddressExtractorTest(unittest.TestCase):
         for test_case in test_cases:
             test_case['extra_matches'] = set()
 
-        test_cases[2]['extra_matches'] = {'Osiedle'}
         test_cases[5]['extra_matches'] = {'Mogilska'}
         test_cases[9]['extra_matches'] = {'Kazimierz', 'Bednarska'}
-        test_cases[11]['extra_matches'] = {'Osiedle', 'Szybka'}
-        test_cases[12]['extra_matches'] = {'Osiedle'}
+        test_cases[11]['extra_matches'] = {'Szybka'}
         test_cases[13]['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
-        test_cases[15]['extra_matches'] = {'Wrocławska', 'Władysława Łokietka', 'Osiedle'}
-        test_cases[16]['extra_matches'] = {'Wrocławska 2', 'Władysława Łokietka', 'Osiedle'}
+        test_cases[15]['extra_matches'] = {'Wrocławska', 'Władysława Łokietka'}
+        test_cases[16]['extra_matches'] = {'Wrocławska 2', 'Władysława Łokietka'}
         test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
         test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Złota'}
-        test_cases[22]['extra_matches'] = {'Osiedle', 'Seweryna Udzieli'}
+        test_cases[22]['extra_matches'] = {'Seweryna Udzieli'}
         # TODO END REMOVE
 
         return test_cases
@@ -121,7 +119,7 @@ class AddressExtractorTest(unittest.TestCase):
             extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(54, extra_matches_count)
+            self.assertEqual(45, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -349,13 +347,12 @@ class AddressExtractorTest(unittest.TestCase):
             *_, found_address = extractor("Duże osiedle.")
             self.assertNotIn("Osiedle", [match.location for match in found_address.all])
 
-    @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[23]
+        flat = all_test_cases[6]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
