@@ -48,7 +48,6 @@ class AddressExtractorTest(unittest.TestCase):
         with open(f'{base_dir}/data/test_data/addresses_from_title_and_description.json', encoding='utf-8') as handle:
             json_obj = json.loads(handle.read())
 
-
         disabled_cases = [12, 15, 19, 26]
         test_cases = [value for (key, value) in json_obj.items() if int(key) not in disabled_cases]
 
@@ -63,7 +62,7 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases[15]['extra_matches'] = {'Wrocławska', 'Władysława Łokietka'}
         test_cases[16]['extra_matches'] = {'Wrocławska 2', 'Władysława Łokietka'}
         test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
-        test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie', 'Złota'}
+        test_cases[21]['extra_matches'] = {'Mogilska', 'Przy Rondzie'}
         test_cases[22]['extra_matches'] = {'Seweryna Udzieli'}
         # TODO END REMOVE
 
@@ -96,10 +95,10 @@ class AddressExtractorTest(unittest.TestCase):
 
         def runner(flat):
             try:
-                extractor \
-                    = AddressExtractor(address_provider, excluded_contexts=[
+                extractor = AddressExtractor(address_provider, excluded_contexts=[
                     FirstWordOfSentenceContext(),
-                    NearbyLocationContext(address_provider=address_provider)
+                    NearbyLocationContext(address_provider=address_provider),
+                    PriceContext()
                 ])
 
                 _, _, found_address = extractor(flat['title'] + '.\n' + flat['description'])
@@ -120,7 +119,7 @@ class AddressExtractorTest(unittest.TestCase):
             extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(45, extra_matches_count)
+            self.assertEqual(44, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -361,7 +360,7 @@ class AddressExtractorTest(unittest.TestCase):
 
             extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[PriceContext()])
 
-            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .',)
+            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .', )
             self.assertNotIn("Złota", [match.location for match in found_address.all])
 
     @unittest.skip
