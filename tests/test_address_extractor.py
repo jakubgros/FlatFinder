@@ -347,6 +347,7 @@ class AddressExtractorTest(unittest.TestCase):
             *_, found_address = extractor("Duże osiedle.")
             self.assertNotIn("Osiedle", [match.location for match in found_address.all])
 
+    @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)

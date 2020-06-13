@@ -4,6 +4,7 @@ from comparators.comparison_rules.comparison_rule import ComparisonRule
 from comparators.comparison_rules.comparison_rule_type import ComparisonRuleType
 from comparators.comparison_rules.comparison_rules_container import ComparisonRulesContainer
 from comparators.morphologic_comparator import MorphologicComparator
+from utilities.utilities import split_on_special_characters
 
 
 class TestComparisonRule(unittest.TestCase):
@@ -48,6 +49,11 @@ class TestComparisonRule(unittest.TestCase):
                                            comparison_rules=ComparisonRulesContainer(rules))
 
         self.assertTrue(comparator.equals("Osiedle Kowalskiego", "osiedle Kowalskiego"))
+
+    def test_comparison_rule_with_context(self):
+        rule = ComparisonRule("osiedle", rule_type=ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+        self.assertFalse(rule.does_apply(subject="Osiedle", context=split_on_special_characters('osiedle')))
+        self.assertTrue(rule.does_apply(subject="Osiedle", context=split_on_special_characters('Bardzo ładne osiedle')))
 
 
 if __name__ == '__main__':
