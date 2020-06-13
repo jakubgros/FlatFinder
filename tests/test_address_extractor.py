@@ -10,6 +10,7 @@ from parsers.address_extractor import AddressExtractor
 from tests.testing_utilities import MockedAddressProvider
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
+from text.analysis.context_analysers.price_context import PriceContext
 
 DISABLE_PARALLELIZED_COMPUTATION = False
 if DISABLE_PARALLELIZED_COMPUTATION:
@@ -358,9 +359,9 @@ class AddressExtractorTest(unittest.TestCase):
                 ],
             )
 
-            extractor = AddressExtractor(mocked_address_provider)
+            extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[PriceContext()])
 
-            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
+            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .',)
             self.assertNotIn("Złota", [match.location for match in found_address.all])
 
     @unittest.skip

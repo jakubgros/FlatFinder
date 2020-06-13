@@ -100,3 +100,24 @@ def strip_list(the_list, *, strip_if_in):
         return the_list[beg:end]
     else:
         return []
+
+
+def is_float(number: str):
+    try:
+        float(number)
+    except ValueError:
+        return False
+    else:
+        return True
+
+
+def safe_list_get(the_list, *, index, default=None):
+    if index < 0 or index >= len(the_list):
+        return default
+
+    try:
+        elem = the_list[index]
+    except IndexError:
+        elem = default
+
+    return elem
