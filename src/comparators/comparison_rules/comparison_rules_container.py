@@ -8,10 +8,10 @@ class ComparisonRulesContainer:
         for rule in rules:
             self.all_rules[rule.rule_type].append(rule)
 
-    def does_apply(self, subject, rule_type):
+    def does_apply(self, *, subject, rule_type, context=None):
         requested_type_rules = self.all_rules.get(rule_type, [])
 
-        return any(rule.does_apply(subject) for rule in requested_type_rules)
+        return any(rule.does_apply(subject=subject, context=context) for rule in requested_type_rules)
 
     def get_filtered(self, filter):
         as_list = [rule for rules_of_particular_type in self.all_rules.values() for rule in rules_of_particular_type]

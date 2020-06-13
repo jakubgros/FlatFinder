@@ -9,16 +9,16 @@ from comparators.morphologic_comparator import MorphologicComparator
 class TestComparisonRule(unittest.TestCase):
 
     def test_does_apply_uses_morphologic_comparison_by_default(self):
-        rule = ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
-        self.assertTrue(rule.does_apply("osiedle"))
-        self.assertTrue(rule.does_apply("osiedlu"))
+        rule = ComparisonRule("osiedle", rule_type=ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+        self.assertTrue(rule.does_apply(subject="osiedle"))
+        self.assertTrue(rule.does_apply(subject="osiedlu"))
 
     def test_accepts_custom_comparators(self):
         rule = ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY,
                               comparator=lambda lhs, rhs: lhs == rhs)
 
-        self.assertTrue(rule.does_apply("osiedle"))
-        self.assertFalse(rule.does_apply("osiedlu"))
+        self.assertTrue(rule.does_apply(subject="osiedle"))
+        self.assertFalse(rule.does_apply(subject="osiedlu"))
 
     def test_comparison_rules_container(self):
         rules = [
@@ -30,13 +30,13 @@ class TestComparisonRule(unittest.TestCase):
 
         rules_container = ComparisonRulesContainer(rules)
 
-        self.assertTrue(rules_container.does_apply("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY))
-        self.assertTrue(rules_container.does_apply("osiedle", "mock_rule_type"))
-        self.assertFalse(rules_container.does_apply("osiedle", "other_mock_rule_type"))
+        self.assertTrue(rules_container.does_apply(subject="osiedle", rule_type=ComparisonRuleType.FORCE_CASE_INSENSITIVITY))
+        self.assertTrue(rules_container.does_apply(subject="osiedle", rule_type="mock_rule_type"))
+        self.assertFalse(rules_container.does_apply(subject="osiedle", rule_type="other_mock_rule_type"))
 
-        self.assertTrue(rules_container.does_apply("ulica", "other_mock_rule_type"))
-        self.assertFalse(rules_container.does_apply("ulica", "mock_rule_type"))
-        self.assertFalse(rules_container.does_apply("ulica", ComparisonRuleType.FORCE_CASE_INSENSITIVITY))
+        self.assertTrue(rules_container.does_apply(subject="ulica", rule_type="other_mock_rule_type"))
+        self.assertFalse(rules_container.does_apply(subject="ulica", rule_type="mock_rule_type"))
+        self.assertFalse(rules_container.does_apply(subject="ulica", rule_type=ComparisonRuleType.FORCE_CASE_INSENSITIVITY))
 
     def test_comparison_rule_with_morphologic_comparator(self):
         comparator = MorphologicComparator(title_case_sensitive=True)

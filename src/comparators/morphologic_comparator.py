@@ -16,10 +16,11 @@ class MorphologicComparator:
         self.title_case_sensitive = title_case_sensitive
         self.rules = comparison_rules
 
-    def _is_case_sensitive_comparison(self, actual_word, rules):
+    def _is_case_sensitive_comparison(self, actual_word, rules, context):
         force_case_insensitivity = self.ignore_case_sensitivity_if_actual_upper_case and actual_word.isupper() \
-                                   or rules and rules.does_apply(actual_word,
-                                                                 ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
+                                   or rules and rules.does_apply(subject=actual_word,
+                                                                 rule_type=ComparisonRuleType.FORCE_CASE_INSENSITIVITY,
+                                                                 context=context)
 
         return not force_case_insensitivity and self.title_case_sensitive
 
@@ -35,16 +36,10 @@ class MorphologicComparator:
         expected_base_form = [analyser.get_base_form(word) for word in expected_split]
         actual_base_form = [analyser.get_base_form(word) for word in actual_split]
 
-        # TOOD change to filter on len(actual_split) == len(split_on_special_characters(subject)) for subject in self.rules
-        if len(actual_split) == 1 and self.rules:
-            rules = self.rules.get_filtered(lambda rule: rule.rule_type != ComparisonRuleType.FORCE_CASE_INSENSITIVITY)
-        else:
-            rules = self.rules
-
         for actual_word_base, expected_word_base, actual_word_original, expected_word_original \
                 in zip(actual_base_form, expected_base_form, actual_split, expected_split):
 
-            test_case_sensitivity = self._is_case_sensitive_comparison(actual_word_original, rules)
+            test_case_sensitivity = self._is_case_sensitive_comparison(actual_word_original, self.rules, actual_split)
             are_not_equal = actual_word_base.isdisjoint(expected_word_base)
 
             if are_not_equal \
