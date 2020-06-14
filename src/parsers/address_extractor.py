@@ -11,6 +11,7 @@ from comparators.comparison_rules.comparison_rules_container import ComparisonRu
 from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
 from containers.address_match import AddressMatch
+from containers.street_address import StreetAddress
 from text.text_searcher import TextSearcher
 
 from itertools import chain
@@ -54,10 +55,9 @@ class AddressExtractor:
             unit_number_slice = (slice_end, slice_end + 1)
             street_number = int(" ".join(words_list[slice(*unit_number_slice)]))
         except (IndexError, ValueError):
-            return False, None, None
+            return None
         else:
-
-            return True, unit_number_slice, street_number
+            return street_number
 
     def _get_comparator(self, location_name):
         if tagger.does_contain_person_first_name(location_name):
@@ -127,6 +127,10 @@ class AddressExtractor:
         address.place = [match for match in address.place
                          if not self._overlaps_with_bigger_match(match, address.all)]
 
+    def _remove_duplicates(self, address):
+        pass
+
+
     def __call__(self, description: Union[List[str], str]):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
         address = Address(district=self._match_locations(self.address_provider.districts, description),
@@ -142,9 +146,10 @@ class AddressExtractor:
         self._filter_by_context(address)
 
         for match in address.street:
-            success, _, street_number = self._extract_street_number(match.source, match.match_slice_position)
-            if success:
-                match.location += " " + str(street_number)
+            unit_number = self._extract_street_number(match.source, match.match_slice_position)
+            match.location = StreetAddress(street_name=match.location, unit_number=unit_number)
+
+        self._remove_duplicates(address)
 
         # noinspection PyUnreachableCode
         if __debug__:

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Tuple, List
+from typing import Tuple, List, Any
 
 
 @dataclass
 class AddressMatch:
     match_slice_position: Tuple[int, int]
-    location: str
+    location: Any
     source: List[str]
 
     @property
