@@ -332,36 +332,50 @@ class AddressExtractorTest(unittest.TestCase):
             self.assertNotIn("Bronowicka", names_of_matched_locations)
 
     def test_osiedle_street_is_not_matched_to_osiedle_location_prefix(self):
-        with self.subTest():
-            mocked_address_provider = MockedAddressProvider(
-                streets=[
-                    {
-                        "official": "Osiedle",
-                        "colloquial": [],
-                    },
-                ],
-            )
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Osiedle",
+                    "colloquial": [],
+                },
+            ],
+        )
 
-            extractor = AddressExtractor(mocked_address_provider)
+        extractor = AddressExtractor(mocked_address_provider)
 
-            *_, found_address = extractor("Duże osiedle.")
-            self.assertNotIn("Osiedle", [match.location for match in found_address.all])
+        *_, found_address = extractor("Duże osiedle.")
+        self.assertNotIn("Osiedle", [match.location for match in found_address.all])
 
     def test_zl_is_not_matched_to_zlota_street(self):
-        with self.subTest():
-            mocked_address_provider = MockedAddressProvider(
-                streets=[
-                    {
-                        "official": "Złota",
-                        "colloquial": [],
-                    },
-                ],
-            )
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Złota",
+                    "colloquial": [],
+                },
+            ],
+        )
 
-            extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[PriceContext()])
+        extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[PriceContext()])
 
-            *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .', )
-            self.assertNotIn("Złota", [match.location for match in found_address.all])
+        *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
+        self.assertNotIn("Złota", [match.location for match in found_address.all])
+
+    def test_street_duplications_are_correctly_merged_if_one_contains_street_number_and_the_other_does_not(self):
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Mogilska",
+                    "colloquial": [],
+                },
+            ],
+        )
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor('Mieszkanie przy ulicy Mogilskiej. Adres Mogilska 66')
+        self.assertIn("Mogilska 66", [match.location for match in found_address.all])
+        self.assertEqual(1, len(found_address.all))
 
     @unittest.skip
     def test_temp(self):  # TODO remove
