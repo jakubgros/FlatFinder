@@ -360,6 +360,21 @@ class AddressExtractorTest(unittest.TestCase):
         *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
         self.assertNotIn("Złota", [match.location for match in found_address.all])
 
+    def test_duplications_are_merged(self):
+        mocked_address_provider = MockedAddressProvider(
+            districts=[
+                {
+                    "official": "Nowa Huta",
+                    "colloquial": [],
+                },
+            ],
+        )
+
+        extractor = AddressExtractor(mocked_address_provider)
+
+        *_, found_address = extractor('Dzielnica Nowa Huta. Mieszkanie się na Nowej Hucie')
+        self.assertEqual(1, len(found_address.all))
+
     def test_street_duplications_are_merged(self):
         mocked_address_provider = MockedAddressProvider(
             streets=[
@@ -374,6 +389,10 @@ class AddressExtractorTest(unittest.TestCase):
 
         *_, found_address = extractor('Mieszkanie przy ulicy Mogilskiej. Adres Mogilska 66')
         self.assertIn("Mogilska 66", [str(match.location) for match in found_address.all])
+        self.assertEqual(1, len(found_address.all))
+
+        *_, found_address = extractor('Mieszkanie przy ulicy Mogilskiej')
+        self.assertIn("Mogilska", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
     @unittest.skip

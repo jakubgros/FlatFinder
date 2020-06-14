@@ -147,9 +147,9 @@ class AddressExtractor:
                 address.street.extend(all_matches_for_particular_street)
 
     def _remove_duplicates(self, address):
-        address.district = list(set(address.district))
-        address.estate = list(set(address.estate))
-        address.place = list(set(address.place))
+        address.district = list({str(match.location): match for match in address.district}.values())
+        address.estate = list({str(match.location): match for match in address.estate}.values())
+        address.place = list({str(match.location): match for match in address.place}.values())
         self._remove_street_duplicates(address)
 
     def __call__(self, description: Union[List[str], str]):
