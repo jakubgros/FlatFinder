@@ -1,5 +1,6 @@
 import logging
 import typing
+from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -21,10 +22,10 @@ from utilities.utilities import do_slices_overlap, slice_span
 
 @dataclass
 class Address:
-    district: List[AddressMatch]
-    estate: List[AddressMatch]
-    street: List[AddressMatch]
-    place: List[AddressMatch]
+    district: typing.Iterable[AddressMatch]
+    estate: typing.Iterable[AddressMatch]
+    street: typing.Iterable[AddressMatch]
+    place: typing.Iterable[AddressMatch]
 
     @property
     def all(self):
@@ -41,7 +42,7 @@ class AddressExtractor:
         self.attribute_name = "address"
 
         self.comparison_rules = ComparisonRulesContainer([
-            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY), #TODO extract to config file
+            ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY),  # TODO extract to config file
             ComparisonRule("kopiec", ComparisonRuleType.FORCE_CASE_INSENSITIVITY),
         ])
 
@@ -127,9 +128,29 @@ class AddressExtractor:
         address.place = [match for match in address.place
                          if not self._overlaps_with_bigger_match(match, address.all)]
 
-    def _remove_duplicates(self, address):
-        pass
+    @staticmethod
+    def _remove_street_duplicates(address):
 
+        no_duplicates = {str(matched_street.location): matched_street for matched_street in address.street}.values()
+
+        matches_by_street_name = defaultdict(list)
+        for match in no_duplicates:
+            matches_by_street_name[match.location.street_name].append(match)
+
+        # if found match with unit number, remove the same street without unit number
+        address.street = []
+        for all_matches_for_particular_street in matches_by_street_name.values():
+            if len(all_matches_for_particular_street) > 1:
+                address.street.extend([street_match for street_match in all_matches_for_particular_street
+                                       if street_match.location.unit_number is not None])
+            else:
+                address.street.extend(all_matches_for_particular_street)
+
+    def _remove_duplicates(self, address):
+        address.district = list(set(address.district))
+        address.estate = list(set(address.estate))
+        address.place = list(set(address.place))
+        self._remove_street_duplicates(address)
 
     def __call__(self, description: Union[List[str], str]):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """

@@ -360,7 +360,7 @@ class AddressExtractorTest(unittest.TestCase):
         *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
         self.assertNotIn("Złota", [match.location for match in found_address.all])
 
-    def test_duplications_are_merged(self):
+    def test_street_duplications_are_merged(self):
         mocked_address_provider = MockedAddressProvider(
             streets=[
                 {
