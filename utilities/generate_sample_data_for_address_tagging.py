@@ -22,9 +22,8 @@ def fetch_flat_announcements_and_save_to_json(*, save_dir, amount, start_index):
             print(e)
             continue
 
-        for saved_flat in all_flats.values():
-            if saved_flat['title'] == flat.title:
-                continue
+        if any(saved_flat['title'] == flat.title for saved_flat in all_flats.values()):
+            continue
 
         all_flats[i] = {
             'title': flat.title,

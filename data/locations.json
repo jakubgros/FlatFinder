@@ -981,6 +981,10 @@
       ],
       "streets": [
         {
+          "official": "Przebiśniegów",
+          "colloquial": []
+        },
+        {
           "official": "Borówczana",
           "colloquial": []
         },
