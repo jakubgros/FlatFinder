@@ -1,6 +1,7 @@
 import logging
 
 from containers.flat import Flat
+from exception.exception import FFE_InvalidArgument
 
 from other.driver import driver
 
@@ -14,15 +15,25 @@ class GumtreeFlatProvider:
         kwargs[price_high]
         kwargs[from]: 'agncy' or 'ownr'
         """
+        args = []
+        if 'price_low' in kwargs or 'price_high' in kwargs:
+            low = kwargs.get('price_low', '')
+            high = kwargs.get('price_high', '')
+            if low > high:
+                raise FFE_InvalidArgument("Price lower boundary can't be greater than higher boundary")
+            args.append(f'pr={low},{high}')
+
+        if 'from' in kwargs:
+            args.append(f'fr={kwargs["from"]}')
+
         self.web_url \
-            = f'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/mieszkanie/v1c9008l3200208a1dwp1?' \
-              f'pr={kwargs["price_low"]},{kwargs["price_high"]}&fr={kwargs["from"]}&priceType=FIXED' \
-              '&nr={page_number}'
+            = 'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/v1c9008l3200208p{page_number}?'\
+              + '&'.join(args)
 
     @property
     def announcements(self):
         try:
-            page_number = 0
+            page_number = 1
             while True:
                 current_page_url = self.web_url.format(page_number=page_number)
                 driver.get(current_page_url)
