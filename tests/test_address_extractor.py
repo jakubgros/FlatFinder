@@ -12,7 +12,7 @@ from text.analysis.context_analysers.first_word_of_sentence_context import First
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 from text.analysis.context_analysers.price_context import PriceContext
 
-DISABLE_PARALLELIZED_COMPUTATION = False
+DISABLE_PARALLELIZED_COMPUTATION = True
 if DISABLE_PARALLELIZED_COMPUTATION:
     import multiprocess.dummy as mp
 else:
@@ -394,13 +394,12 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Mogilska", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
-    @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[6]
+        flat = all_test_cases[27]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),
