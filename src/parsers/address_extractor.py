@@ -95,8 +95,24 @@ class AddressExtractor:
     def _should_be_excluded(self, match):
         for ctx_analyser in self.excluded_contexts:
             if ctx_analyser(match):
-                logging.debug(
-                    f"\nexcluded by {ctx_analyser.__class__.__name__}: \n {match} \n {match.source[slice(*match.match_slice_position)]}\n")
+
+                # noinspection PyUnreachableCode
+                if __debug__:
+                    source = match.source[:]
+                    source[slice(*match.match_slice_position)] = [
+                        Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
+                    ctx_size = 10
+                    beg, end = match.match_slice_position
+                    beg -= ctx_size
+                    end += ctx_size
+                    if beg < 0:
+                        beg = 0
+                    description = ' '.join(source[beg:end])
+                    excluded_phrase = ''.join(match.source[slice(*match.match_slice_position)])
+                    logging.debug(
+                        f"\n [{excluded_phrase}] excluded by [{ctx_analyser.__class__.__name__}]:\n" \
+                        f"{description}\n\n")
+
                 return True
 
         return False
@@ -178,7 +194,13 @@ class AddressExtractor:
                 source = match.source[:]
                 source[slice(*match.match_slice_position)] = [
                     Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
-                description = ' '.join(source)
+                ctx_size = 10
+                beg, end = match.match_slice_position
+                beg -= ctx_size
+                end += ctx_size
+                if beg < 0:
+                    beg = 0
+                description = ' '.join(source[beg:end])
                 logging.debug(f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
                               f"description: {description}\n")
 

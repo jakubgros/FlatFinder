@@ -32,10 +32,15 @@ class AddressExtractorTest(unittest.TestCase):
         extra_matches = actual.difference(expected)
 
         msg = f'\n' \
+              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
+              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
               + f'[matched from expected] = {matched}\n\n' \
               + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
               + f'[title] =\n{flat["title"]}\n\n' \
-              + f'[description] =\n {flat["description"]}\n\n'
+              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
+              + f'[description] =\n {flat["description"]}\n\n' \
+              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
+              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
 
         if accept_extra_matches:
             self.assertTrue(expected.issubset(actual), msg)
@@ -399,7 +404,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[27]
+        flat = all_test_cases[37]
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
             FirstWordOfSentenceContext(),

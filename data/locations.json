@@ -67,6 +67,10 @@
         {
           "official": "Biblioteka Jagiellońska",
           "colloquial": []
+        },
+        {
+          "official": "Osiedle Eldorado",
+          "colloquial": []
         }
       ],
       "districts": [
@@ -3146,10 +3150,6 @@
         },
         {
           "official": "Węgrzynowicka",
-          "colloquial": []
-        },
-        {
-          "official": "Kopiec Kościuszki",
           "colloquial": []
         },
         {
