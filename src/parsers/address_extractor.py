@@ -101,7 +101,7 @@ class AddressExtractor:
                     source = match.source[:]
                     source[slice(*match.match_slice_position)] = [
                         Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
-                    ctx_size = 10
+                    ctx_size = 30
                     beg, end = match.match_slice_position
                     beg -= ctx_size
                     end += ctx_size
@@ -110,8 +110,10 @@ class AddressExtractor:
                     description = ' '.join(source[beg:end])
                     excluded_phrase = ''.join(match.source[slice(*match.match_slice_position)])
                     logging.debug(
-                        f"\n [{excluded_phrase}] excluded by [{ctx_analyser.__class__.__name__}]:\n" \
-                        f"{description}\n\n")
+                        f"\n\nXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n"
+                        f"\n [{excluded_phrase}] excluded by [{ctx_analyser.__class__.__name__}]:\n"
+                        f"{description}\n"
+                        f"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX\n\n")
 
                 return True
 
@@ -194,14 +196,16 @@ class AddressExtractor:
                 source = match.source[:]
                 source[slice(*match.match_slice_position)] = [
                     Fore.GREEN + ' '.join(source[slice(*match.match_slice_position)]) + Style.RESET_ALL]
-                ctx_size = 10
+                ctx_size = 30
                 beg, end = match.match_slice_position
                 beg -= ctx_size
                 end += ctx_size
                 if beg < 0:
                     beg = 0
                 description = ' '.join(source[beg:end])
-                logging.debug(f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
-                              f"description: {description}\n")
+                logging.debug(f"\n\nMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n"
+                              f"\nMatched db location '{match.location}' to '{match.matched_phrase}'\n"
+                              f"description: {description}\n"
+                              f"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n\n")
 
         return len(address.all) > 0, self.attribute_name, address
