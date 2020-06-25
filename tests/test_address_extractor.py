@@ -23,7 +23,8 @@ class AddressExtractorTest(unittest.TestCase):
 
     def _compare_address_results(self, flat, found_address):
         expected = flat['locations']
-        actual = [str(match.location) for match in chain(found_address.street, found_address.estate, found_address.district)]
+        actual = [str(match.location) for match in
+                  chain(found_address.street, found_address.estate, found_address.district)]
 
         expected = set(Counter(expected).keys())
         actual = set(Counter(actual).keys())
@@ -31,16 +32,16 @@ class AddressExtractorTest(unittest.TestCase):
         matched = {key: key in actual for key in expected}
         extra_matches = actual.difference(expected)
 
-        msg = f'\n' \
-              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
-              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
-              + f'[matched from expected] = {matched}\n\n' \
-              + f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n' \
-              + f'[title] =\n{flat["title"]}\n\n' \
-              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
-              + f'[description] =\n {flat["description"]}\n\n' \
-              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
-              + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
+        msg = (f'\n'
+               f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
+               f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
+               f'[description] =\n {flat["description"]}\n\n'
+               f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
+               f'[matched from expected] = {matched}\n\n'
+               f'[extra matches] =\n{extra_matches if len(extra_matches) > 0 else "NO EXTRA MATCHES"}\n\n'
+               f'[title] =\n{flat["title"]}\n\n'
+               f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
+               f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n')
 
         if flat.get('ignore_extra_matches', False):
             self.assertTrue(expected.issubset(actual), msg)
@@ -77,7 +78,8 @@ class AddressExtractorTest(unittest.TestCase):
     @staticmethod
     def _get_amount_of_extra_matches(flat, found_address):
         expected = flat['locations']
-        actual = [str(match.location) for match in chain(found_address.street, found_address.estate, found_address.district)]
+        actual = [str(match.location) for match in
+                  chain(found_address.street, found_address.estate, found_address.district)]
 
         exp_counter = Counter(expected)
         act_counter = Counter(actual)
@@ -406,7 +408,7 @@ class AddressExtractorTest(unittest.TestCase):
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[23]
+        flat = all_test_cases[27]
         flat['ignore_extra_matches'] = False
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
