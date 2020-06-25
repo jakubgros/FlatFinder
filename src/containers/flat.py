@@ -1,3 +1,4 @@
+import unicodedata
 from collections import namedtuple
 
 from selenium.common.exceptions import NoSuchElementException
@@ -29,10 +30,10 @@ class Flat:
 
         driver.get(url)
 
-        flat.title = driver.find_element_by_class_name('myAdTitle').text
+        flat.title = unicodedata.normalize('NFKC', driver.find_element_by_class_name('myAdTitle').text)
         flat.price = cls._parse_price(driver.find_element_by_class_name('price').text)
-        flat.description = driver.find_element_by_class_name('description').text
-        flat.address = driver.find_element_by_class_name('full-address').text
+        flat.description = unicodedata.normalize('NFKC', driver.find_element_by_class_name('description').text)
+        flat.address = unicodedata.normalize('NFKC', driver.find_element_by_class_name('full-address').text)
 
         # top menu
         sel_menu = driver.find_element_by_class_name("selMenu")
@@ -43,8 +44,9 @@ class Flat:
                 value_elem = el.find_element_by_class_name('value')
             except NoSuchElementException:
                 continue
-            flat.attributes[name_elem.text] = value_elem.text
+            flat.attributes[name_elem.text] = unicodedata.normalize('NFKC', value_elem.text)
 
+        # TODO add unicode processing
         return flat
 
     def extract_info_from_description(self, extractor):

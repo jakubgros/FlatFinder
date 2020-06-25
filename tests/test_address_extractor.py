@@ -12,7 +12,7 @@ from text.analysis.context_analysers.first_word_of_sentence_context import First
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 from text.analysis.context_analysers.price_context import PriceContext
 
-DISABLE_PARALLELIZED_COMPUTATION = True
+DISABLE_PARALLELIZED_COMPUTATION = False
 if DISABLE_PARALLELIZED_COMPUTATION:
     import multiprocess.dummy as mp
 else:
@@ -21,7 +21,7 @@ else:
 
 class AddressExtractorTest(unittest.TestCase):
 
-    def _compare_address_results(self, flat, found_address, *, accept_extra_matches):
+    def _compare_address_results(self, flat, found_address):
         expected = flat['locations']
         actual = [str(match.location) for match in chain(found_address.street, found_address.estate, found_address.district)]
 
@@ -42,7 +42,9 @@ class AddressExtractorTest(unittest.TestCase):
               + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n' \
               + f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n'
 
-        if accept_extra_matches:
+        if flat.get('ignore_extra_matches', False):
+            self.assertTrue(expected.issubset(actual), msg)
+        elif 'extra_matches' in flat:
             self.assertTrue(expected.issubset(actual), msg)
             self.assertEqual(extra_matches, flat['extra_matches'], "EXTRA MATCHES ARE NOT CORRECT\n" + msg)
         else:
@@ -57,9 +59,6 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases = [value for (key, value) in json_obj.items() if int(key) not in disabled_cases]
 
         # TODO REMOVE
-        for test_case in test_cases:
-            test_case['extra_matches'] = set()
-
         test_cases[9]['extra_matches'] = {'Kazimierz', 'Bednarska'}
         test_cases[11]['extra_matches'] = {'Szybka'}
         test_cases[13]['extra_matches'] = {'Bolesława Komorowskiego', 'Krakowska'}
@@ -68,6 +67,9 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
         test_cases[21]['extra_matches'] = {'Przy Rondzie'}
         test_cases[22]['extra_matches'] = {'Seweryna Udzieli'}
+
+        for test_case in test_cases[22:]:
+            test_case['ignore_extra_matches'] = True
         # TODO END REMOVE
 
         return test_cases
@@ -119,7 +121,7 @@ class AddressExtractorTest(unittest.TestCase):
                 if isinstance(subtest_result, Exception):
                     self.fail(subtest_result)
                 else:
-                    self._compare_address_results(test_case, subtest_result, accept_extra_matches=True)
+                    self._compare_address_results(test_case, subtest_result)
             extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
@@ -412,7 +414,7 @@ class AddressExtractorTest(unittest.TestCase):
         ])
 
         *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
-        self._compare_address_results(flat, found_address, accept_extra_matches=False)
+        self._compare_address_results(flat, found_address)
 
 
 if __name__ == "__main__":
