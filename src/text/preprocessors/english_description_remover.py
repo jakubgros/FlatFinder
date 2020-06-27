@@ -28,7 +28,7 @@ class EnglishDescriptionRemover:
 
     def _get_biggest_english_part(self, split_text):
         tag_values = {
-            'special character': 0,
+            'special character': -0.0000000001,
             'english word': 1,
             'other': -1
         }
@@ -48,15 +48,17 @@ class EnglishDescriptionRemover:
                 if score >= max_val:
                     max_score = score, (slice_beg, slice_end)
 
-        return max_score
+        _, (max_score_slice_beg, max_score_slice_end) = max_score
+        return max_score_slice_beg, max_score_slice_end
 
-    def process(self, text):
+    def process(self, text, min_snippet_remove_size=5):
         split_text = split_on_special_characters(text, preserve_special_characters=True, ignore_spaces=False)
 
-        score, (slice_beg, slice_end) = self._get_biggest_english_part(split_text)
+        while True:
+            slice_beg, slice_end = self._get_biggest_english_part(split_text)
 
-        without_english_part \
-            = [word for index, word in enumerate(split_text) if index not in range(slice_beg, slice_end+1)]
+            if slice_end - slice_beg < min_snippet_remove_size:
+                return ''.join(split_text).strip()
 
-        return ''.join(without_english_part).strip()
+            split_text = [word for index, word in enumerate(split_text) if index not in range(slice_beg, slice_end+1)]
 

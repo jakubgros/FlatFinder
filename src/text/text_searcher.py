@@ -10,13 +10,10 @@ class TextSearcher:
     def find(
             *,
             phrase_to_find,
-            text: Union[List[str], str],
+            text: str,
             equality_comparator=lambda lhs, rhs: lhs == rhs):
 
-        if isinstance(text, str):
-            word_list = split_on_special_characters(text, preserve_special_characters=True)
-        else:
-            word_list = text
+        word_list = split_on_special_characters(text, preserve_special_characters=True)
 
         max_frame_size = len(phrase_to_find.split())
         all_text_frames = (TextFrame(word_list, frame_size) for frame_size in range(1, max_frame_size + 1))

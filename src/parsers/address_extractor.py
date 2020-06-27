@@ -13,6 +13,7 @@ from comparators.morphologic_comparator import MorphologicComparator
 from comparators.name_comparator import NameComparator
 from containers.address_match import AddressMatch
 from containers.street_address import StreetAddress
+from text.preprocessors.english_description_remover import EnglishDescriptionRemover
 from text.text_searcher import TextSearcher
 
 from itertools import chain
@@ -170,8 +171,12 @@ class AddressExtractor:
         address.place = list({str(match.location): match for match in address.place}.values())
         self._remove_street_duplicates(address)
 
-    def __call__(self, description: Union[List[str], str]):
+    def __call__(self, description: str):
         """ Extracts location from description, returns (status, extracted_attribute_name, value) """
+
+        english_description_remover = EnglishDescriptionRemover()
+        description = english_description_remover.process(description)
+
         address = Address(district=self._match_locations(self.address_provider.districts, description),
                           estate=self._match_locations(self.address_provider.estates, description),
                           street=self._match_locations(self.address_provider.streets, description),

@@ -64,7 +64,7 @@ class NearbyLocationContext:
     def does_introducer_refer_to_tested_location(self, introducer_subject):
         address_extractor = AddressExtractor(self.address_provider)
 
-        *_, matches = address_extractor(introducer_subject)
+        *_, matches = address_extractor(' '.join(introducer_subject))
         found_addresses = chain(matches.street, matches.estate, matches.district, matches.place)
         match_slices = (address.match_slice_position for address in found_addresses)
 
