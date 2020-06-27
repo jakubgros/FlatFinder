@@ -71,6 +71,10 @@
         {
           "official": "Osiedle Eldorado",
           "colloquial": []
+        },
+        {
+          "official": "Osiedle Wizjonerów",
+          "colloquial": []
         }
       ],
       "districts": [
@@ -1550,10 +1554,6 @@
         },
         {
           "official": "Obopólna",
-          "colloquial": []
-        },
-        {
-          "official": "Tadeusza Kościuszki",
           "colloquial": []
         },
         {

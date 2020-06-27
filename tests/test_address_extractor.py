@@ -68,12 +68,35 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases[20]['extra_matches'] = {'Zakrzówek', 'Czerwone Maki'}
         test_cases[21]['extra_matches'] = {'Przy Rondzie'}
         test_cases[22]['extra_matches'] = {'Seweryna Udzieli'}
+        test_cases[23]['extra_matches'] = {'Armii Krajowej'}
+        test_cases[25]['extra_matches'] = {'Błonie', 'Rynek Główny'}
+        test_cases[26]['extra_matches'] = {'Wielicka'}
+        test_cases[27]['extra_matches'] = {'Błonie', 'gen. Tadeusza Kościuszki'}
+        test_cases[28]['extra_matches'] = {'Osiedle'}
+        test_cases[29]['extra_matches'] = {'Kazimierz', 'Sukiennicza', 'św. Bronisławy', 'Koletek', 'Rynek Główny', 'Stare Miasto', 'Wawel'}
 
-        for test_case in test_cases[22:]:
+
+        for test_case in test_cases[25:]:
             test_case['ignore_extra_matches'] = True
         # TODO END REMOVE
 
         return test_cases
+
+    def test_temp(self):  # TODO remove
+        import logging
+        logging.root.setLevel(logging.NOTSET)
+
+        all_test_cases = self._load_regression_cases()
+        flat = all_test_cases[30]
+        flat['ignore_extra_matches'] = False
+
+        extractor = AddressExtractor(address_provider, excluded_contexts=[
+            FirstWordOfSentenceContext(),
+            NearbyLocationContext(address_provider=address_provider)
+        ])
+
+        *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
+        self._compare_address_results(flat, found_address)
 
     @staticmethod
     def _get_amount_of_extra_matches(flat, found_address):
@@ -127,7 +150,7 @@ class AddressExtractorTest(unittest.TestCase):
             extra_matches_count += self._get_amount_of_extra_matches(test_case, subtest_result)
 
         with self.subTest("extra matches"):
-            self.assertEqual(93, extra_matches_count)
+            self.assertEqual(92, extra_matches_count)
 
     def test_case_matters(self):
         mocked_address_provider = MockedAddressProvider(
@@ -403,21 +426,7 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Mogilska", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
-    def test_temp(self):  # TODO remove
-        import logging
-        logging.root.setLevel(logging.NOTSET)
 
-        all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[16]
-        flat['ignore_extra_matches'] = False
-
-        extractor = AddressExtractor(address_provider, excluded_contexts=[
-            FirstWordOfSentenceContext(),
-            NearbyLocationContext(address_provider=address_provider)
-        ])
-
-        *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
-        self._compare_address_results(flat, found_address)
 
 
 if __name__ == "__main__":
