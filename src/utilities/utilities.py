@@ -21,6 +21,8 @@ def split_on_special_characters(text, *, preserve_special_characters=False, igno
     if not preserve_special_characters:
         text_split = [word for word in text_split if word.isalnum()]
 
+    text_split = [word for word in text_split if len(word) != 0]
+
     return text_split
 
 
