@@ -74,6 +74,19 @@ class AddressExtractorTest(unittest.TestCase):
         test_cases[27]['extra_matches'] = {'Błonie', 'gen. Tadeusza Kościuszki'}
         test_cases[28]['extra_matches'] = {'Osiedle'}
         test_cases[29]['extra_matches'] = {'Kazimierz', 'Sukiennicza', 'św. Bronisławy', 'Koletek', 'Rynek Główny', 'Stare Miasto', 'Wawel'}
+        test_cases[30]['extra_matches'] = {'Koszykarska', 'Nowohucka', 'Podgórze'}
+        test_cases[32]['extra_matches'] = {'Kazimierza Wielkiego', 'Rynek Główny', 'Planty'}
+        test_cases[33]['extra_matches'] = {'Podgórze', 'św. Kingi'}
+        test_cases[34]['extra_matches'] = {'Saska', 'Rynek Główny', 'Kazimierz'}
+        test_cases[35]['extra_matches'] = {'Królewska', 'Stare Miasto', 'Rynek Główny'}
+        test_cases[36]['extra_matches'] = {'Stare Miasto', 'Jasna', 'Przyjemna', 'Bartosza', 'Widok', 'Podgórska', 'Kazimierz'}
+        test_cases[37]['extra_matches'] = {'Ciepłownicza', 'Sikorki', 'Nowohucka', 'Sołtysowska', 'Nowa Huta'}
+        test_cases[38]['extra_matches'] = {'Rynek Główny', 'Dębnicka', 'Błonie'}
+        test_cases[40]['extra_matches'] = {'Kazimierza Wielkiego', 'Lublańska', 'Dobrego Pasterza', 'Adama Chmiela', 'Wodna'}
+        test_cases[41]['extra_matches'] = {'św. Piotra', 'Rondo Mogilskie'}
+        test_cases[43]['extra_matches'] = {'Rynek Główny', 'Nowa', 'Błonie', 'Wawel', 'Krakowska'}
+        test_cases[44]['extra_matches'] = {'Wawel', 'Powiśle', 'Zwierzyniecka', 'Rynek Główny', 'Smoleńsk'}
+        test_cases[45]['extra_matches'] = {'Podgórze', 'Henryka i Karola Czeczów', 'Mariana Domagały', 'Agatowa'}
 
 
         for test_case in test_cases[25:]:
@@ -82,12 +95,13 @@ class AddressExtractorTest(unittest.TestCase):
 
         return test_cases
 
+    @unittest.skip
     def test_temp(self):  # TODO remove
         import logging
         logging.root.setLevel(logging.NOTSET)
 
         all_test_cases = self._load_regression_cases()
-        flat = all_test_cases[30]
+        flat = all_test_cases[46]
         flat['ignore_extra_matches'] = False
 
         extractor = AddressExtractor(address_provider, excluded_contexts=[
