@@ -94,7 +94,7 @@ class ScrappingManager:
                 print(traceback.format_exc())
                 print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
-        self._wait_until_interval_passes()
+            self._wait_until_interval_passes()
 
 
 if __name__ == "__main__":
