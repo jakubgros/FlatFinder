@@ -4,5 +4,5 @@ class AttributeFilter:
         self.accepted_values = accepted_values
 
     def __call__(self, flat):
-        attribute_val = flat.extract_info_from_description.get(self.name, set())
+        attribute_val = flat.description_extracted_attributes.get(self.name, set())
         return attribute_val.intersection(self.accepted_values)

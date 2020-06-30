@@ -8,7 +8,7 @@ class KitchenetteExtractor:
     def __call__(self, description: str):
         phrases_to_look_for = ['aneks kuchenny', 'aneks', 'salon z kuchnią']
 
-        comparator = MorphologicComparator()
+        comparator = MorphologicComparator().equals
 
         for phrase in phrases_to_look_for:
             found, _ = TextSearcher.find(
@@ -17,6 +17,6 @@ class KitchenetteExtractor:
                 equality_comparator=comparator)
 
             if found:
-                return True
+                return {True}
 
-        return False
+        return {False}
