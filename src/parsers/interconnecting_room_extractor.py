@@ -6,7 +6,7 @@ class InterconnectingRoomExtractor:
     attribute_name = 'interconnecting room'
 
     def __call__(self, description: str):
-        phrases_to_look_for = ['przechodni pokój']
+        phrases_to_look_for = ['przechodni pokój', 'pokój przechodni']
 
         comparator = MorphologicComparator()
 

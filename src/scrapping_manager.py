@@ -1,5 +1,6 @@
 from random import random
 
+from attribute_filter import AttributeFilter
 from containers.flat import Flat
 from data_provider.address_provider import address_provider
 from data_provider.gumtree_flat_provider import GumtreeFlatProvider
@@ -48,7 +49,7 @@ class ScrappingManager:
         else:
             print("FLAT DOESN'T MATCH FILTERS\n")
 
-        print(f'{flat.url}\n'
+        print(f'{flat}\n'
               f'{filtered_data}\n\n\n')
 
     def _get_interval(self):  # to look more like a human
@@ -97,5 +98,14 @@ class ScrappingManager:
 
 
 if __name__ == "__main__":
-    mgr = ScrappingManager()
+    
+    without_kitchenette = AttributeFilter(KitchenetteExtractor.attribute_name, [False])
+    without_interconnecting_room = AttributeFilter(InterconnectingRoomExtractor.attribute_name, [False])
+
+    mgr = ScrappingManager(check_interval=1*60,
+                           filters=[
+                               without_kitchenette,
+                               without_interconnecting_room
+                           ])
+
     mgr.run()
