@@ -38,9 +38,10 @@ class Address:
 
 
 class AddressExtractor:
+    attribute_name = "address"
+
     def __init__(self, address_provider, excluded_contexts=[]):
         self.address_provider = address_provider
-        self.attribute_name = "address"
 
         self.comparison_rules = ComparisonRulesContainer([
             ComparisonRule("osiedle", ComparisonRuleType.FORCE_CASE_INSENSITIVITY),  # TODO extract to config file
@@ -172,7 +173,7 @@ class AddressExtractor:
         self._remove_street_duplicates(address)
 
     def __call__(self, description: str):
-        """ Extracts location from description, returns (status, extracted_attribute_name, value) """
+        """ Extracts location from description """
 
         english_description_remover = EnglishDescriptionRemover()
         description = english_description_remover.process(description)
@@ -213,4 +214,4 @@ class AddressExtractor:
                               f"description: {description}\n"
                               f"MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM\n\n")
 
-        return len(address.all) > 0, self.attribute_name, address
+        return address

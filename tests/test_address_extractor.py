@@ -109,7 +109,7 @@ class AddressExtractorTest(unittest.TestCase):
             NearbyLocationContext(address_provider=address_provider)
         ])
 
-        *_, found_address = extractor(flat['title'] + '.\n' + flat['description'])
+        found_address = extractor(flat['title'] + '.\n' + flat['description'])
         self._compare_address_results(flat, found_address)
 
     @staticmethod
@@ -146,7 +146,7 @@ class AddressExtractorTest(unittest.TestCase):
                     PriceContext()
                 ])
 
-                _, _, found_address = extractor(flat['title'] + '.\n' + flat['description'])
+                found_address = extractor(flat['title'] + '.\n' + flat['description'])
                 return flat, found_address
             except Exception as e:
                 trace = traceback.format_exc()
@@ -175,8 +175,8 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        status, *_ = extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe")
-        self.assertFalse(status)
+        found_address = extractor("Oferuję do wynajęcia śliczne mieszkanie 4-pokojowe")
+        self.assertEqual(0, len(found_address.all))
 
     def test_case_does_not_matter_phrase_in_text_is_all_upper_case(self):
         mocked_address_provider = MockedAddressProvider(
@@ -187,7 +187,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("mieszkanie przy ulicy ŚLICZNEJ")
+        found_address = extractor("mieszkanie przy ulicy ŚLICZNEJ")
         self.assertIn("Śliczna", [str(match.location) for match in found_address.street])
 
     def test_extract_address_with_unit_number(self):
@@ -199,7 +199,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("Zamoyskiego 15")
+        found_address = extractor("Zamoyskiego 15")
         self.assertIn("Jana Zamoyskiego 15", [str(match.location) for match in found_address.street])
 
     def test_address_extractor_returns_official_name_if_colloquial_name_matched(self):
@@ -211,7 +211,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("Kozłówek")
+        found_address = extractor("Kozłówek")
         self.assertIn("Osiedle Na Kozłówce", [match.location for match in found_address.estate])
 
     def test_address_extractor_correctly_compares_names(self):
@@ -221,15 +221,15 @@ class AddressExtractorTest(unittest.TestCase):
         }]
 
         extractor = AddressExtractor(MockedAddressProvider(streets=streets))
-        *_, found_address = extractor("Kościuszki")
+        found_address = extractor("Kościuszki")
         self.assertIn("Tadeusza Kościuszki", [str(match.location) for match in found_address.street])
 
         extractor = AddressExtractor(MockedAddressProvider(streets=streets))
-        *_, found_address = extractor("Tadeusza Kościuszki")
+        found_address = extractor("Tadeusza Kościuszki")
         self.assertIn("Tadeusza Kościuszki", [str(match.location) for match in found_address.street])
 
         extractor = AddressExtractor(MockedAddressProvider(streets=streets))
-        *_, found_address = extractor("Tadeusza")
+        found_address = extractor("Tadeusza")
         self.assertNotIn("Tadeusza Kościuszki", [str(match.location) for match in found_address.street])
 
     def test_address_extractor_performs_morphological_comparison(self):
@@ -240,7 +240,7 @@ class AddressExtractorTest(unittest.TestCase):
             }])
 
         extractor = AddressExtractor(mocked_address_provider)
-        *_, found_address = extractor("Stanisławowi")
+        found_address = extractor("Stanisławowi")
         self.assertIn("Stanisława", [str(match.location) for match in found_address.street])
 
     def test_address_extractor_correctly_recognize_location_type(self):
@@ -260,7 +260,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("blah blah Piotra blah Grzegorza blah Stanisława")
+        found_address = extractor("blah blah Piotra blah Grzegorza blah Stanisława")
 
         self.assertEqual(len(found_address.street), 1)
         self.assertIn("Stanisława", [str(match.location) for match in found_address.street])
@@ -281,11 +281,11 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        has_found, *_ = extractor("miasto Kraków")
-        self.assertFalse(has_found)
+        found_address = extractor("miasto Kraków")
+        self.assertEqual(0, len(found_address.all))
 
-        has_found, *_ = extractor("w Krakowie")
-        self.assertFalse(has_found)
+        found_address = extractor("w Krakowie")
+        self.assertEqual(0, len(found_address.all))
 
     def test_word_is_not_interpreted_as_location_if_it_is_first_word_of_a_sentence(self):
         mocked_address_provider = MockedAddressProvider(
@@ -298,11 +298,11 @@ class AddressExtractorTest(unittest.TestCase):
         extractor = AddressExtractor(mocked_address_provider,
                                      excluded_contexts=[FirstWordOfSentenceContext()])
 
-        has_found, *_ = extractor("Jakieś zdanie. Piękna okolica.")
-        self.assertFalse(has_found)
+        found_address = extractor("Jakieś zdanie. Piękna okolica.")
+        self.assertEqual(0, len(found_address.all))
 
-        has_found, *_ = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
-        self.assertTrue(has_found)
+        found_address = extractor("Jakieś zdanie. Lokalizacja - Piękna 13")
+        self.assertNotEqual(0, len(found_address.all))
 
     def test_location_is_not_matched_if_it_is_not_flat_address(self):
         mocked_address_provider = MockedAddressProvider(
@@ -328,7 +328,7 @@ class AddressExtractorTest(unittest.TestCase):
                                              address_provider=mocked_address_provider)
         extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[ctx_analyser])
 
-        *_, found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")
+        found_address = extractor("Mieszkanie znajduje się na ulicy Karmelickiej. W sąsiedztwie ul. Szeroka i Ikea")
         self.assertIn("Karmelicka", [str(match.location) for match in found_address.street])
         self.assertEqual(1, len(found_address.all_addresses))
 
@@ -348,7 +348,7 @@ class AddressExtractorTest(unittest.TestCase):
             )
 
             extractor = AddressExtractor(mocked_address_provider)
-            *_, found_address = extractor(
+            found_address = extractor(
                 "\nDo wynajęcia 1-pokojowe funkcjonalne mieszkanie w spokojnej, dobrze skomunikowanej"
                 " okolicy - Stare Podgórze przy ulicy Zamoyskiego, bardzo dobry dojazd do każdej części miasta.")
             names_of_matched_locations = [str(match.location) for match in found_address.all]
@@ -369,7 +369,7 @@ class AddressExtractorTest(unittest.TestCase):
             )
 
             extractor = AddressExtractor(mocked_address_provider)
-            *_, found_address = extractor("Galeria Bronowicka")
+            found_address = extractor("Galeria Bronowicka")
             names_of_matched_locations = [str(match.location) for match in found_address.all]
 
             self.assertIn("Galeria Bronowicka", names_of_matched_locations)
@@ -387,7 +387,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor("Duże osiedle.")
+        found_address = extractor("Duże osiedle.")
         self.assertNotIn("Osiedle", [match.location for match in found_address.all])
 
     def test_zl_is_not_matched_to_zlota_street(self):
@@ -402,7 +402,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider, excluded_contexts=[PriceContext()])
 
-        *_, found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
+        found_address = extractor('czynsz najmu : 1600 zł + 553 ZŁ czynsz administracyjny + media .')
         self.assertNotIn("Złota", [match.location for match in found_address.all])
 
     def test_duplications_are_merged(self):
@@ -417,7 +417,7 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor('Dzielnica Nowa Huta. Mieszkanie się na Nowej Hucie')
+        found_address = extractor('Dzielnica Nowa Huta. Mieszkanie się na Nowej Hucie')
         self.assertEqual(1, len(found_address.all))
 
     def test_street_duplications_are_merged(self):
@@ -432,11 +432,11 @@ class AddressExtractorTest(unittest.TestCase):
 
         extractor = AddressExtractor(mocked_address_provider)
 
-        *_, found_address = extractor('Mieszkanie przy ulicy Mogilskiej. Adres Mogilska 66')
+        found_address = extractor('Mieszkanie przy ulicy Mogilskiej. Adres Mogilska 66')
         self.assertIn("Mogilska 66", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
-        *_, found_address = extractor('Mieszkanie przy ulicy Mogilskiej')
+        found_address = extractor('Mieszkanie przy ulicy Mogilskiej')
         self.assertIn("Mogilska", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
