@@ -7,6 +7,8 @@ from timeit import default_timer as timer
 import time
 
 from parsers.address_extractor import AddressExtractor
+from parsers.interconnecting_room_extractor import InterconnectingRoomExtractor
+from parsers.kitchenette_extractor import KitchenetteExtractor
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 from text.analysis.context_analysers.price_context import PriceContext
@@ -24,8 +26,8 @@ class ScrappingManager:
                         FirstWordOfSentenceContext(),
                         NearbyLocationContext(address_provider=address_provider),
                         PriceContext()]),
-                    #InterconnectingRoomExtractor(),
-                    #KitchenetteExtractor()
+                    InterconnectingRoomExtractor(),
+                    KitchenetteExtractor()
                 ]
 
         self.start = timer()
