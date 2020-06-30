@@ -8,7 +8,7 @@ def fetch_flat_announcements_and_save_to_json(*, save_dir, amount, start_index):
     provider = GumtreeFlatProvider()
 
     all_flats = {}
-    announcements_it = provider.announcements
+    announcements_it = provider.most_recent_flat_links
     i = start_index - 1
     while len(all_flats) < amount:
         url = next(announcements_it)

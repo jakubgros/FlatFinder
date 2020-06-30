@@ -49,6 +49,7 @@ class Flat:
         # TODO add unicode processing
         return flat
 
-    def extract_info_from_description(self, extractor):
-        status, attribute, value = extractor(self.description)
-        self.description_extracted_attributes[attribute] = ExtractionResult(status, value)
+    def extract_info_from_description(self, extractors):
+        for extractor in extractors:
+            value = extractor(self.description)
+            self.description_extracted_attributes[extractor.attribute_name] = value
