@@ -34,16 +34,20 @@ class GumtreeFlatProvider:
         self.first_run = True
 
     def get_flat_links(self, page_number):
-        current_page_url = self.web_url.format(page_number=page_number)
-        driver.get(current_page_url)
-        flat_links = driver.find_elements_by_class_name("tileV1")
-        flat_links = [announcement.find_element_by_class_name('title') for announcement in
-                                  flat_links]
-        flat_links = [announcement.find_element_by_css_selector(':first-child') for announcement in
-                                  flat_links]
-        flat_links = [announcement.get_attribute('href') for announcement in flat_links]
-
-        return set(flat_links)
+        flat_links = []
+        try:
+            current_page_url = self.web_url.format(page_number=page_number)
+            driver.get(current_page_url)
+            flat_links = driver.find_elements_by_class_name("tileV1")
+            flat_links = [announcement.find_element_by_class_name('title') for announcement in
+                                      flat_links]
+            flat_links = [announcement.find_element_by_css_selector(':first-child') for announcement in
+                                      flat_links]
+            flat_links = [announcement.get_attribute('href') for announcement in flat_links]
+        except Exception as e:
+            logging.log(e)
+        finally:
+            return set(flat_links)
 
     def get_most_recent_flat_links(self):
         page_number = 0

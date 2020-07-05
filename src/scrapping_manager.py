@@ -1,5 +1,7 @@
+import logging
 import traceback
 from datetime import datetime
+from pprint import pprint
 from random import random
 
 from attribute_filter import AttributeFilter
@@ -16,9 +18,11 @@ from text.analysis.context_analysers.first_word_of_sentence_context import First
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 from text.analysis.context_analysers.price_context import PriceContext
 
+processed = 0
+currently_printed_id = 0
 
 class ScrappingManager:
-    def __init__(self, check_interval_in_seconds, filters, config, extractors):
+    def __init__(self, *, check_interval_in_seconds, filters, config, extractors):
         self.flat_filters = filters
         self.check_interval = check_interval_in_seconds
         self.gumtree_flat_provider = GumtreeFlatProvider(**config)
@@ -51,8 +55,15 @@ class ScrappingManager:
 
     def announce(self, flats):
         for flat in flats:
-            print(f'[{datetime.now()}]\n')
-            print(flat.__dict__)
+            global currently_printed_id
+            global processed
+            currently_printed_id += 1
+            print(f'[{datetime.now()}][{currently_printed_id}/{processed}]')
+            print(flat.title)
+            print(flat.address)
+            print(flat.url)
+            pprint(flat.attributes, indent=2)
+            pprint(flat.description_extracted_attributes, indent=2)
             print('\n\n\n')
 
     def apply_filters(self, flats):
@@ -67,16 +78,21 @@ class ScrappingManager:
                 new_flats = []
 
                 for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
-                    flat = Flat.from_url(flat_link)
+                    try:
+                        global processed
+                        processed += 1
+                        flat = Flat.from_url(flat_link)
 
-                    if flat.title in self.processed_flats_by_titles:
-                        continue
-                    else:
-                        self.processed_flats_by_titles[flat.title] = flat
+                        if flat.title in self.processed_flats_by_titles:
+                            continue
+                        else:
+                            self.processed_flats_by_titles[flat.title] = flat
 
-                    flat.extract_info_from_description(self.extractors)
+                        flat.extract_info_from_description(self.extractors)
 
-                    new_flats.append(flat)
+                        new_flats.append(flat)
+                    except Exception as e:
+                        logging.log(e)
 
                 new_flats = self.apply_filters(new_flats)
                 self.announce(new_flats)
@@ -95,16 +111,16 @@ if __name__ == "__main__":
     without_interconnecting_room = AttributeFilter(InterconnectingRoomExtractor.attribute_name, [False])
 
     extractors = [
-        #AddressExtractor(address_provider, excluded_contexts=[
-        #    FirstWordOfSentenceContext(),
-        #    NearbyLocationContext(address_provider=address_provider),
-         #   PriceContext()]),
+        AddressExtractor(address_provider, excluded_contexts=[
+            FirstWordOfSentenceContext(),
+            NearbyLocationContext(address_provider=address_provider),
+            PriceContext()]),
 
         InterconnectingRoomExtractor(),
         KitchenetteExtractor()
     ]
 
-    mgr = ScrappingManager(check_interval_in_seconds=60,
+    mgr = ScrappingManager(check_interval_in_seconds=300,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room
