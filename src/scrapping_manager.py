@@ -1,4 +1,5 @@
 import traceback
+from datetime import datetime
 from random import random
 
 from attribute_filter import AttributeFilter
@@ -17,42 +18,15 @@ from text.analysis.context_analysers.price_context import PriceContext
 
 
 class ScrappingManager:
-    def __init__(self, check_interval, filters, config):
-        self.attribute_filters = filters
-        self.check_interval = check_interval
+    def __init__(self, check_interval_in_seconds, filters, config, extractors):
+        self.flat_filters = filters
+        self.check_interval = check_interval_in_seconds
         self.gumtree_flat_provider = GumtreeFlatProvider(**config)
-        self.processed_flat_links = set()
-
-        self.extractors = [
-            #AddressExtractor(address_provider, excluded_contexts=[
-             #   FirstWordOfSentenceContext(),
-             #   NearbyLocationContext(address_provider=address_provider),
-            #   PriceContext()]),
-
-            InterconnectingRoomExtractor(),
-            KitchenetteExtractor()
-        ]
+        self.extractors = extractors
 
         self.start = timer()
 
-    def _get_new_flat_links(self):
-        fetched_flat_links = set(self.gumtree_flat_provider.most_recent_flat_links)
-        new_flat_links = fetched_flat_links.difference(self.processed_flat_links)
-        self.processed_flat_links.update(new_flat_links)
-        return new_flat_links
-
-    def _filter_and_print(self, flat):
-        filtered_data = {}
-        for attribute_filter in self.attribute_filters:
-            filtered_data[attribute_filter.name] = attribute_filter(flat)
-
-        if all(len(filtered_value) > 0 for filtered_value in filtered_data.values()):
-            print("FOUND FLAT MATCHING ALL FILTERS!")
-        else:
-            print("FLAT DOESN'T MATCH FILTERS")
-
-        print(f'{flat.url}\n'
-              f'{filtered_data}\n\n\n')
+        self.processed_flats_by_titles = {}
 
     def _get_interval(self):  # to look more like a human
         max_incline = 0.15
@@ -75,18 +49,37 @@ class ScrappingManager:
 
         self.start = timer()
 
+    def announce(self, flats):
+        for flat in flats:
+            print(f'[{datetime.now()}]\n')
+            print(flat.__dict__)
+            print('\n\n\n')
+
+    def apply_filters(self, flats):
+        for flat_filter in self.flat_filters:
+            flats = flat_filter(flats)
+
+        return flats
+
     def run(self):
         while True:
             try:
-                processed_flats = {}
+                new_flats = []
 
-                for flat_link in self._get_new_flat_links():
+                for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
                     flat = Flat.from_url(flat_link)
+
+                    if flat.title in self.processed_flats_by_titles:
+                        continue
+                    else:
+                        self.processed_flats_by_titles[flat.title] = flat
+
                     flat.extract_info_from_description(self.extractors)
 
-                    if flat.title not in processed_flats:
-                        processed_flats[flat.title] = flat
-                        self._filter_and_print(flat)
+                    new_flats.append(flat)
+
+                new_flats = self.apply_filters(new_flats)
+                self.announce(new_flats)
 
             except Exception as e:
                 print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
@@ -101,7 +94,17 @@ if __name__ == "__main__":
     without_kitchenette = AttributeFilter(KitchenetteExtractor.attribute_name, [False])
     without_interconnecting_room = AttributeFilter(InterconnectingRoomExtractor.attribute_name, [False])
 
-    mgr = ScrappingManager(check_interval=1 * 60,
+    extractors = [
+        #AddressExtractor(address_provider, excluded_contexts=[
+        #    FirstWordOfSentenceContext(),
+        #    NearbyLocationContext(address_provider=address_provider),
+         #   PriceContext()]),
+
+        InterconnectingRoomExtractor(),
+        KitchenetteExtractor()
+    ]
+
+    mgr = ScrappingManager(check_interval_in_seconds=60,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room
@@ -109,6 +112,7 @@ if __name__ == "__main__":
                            config={
                                'price_low': 1000,
                                'price_high': 2000
-                           })
+                           },
+                           extractors=extractors)
 
     mgr.run()

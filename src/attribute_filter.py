@@ -3,6 +3,12 @@ class AttributeFilter:
         self.name = name
         self.accepted_values = accepted_values
 
-    def __call__(self, flat):
-        attribute_val = flat.description_extracted_attributes.get(self.name, set())
-        return attribute_val.intersection(self.accepted_values)
+    def __call__(self, flats):
+        matching_filter = []
+
+        for flat in flats:
+            attribute_val = flat.description_extracted_attributes.get(self.name, set())
+            if attribute_val.intersection(self.accepted_values):
+                matching_filter.append(flat)
+
+        return matching_filter

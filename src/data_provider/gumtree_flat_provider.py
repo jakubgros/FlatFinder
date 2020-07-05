@@ -30,22 +30,37 @@ class GumtreeFlatProvider:
             = 'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/v1c9008l3200208p{page_number}?'\
               + '&'.join(args)
 
-    @property
-    def most_recent_flat_links(self):
-        try:
-            page_number = 1
-            current_page_url = self.web_url.format(page_number=page_number)
-            driver.get(current_page_url)
-            raw_announcements = driver.find_elements_by_class_name("tileV1")
-            raw_announcements = [announcement.find_element_by_class_name('title') for announcement in
-                                 raw_announcements]
-            raw_announcements = [announcement.find_element_by_css_selector(':first-child') for announcement in
-                                 raw_announcements]
-            raw_announcements = [announcement.get_attribute('href') for announcement in raw_announcements]
+        self.processed_flat_links = set()
+        self.first_run = True
 
-            yield from raw_announcements
-        except Exception as e:
-            logging.debug(e)
-            logging.debug(current_page_url)
-            logging.debug(driver)
-            raise
+    def get_flat_links(self, page_number):
+        current_page_url = self.web_url.format(page_number=page_number)
+        driver.get(current_page_url)
+        flat_links = driver.find_elements_by_class_name("tileV1")
+        flat_links = [announcement.find_element_by_class_name('title') for announcement in
+                                  flat_links]
+        flat_links = [announcement.find_element_by_css_selector(':first-child') for announcement in
+                                  flat_links]
+        flat_links = [announcement.get_attribute('href') for announcement in flat_links]
+
+        return set(flat_links)
+
+    def get_most_recent_flat_links(self):
+        page_number = 0
+
+        most_recent_flat_links = []
+        while True:
+            page_number += 1
+            curr_page_links = self.get_flat_links(page_number)
+
+            new_links = curr_page_links.difference(self.processed_flat_links)
+
+            most_recent_flat_links.extend(new_links)
+            self.processed_flat_links.update(new_links)
+
+            if len(new_links) != len(curr_page_links) or self.first_run:
+                self.first_run = False
+                break
+
+        return most_recent_flat_links
+
