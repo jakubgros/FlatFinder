@@ -4,14 +4,16 @@ from datetime import datetime
 from pprint import pprint
 from random import random
 
-from attribute_filter import AttributeFilter
+from filters.attribute_filter import AttributeFilter
 from containers.flat import Flat
 from data_provider.address_provider import address_provider
 from data_provider.gumtree_flat_provider import GumtreeFlatProvider
 from timeit import default_timer as timer
 import time
 
+from filters.exclude_address_filter import ExcludeAddressFilter
 from parsers.address_extractor import AddressExtractor
+from parsers.bachelor_pad_extractor import BachelorPadExtractor
 from parsers.interconnecting_room_extractor import InterconnectingRoomExtractor
 from parsers.kitchenette_extractor import KitchenetteExtractor
 from text.analysis.context_analysers.first_word_of_sentence_context import FirstWordOfSentenceContext
@@ -20,6 +22,7 @@ from text.analysis.context_analysers.price_context import PriceContext
 
 processed = 0
 currently_printed_id = 0
+
 
 class ScrappingManager:
     def __init__(self, *, check_interval_in_seconds, filters, config, extractors):
@@ -63,7 +66,9 @@ class ScrappingManager:
             print(flat.address)
             print(flat.url)
             pprint(flat.attributes, indent=2)
-            pprint(flat.description_extracted_attributes, indent=2)
+            description_extracted_attributes = {attr_name: str(attr_val) for attr_name, attr_val in
+                                                flat.description_extracted_attributes.items()}
+            pprint(description_extracted_attributes, indent=2)
             print('\n\n\n')
 
     def apply_filters(self, flats):
@@ -92,7 +97,7 @@ class ScrappingManager:
 
                         new_flats.append(flat)
                     except Exception as e:
-                        logging.log(e)
+                        logging.debug(e)
 
                 new_flats = self.apply_filters(new_flats)
                 self.announce(new_flats)
@@ -106,9 +111,16 @@ class ScrappingManager:
             self._wait_until_interval_passes()
 
 
+
 if __name__ == "__main__":
+
     without_kitchenette = AttributeFilter(KitchenetteExtractor.attribute_name, [False])
     without_interconnecting_room = AttributeFilter(InterconnectingRoomExtractor.attribute_name, [False])
+    not_bachelor_pad = AttributeFilter(BachelorPadExtractor.attribute_name, [False])
+    excluded_addresses_filter = ExcludeAddressFilter(["Nowa Huta", "Borek Fałęcki", "Wzgórza Krzesławickie", "Prokocim",
+                                                      "Łagiewniki", "Prądnik Czerwony", "Podgórze duchackie",
+                                                      "Bieńczyce", "Czyżyny", "Bieżanów", "Mistrzejowice",
+                                                      "Swoszowice"])
 
     extractors = [
         AddressExtractor(address_provider, excluded_contexts=[
@@ -117,17 +129,20 @@ if __name__ == "__main__":
             PriceContext()]),
 
         InterconnectingRoomExtractor(),
-        KitchenetteExtractor()
+        KitchenetteExtractor(),
+        BachelorPadExtractor()
     ]
 
     mgr = ScrappingManager(check_interval_in_seconds=300,
                            filters=[
                                without_kitchenette,
-                               without_interconnecting_room
+                               without_interconnecting_room,
+                               not_bachelor_pad,
+                               excluded_addresses_filter
                            ],
                            config={
                                'price_low': 1000,
-                               'price_high': 2000
+                               'price_high': 1500
                            },
                            extractors=extractors)
 

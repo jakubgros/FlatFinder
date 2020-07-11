@@ -2,6 +2,7 @@ import logging
 import typing
 from collections import defaultdict
 from dataclasses import dataclass
+from pprint import pprint, pformat
 from typing import List, Union
 
 from colorama import Fore, Style
@@ -36,6 +37,14 @@ class Address:
     def all_addresses(self):
         return self.district + self.estate + self.street
 
+    def __str__(self):
+        helper_dict = {
+            'district': [str(val) for val in self.district],
+            'estate': [str(val) for val in self.estate],
+            'street': [str(val) for val in self.street]
+        }
+
+        return pformat(helper_dict, indent=2)
 
 class AddressExtractor:
     attribute_name = "address"

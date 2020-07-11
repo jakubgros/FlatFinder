@@ -45,7 +45,7 @@ class GumtreeFlatProvider:
                                       flat_links]
             flat_links = [announcement.get_attribute('href') for announcement in flat_links]
         except Exception as e:
-            logging.log(e)
+            logging.debug(e)
         finally:
             return set(flat_links)
 
