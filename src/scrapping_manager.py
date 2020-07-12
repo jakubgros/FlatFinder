@@ -1,16 +1,10 @@
-import dataclasses
 import json
 import logging
-import shutil
 import traceback
-from datetime import datetime
-from pprint import pprint
 from random import random
-from pathlib import Path
-
-import jsonpickle as jsonpickle
-
-from env_utils.base_dir import base_dir
+import xml.etree.cElementTree as ET
+from mailer import Mailer
+from mailer import Message
 from filters.attribute_filter import AttributeFilter
 from containers.flat import Flat
 from data_provider.address_provider import address_provider
@@ -46,9 +40,8 @@ class ScrappingManager:
         self.set_up_db()
 
     def set_up_db(self):
-        db_dir = f'{base_dir}/temp/fetched_flats'
-        shutil.rmtree(db_dir, ignore_errors=True)
-        Path(db_dir).mkdir(parents=True, exist_ok=True)
+        self.mailer = Mailer('smtp.gmail.com', 587, use_tls=True)
+        self.mailer.login(usr="123szukaczmieszkan123@gmail.com", pwd="#Rguih1m37x")
 
     def _get_interval(self):  # to look more like a human
         max_incline = 0.15
@@ -71,12 +64,61 @@ class ScrappingManager:
 
         self.start = timer()
 
+    def display_to_html(self, flat_dict, root):
+        address_attr = flat_dict['attributes'].get("Lokalizacja", "")
+        gmaps_attr = flat_dict['address']
+        extracted_addr = [addr for addr in flat_dict['description_extracted_attributes']['address'].values()]
+
+
+
+        table = ET.SubElement(root, "table", style="border: 1px solid black; background-color: #E9967A")
+
+        for label, value in [
+            ('title', flat_dict['title']),
+            ('price', flat_dict['price']),
+            ('address_attr', address_attr),
+            ('gmaps_attr', gmaps_attr),
+            ('extracted_addr', extracted_addr),
+            ('gmaps_attr', gmaps_attr),
+            ('description', flat_dict['description']),
+            ('link', flat_dict['url']),
+        ]:
+            label = str(label)
+            value = str(value)
+            tr = ET.SubElement(table, "tr")
+            ET.SubElement(tr, "td").text = label
+            ET.SubElement(tr, "td").text = value
+
+        for photo in flat_dict['photos']:
+            tr = ET.SubElement(root, "tr")
+            ET.SubElement(tr, "img", src=photo)
+
+        # SEPARATORS
+        ET.SubElement(root, "hr")
+        ET.SubElement(root, "br")
+        ET.SubElement(root, "br")
+        ET.SubElement(root, "hr")
+
+
     def save_to_db(self, flats):
 
         self.flats_by_order_of_processing.extend(flats)
-        for flat in flats:
-            print(json.dumps(flat.to_dict(), indent=2))
 
+        root = ET.Element("html")
+
+        global currently_printed_id
+        global processed
+        previous_id = currently_printed_id
+        currently_printed_id += len(flats)
+        for flat in flats:
+            flat_dict = flat.to_dict()
+            print(flat_dict)
+            self.display_to_html(flat_dict, root)
+
+        message = Message(From="123szukaczmieszkan123@gmail.com", To="kubagros@gmail.com")
+        message.Subject = f"MIESZKANIA [{previous_id}-{currently_printed_id}/{processed}]"
+        message.Html = ET.tostring(root, method='html')
+        self.mailer.send(message)
 
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
@@ -87,6 +129,7 @@ class ScrappingManager:
     def run(self):
         while True:
             try:
+                new_flats = []
                 for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
                     try:
                         global processed
@@ -100,15 +143,12 @@ class ScrappingManager:
 
                         flat.extract_info_from_description(self.extractors)
 
-                        new_flats = [flat]
-                        new_flats = self.apply_filters(new_flats)
-
-                        self.save_to_db(new_flats)
-
+                        new_flats.append(flat)
                     except Exception as e:
                         logging.error(e, exc_info=True)
 
-
+                new_flats = self.apply_filters(new_flats)
+                self.save_to_db(new_flats)
 
             except Exception as e:
                 print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
