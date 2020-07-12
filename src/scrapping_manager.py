@@ -168,7 +168,7 @@ if __name__ == "__main__":
     excluded_addresses_filter = ExcludeAddressFilter(["Nowa Huta", "Borek Fałęcki", "Wzgórza Krzesławickie", "Prokocim",
                                                       "Łagiewniki", "Prądnik Czerwony", "Podgórze duchackie",
                                                       "Bieńczyce", "Czyżyny", "Bieżanów", "Mistrzejowice",
-                                                      "Swoszowice"])
+                                                      "Swoszowice", "Ruczaj"])
 
     extractors = [
         AddressExtractor(address_provider, excluded_contexts=[
@@ -181,7 +181,7 @@ if __name__ == "__main__":
         BachelorPadExtractor()
     ]
 
-    mgr = ScrappingManager(check_interval_in_seconds=300,
+    mgr = ScrappingManager(check_interval_in_seconds=3*60*60,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room,

@@ -40,10 +40,16 @@ class MorphologicComparator:
                 in zip(actual_base_form, expected_base_form, actual_split, expected_split):
 
             test_case_sensitivity = self._is_case_sensitive_comparison(actual_word_original, self.rules, actual_split)
+
+            actual_word_original_istitle = actual_word_original.istitle()
+            expected_word_original_istitle = expected_word_original.istitle()
+            actual_word_base = set(word.lower() for word in actual_word_base)
+            expected_word_base = set(word.lower() for word in expected_word_base)
+
             are_not_equal = actual_word_base.isdisjoint(expected_word_base)
 
             if are_not_equal \
-                    or (test_case_sensitivity and actual_word_original.istitle() != expected_word_original.istitle()):
+                    or (test_case_sensitivity and actual_word_original_istitle != expected_word_original_istitle):
                 return False
 
         return True

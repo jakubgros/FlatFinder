@@ -440,7 +440,21 @@ class AddressExtractorTest(unittest.TestCase):
         self.assertIn("Mogilska", [str(match.location) for match in found_address.all])
         self.assertEqual(1, len(found_address.all))
 
+    def test_actual_all_uppercase_bug(self):
+        mocked_address_provider = MockedAddressProvider(
+            streets=[
+                {
+                    "official": "Czyżyny",
+                    "colloquial": [],
+                },
+            ],
+        )
 
+        extractor = AddressExtractor(mocked_address_provider)
+
+        found_address = extractor('CZYŻYNY')
+        self.assertIn("Czyżyny", [str(match.location) for match in found_address.all])
+        self.assertEqual(1, len(found_address.all))
 
 
 if __name__ == "__main__":
