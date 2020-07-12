@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass()
+@dataclass
 class StreetAddress:
     street_name: str
     unit_number: int = None

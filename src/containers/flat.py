@@ -1,3 +1,4 @@
+import json
 import traceback
 import unicodedata
 from collections import namedtuple
@@ -25,6 +26,7 @@ class Flat:
         self.price = None
         self.description = None
         self.address = None
+        self.photos = None
 
     @staticmethod
     def _parse_price(price_as_string):
@@ -32,7 +34,7 @@ class Flat:
         return int(price_stripped)
 
     def _extract_photo_links(self, page_src):
-        bs = BeautifulSoup(page_src)
+        bs = BeautifulSoup(page_src, features='html.parser')
 
         gallery = bs.find('div', class_="vip-gallery")
         thumbsnails = gallery.find(class_="thumbs").find_all('img')
@@ -44,6 +46,8 @@ class Flat:
             proper_link_end = thumbsnail_link.rfind('/')
             proper_link = thumbsnail_link[proper_link_beg:proper_link_end] + "/$_20.JPG"
             photo_links.append(proper_link)
+
+        return photo_links
 
     @classmethod
     def from_url(cls, url):
@@ -57,7 +61,7 @@ class Flat:
         flat.description = unicodedata.normalize('NFKC', driver.find_element_by_class_name('description').text)
         flat.address = unicodedata.normalize('NFKC', driver.find_element_by_class_name('full-address').text)
 
-        flat.photos = cls._extract_photo_links(driver.page_source)
+        flat.photos = flat._extract_photo_links(driver.page_source)
 
         # top menu
         sel_menu = driver.find_element_by_class_name("selMenu")
@@ -90,3 +94,36 @@ class Flat:
                 raise extracted_val
             else:
                 self.description_extracted_attributes[attribute_name] = extracted_val
+
+    def to_dict(self):
+        as_dict = {
+            'title': self.title,
+            'attributes': self.attributes,
+            'description': self.description,
+            'url': self.url,
+            'address': self.address,
+            'price': self.price,
+            'photos': self.photos,
+        }
+
+        descr_extr_attr_as_dict = {}
+
+        for attr_name, val in self.description_extracted_attributes.items():
+            val_as_dict = None
+            try:
+                val_as_dict = val.to_dict()
+            except AttributeError:
+                pass
+
+            if not val_as_dict:
+                val_as_dict = val
+
+                if isinstance(val_as_dict, set):
+                    val_as_dict = list(val_as_dict)
+
+            descr_extr_attr_as_dict[attr_name] = val_as_dict
+
+
+        as_dict['description_extracted_attributes'] = descr_extr_attr_as_dict
+
+        return as_dict

@@ -1,9 +1,16 @@
+import dataclasses
+import json
 import logging
+import shutil
 import traceback
 from datetime import datetime
 from pprint import pprint
 from random import random
+from pathlib import Path
 
+import jsonpickle as jsonpickle
+
+from env_utils.base_dir import base_dir
 from filters.attribute_filter import AttributeFilter
 from containers.flat import Flat
 from data_provider.address_provider import address_provider
@@ -34,6 +41,14 @@ class ScrappingManager:
         self.start = timer()
 
         self.processed_flats_by_titles = {}
+        self.flats_by_order_of_processing = []
+
+        self.set_up_db()
+
+    def set_up_db(self):
+        db_dir = f'{base_dir}/temp/fetched_flats'
+        shutil.rmtree(db_dir, ignore_errors=True)
+        Path(db_dir).mkdir(parents=True, exist_ok=True)
 
     def _get_interval(self):  # to look more like a human
         max_incline = 0.15
@@ -56,20 +71,12 @@ class ScrappingManager:
 
         self.start = timer()
 
-    def announce(self, flats):
+    def save_to_db(self, flats):
+
+        self.flats_by_order_of_processing.extend(flats)
         for flat in flats:
-            global currently_printed_id
-            global processed
-            currently_printed_id += 1
-            print(f'[{datetime.now()}][{currently_printed_id}/{processed}]')
-            print(flat.title)
-            print(flat.address)
-            print(flat.url)
-            pprint(flat.attributes, indent=2)
-            description_extracted_attributes = {attr_name: str(attr_val) for attr_name, attr_val in
-                                                flat.description_extracted_attributes.items()}
-            pprint(description_extracted_attributes, indent=2)
-            print('\n\n\n')
+            print(json.dumps(flat.to_dict(), indent=2))
+
 
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
@@ -80,8 +87,6 @@ class ScrappingManager:
     def run(self):
         while True:
             try:
-                new_flats = []
-
                 for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
                     try:
                         global processed
@@ -95,12 +100,15 @@ class ScrappingManager:
 
                         flat.extract_info_from_description(self.extractors)
 
-                        new_flats.append(flat)
-                    except Exception as e:
-                        logging.debug(e)
+                        new_flats = [flat]
+                        new_flats = self.apply_filters(new_flats)
 
-                new_flats = self.apply_filters(new_flats)
-                self.announce(new_flats)
+                        self.save_to_db(new_flats)
+
+                    except Exception as e:
+                        logging.error(e, exc_info=True)
+
+
 
             except Exception as e:
                 print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
@@ -113,7 +121,7 @@ class ScrappingManager:
 
 
 if __name__ == "__main__":
-
+    logging.basicConfig(level=logging.ERROR)
     without_kitchenette = AttributeFilter(KitchenetteExtractor.attribute_name, [False])
     without_interconnecting_room = AttributeFilter(InterconnectingRoomExtractor.attribute_name, [False])
     not_bachelor_pad = AttributeFilter(BachelorPadExtractor.attribute_name, [False])
