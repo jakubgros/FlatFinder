@@ -13,16 +13,21 @@ class Database:
         self.buffer = []
         self.buffer_size = 10
 
+        self._processed_flats_by_titles = {}
+
     def save(self, flats):
         for flat in flats:
+            self._processed_flats_by_titles[flat.title] = flat
             self.buffer.append(flat)
 
             if len(self.buffer) >= self.buffer_size:
                 self.flush()
 
     def flush(self):
+
         self._save_to_email(self.buffer)
         self._save_to_console(self.buffer)
+
 
         self.buffer.clear()
 
@@ -78,3 +83,6 @@ class Database:
         ET.SubElement(root, "br")
         ET.SubElement(root, "br")
         ET.SubElement(root, "hr")
+
+    def has_flat(self, flat):
+        return flat.title in self._processed_flats_by_titles

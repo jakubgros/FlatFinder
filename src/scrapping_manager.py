@@ -21,13 +21,12 @@ from text.analysis.context_analysers.price_context import PriceContext
 class ScrappingManager:
     def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
         self.flat_filters = filters
-        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
+        self._gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
         self.extractors = extractors
 
-        self.processed_flats_by_titles = {}
-        self.first_run_time_delta = first_run_time_delta
-        self.output_manager = Database()
-        self.loop_ticker = LoopTicker(check_interval_in_seconds)
+        self._first_run_time_delta = first_run_time_delta
+        self._database = Database()
+        self._loop_ticker = LoopTicker(check_interval_in_seconds)
 
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
@@ -35,22 +34,20 @@ class ScrappingManager:
 
         return flats
 
-    def _is_duplicate_of_already_processed(self, flat):
-        return flat.title in self.processed_flats_by_titles
+
 
     def run(self):
-        while self.loop_ticker.tick():
-            for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
+        while self._loop_ticker.tick():
+            for flat_link in self._gumtree_flat_provider.get_most_recent_flat_links():
                 try:
                     flat = Flat.from_url(flat_link)
 
-                    if not self._is_duplicate_of_already_processed(flat):
-                        self.processed_flats_by_titles[flat.title] = flat
+                    if not self._database.has_flat(flat):
 
                         flat.extract_info_from_description(self.extractors)
 
                         new_flats = self.apply_filters([flat])
-                        self.output_manager.save(new_flats)
+                        self._database.save(new_flats)
 
                 except Exception as e:
                     logging.error(e, exc_info=True)
