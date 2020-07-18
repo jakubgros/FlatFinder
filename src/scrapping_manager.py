@@ -91,18 +91,11 @@ class OutputManager():
         ET.SubElement(root, "br")
         ET.SubElement(root, "hr")
 
-class ScrappingManager:
-    def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
-        self.flat_filters = filters
+class ClockRunner():
+    def __init__(self, check_interval_in_seconds):
         self.check_interval = check_interval_in_seconds
-        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
-        self.extractors = extractors
-
         self.start = timer()
-        self.processed_flats_by_titles = {}
-        self.first_run_time_delta = first_run_time_delta
         self.first_run = True
-        self.output_manager = OutputManager()
 
     def _get_interval(self):  # to look more like a human
         max_incline = 0.15
@@ -116,7 +109,7 @@ class ScrappingManager:
 
         return random_val
 
-    def _wait_until_interval_passes(self):
+    def tick(self):
         if self.first_run:
             self.first_run = False
         else:
@@ -130,6 +123,17 @@ class ScrappingManager:
 
         return True
 
+class ScrappingManager:
+    def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
+        self.flat_filters = filters
+        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
+        self.extractors = extractors
+
+        self.processed_flats_by_titles = {}
+        self.first_run_time_delta = first_run_time_delta
+        self.output_manager = OutputManager()
+        self.clock_runner = ClockRunner(check_interval_in_seconds)
+
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
             flats = flat_filter(flats)
@@ -139,23 +143,19 @@ class ScrappingManager:
     def _is_duplicate_of_already_processed(self, flat):
         return flat.title in self.processed_flats_by_titles
 
-
     def run(self):
-
-        while self._wait_until_interval_passes():
+        while self.clock_runner.tick():
             for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
                 try:
                     flat = Flat.from_url(flat_link)
 
-                    if self._is_duplicate_of_already_processed(flat):
-                        continue
-                    else:
+                    if not self._is_duplicate_of_already_processed(flat):
                         self.processed_flats_by_titles[flat.title] = flat
 
-                    flat.extract_info_from_description(self.extractors)
+                        flat.extract_info_from_description(self.extractors)
 
-                    new_flats = self.apply_filters([flat])
-                    self.output_manager.output(new_flats)
+                        new_flats = self.apply_filters([flat])
+                        self.output_manager.output(new_flats)
 
                 except Exception as e:
                     logging.error(e, exc_info=True)
