@@ -1,7 +1,6 @@
-import json
 import logging
-import traceback
 from datetime import timedelta
+from pprint import pprint
 from random import random
 import xml.etree.cElementTree as ET
 from mailer import Mailer
@@ -22,57 +21,47 @@ from text.analysis.context_analysers.first_word_of_sentence_context import First
 from text.analysis.context_analysers.nearby_location_context import NearbyLocationContext
 from text.analysis.context_analysers.price_context import PriceContext
 
-processed = 0
-currently_printed_id = 0
-
-
-class ScrappingManager:
-    def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
-        self.flat_filters = filters
-        self.check_interval = check_interval_in_seconds
-        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
-        self.extractors = extractors
-
-        self.start = timer()
-
-        self.processed_flats_by_titles = {}
-        self.flats_by_order_of_processing = []
-
-        self.first_run_time_delta = first_run_time_delta
-
-        self.set_up_db()
-
-    def set_up_db(self):
+class OutputManager():
+    def __init__(self):
         self.mailer = Mailer('smtp.gmail.com', 587, use_tls=True)
         self.mailer.login(usr="123szukaczmieszkan123@gmail.com", pwd="#Rguih1m37x")
+        self.amount_of_all_processed = 0
+        self.currently_printed_id = 0
+        self.buffer = []
+        self.buffer_size = 10
 
-    def _get_interval(self):  # to look more like a human
-        max_incline = 0.15
-        current_incline = random() * max_incline
-        current_incline_in_seconds = self.check_interval * current_incline
+    def output(self, flats):
+        for flat in flats:
+            self.buffer.append(flat)
 
-        if random() > 0.5:
-            random_val = self.check_interval + current_incline_in_seconds
-        else:
-            random_val = self.check_interval - current_incline_in_seconds
+            if len(self.buffer) >= self.buffer_size:
+                self._output_to_email(self.buffer)
+                self._output_to_console(self.buffer)
 
-        return random_val
+                self.buffer.clear()
 
-    def _wait_until_interval_passes(self):
-        end = timer()
-        time_passed_in_seconds = end - self.start
-        time_left_in_the_interval = self._get_interval() - time_passed_in_seconds
-        if time_left_in_the_interval > 0:
-            time.sleep(time_left_in_the_interval)
+    def _output_to_console(self, flats):
+        for flat in flats:
+            pprint(flat.to_dict(), indent=2)
 
-        self.start = timer()
+    def _output_to_email(self, flats):
+        root = ET.Element("html")
 
-    def display_to_html(self, flat_dict, root):
+        previous_id = self.currently_printed_id
+        self.currently_printed_id += len(flats)
+        for flat in flats:
+            flat_dict = flat.to_dict()
+            self._display_to_html(flat_dict, root)
+
+        message = Message(From="123szukaczmieszkan123@gmail.com", To="kubagros@gmail.com")
+        message.Subject = f"MIESZKANIA [{previous_id}-{self.currently_printed_id}/{self.amount_of_all_processed}]"
+        message.Html = ET.tostring(root, method='html')
+        self.mailer.send(message)
+
+    def _display_to_html(self, flat_dict, root):
         address_attr = flat_dict['attributes'].get("Lokalizacja", "")
         gmaps_attr = flat_dict['address']
         extracted_addr = [addr for addr in flat_dict['description_extracted_attributes']['address'].values()]
-
-
 
         table = ET.SubElement(root, "table", style="border: 1px solid black; background-color: #E9967A")
 
@@ -102,26 +91,44 @@ class ScrappingManager:
         ET.SubElement(root, "br")
         ET.SubElement(root, "hr")
 
+class ScrappingManager:
+    def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
+        self.flat_filters = filters
+        self.check_interval = check_interval_in_seconds
+        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
+        self.extractors = extractors
 
-    def save_to_db(self, flats):
+        self.start = timer()
+        self.processed_flats_by_titles = {}
+        self.first_run_time_delta = first_run_time_delta
+        self.first_run = True
+        self.output_manager = OutputManager()
 
-        self.flats_by_order_of_processing.extend(flats)
+    def _get_interval(self):  # to look more like a human
+        max_incline = 0.15
+        current_incline = random() * max_incline
+        current_incline_in_seconds = self.check_interval * current_incline
 
-        root = ET.Element("html")
+        if random() > 0.5:
+            random_val = self.check_interval + current_incline_in_seconds
+        else:
+            random_val = self.check_interval - current_incline_in_seconds
 
-        global currently_printed_id
-        global processed
-        previous_id = currently_printed_id
-        currently_printed_id += len(flats)
-        for flat in flats:
-            flat_dict = flat.to_dict()
-            print(flat_dict)
-            self.display_to_html(flat_dict, root)
+        return random_val
 
-        message = Message(From="123szukaczmieszkan123@gmail.com", To="kubagros@gmail.com")
-        message.Subject = f"MIESZKANIA [{previous_id}-{currently_printed_id}/{processed}]"
-        message.Html = ET.tostring(root, method='html')
-        self.mailer.send(message)
+    def _wait_until_interval_passes(self):
+        if self.first_run:
+            self.first_run = False
+        else:
+            end = timer()
+            time_passed_in_seconds = end - self.start
+            time_left_in_the_interval = self._get_interval() - time_passed_in_seconds
+            if time_left_in_the_interval > 0:
+                time.sleep(time_left_in_the_interval)
+
+            self.start = timer()
+
+        return True
 
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
@@ -129,37 +136,29 @@ class ScrappingManager:
 
         return flats
 
+    def _is_duplicate_of_already_processed(self, flat):
+        return flat.title in self.processed_flats_by_titles
+
+
     def run(self):
-        while True:
-            try:
-                new_flats = []
-                for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
-                    try:
-                        global processed
-                        processed += 1
-                        flat = Flat.from_url(flat_link)
 
-                        if flat.title in self.processed_flats_by_titles:
-                            continue
-                        else:
-                            self.processed_flats_by_titles[flat.title] = flat
+        while self._wait_until_interval_passes():
+            for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
+                try:
+                    flat = Flat.from_url(flat_link)
 
-                        flat.extract_info_from_description(self.extractors)
+                    if self._is_duplicate_of_already_processed(flat):
+                        continue
+                    else:
+                        self.processed_flats_by_titles[flat.title] = flat
 
-                        new_flats.append(flat)
-                    except Exception as e:
-                        logging.error(e, exc_info=True)
+                    flat.extract_info_from_description(self.extractors)
 
-                new_flats = self.apply_filters(new_flats)
-                self.save_to_db(new_flats)
+                    new_flats = self.apply_filters([flat])
+                    self.output_manager.output(new_flats)
 
-            except Exception as e:
-                print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-                print(f"EXCEPTION CAUGHT:\n {e}")
-                print(traceback.format_exc())
-                print("\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-
-            self._wait_until_interval_passes()
+                except Exception as e:
+                    logging.error(e, exc_info=True)
 
 
 

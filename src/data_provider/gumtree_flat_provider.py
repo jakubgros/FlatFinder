@@ -11,7 +11,7 @@ from other.driver import driver
 # TODO add tests
 
 class GumtreeFlatProvider:
-    def __init__(self, first_run_time_delta, **kwargs):
+    def __init__(self, first_run_time_delta, processed_flat_links=set(), **kwargs):
         """
         :param kwargs:
         kwargs[price_low]
@@ -33,7 +33,7 @@ class GumtreeFlatProvider:
             = 'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/v1c9008l3200208p{page_number}?'\
               + '&'.join(args)
 
-        self.processed_flat_links = set()
+        self.processed_flat_links = processed_flat_links
         self.first_run = True
 
         self.oldest_add_date_to_fetch_on_first_run = datetime.now() - first_run_time_delta
@@ -103,7 +103,6 @@ class GumtreeFlatProvider:
             page_number += 1
 
             curr_page_links = self.get_flat_links_with_date_added(page_number)
-
 
             new_links = []
             for is_featured, link, when_added in curr_page_links:
