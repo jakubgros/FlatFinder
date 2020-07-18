@@ -1,7 +1,6 @@
 import logging
 from datetime import timedelta
 from pprint import pprint
-from random import random
 import xml.etree.cElementTree as ET
 from mailer import Mailer
 from mailer import Message
@@ -9,10 +8,10 @@ from filters.attribute_filter import AttributeFilter
 from containers.flat import Flat
 from data_provider.address_provider import address_provider
 from data_provider.gumtree_flat_provider import GumtreeFlatProvider
-from timeit import default_timer as timer
-import time
+
 
 from filters.exclude_address_filter import ExcludeAddressFilter
+from other.LoopTicker import LoopTicker
 from parsers.address_extractor import AddressExtractor
 from parsers.bachelor_pad_extractor import BachelorPadExtractor
 from parsers.interconnecting_room_extractor import InterconnectingRoomExtractor
@@ -91,37 +90,7 @@ class OutputManager():
         ET.SubElement(root, "br")
         ET.SubElement(root, "hr")
 
-class ClockRunner():
-    def __init__(self, check_interval_in_seconds):
-        self.check_interval = check_interval_in_seconds
-        self.start = timer()
-        self.first_run = True
 
-    def _get_interval(self):  # to look more like a human
-        max_incline = 0.15
-        current_incline = random() * max_incline
-        current_incline_in_seconds = self.check_interval * current_incline
-
-        if random() > 0.5:
-            random_val = self.check_interval + current_incline_in_seconds
-        else:
-            random_val = self.check_interval - current_incline_in_seconds
-
-        return random_val
-
-    def tick(self):
-        if self.first_run:
-            self.first_run = False
-        else:
-            end = timer()
-            time_passed_in_seconds = end - self.start
-            time_left_in_the_interval = self._get_interval() - time_passed_in_seconds
-            if time_left_in_the_interval > 0:
-                time.sleep(time_left_in_the_interval)
-
-            self.start = timer()
-
-        return True
 
 class ScrappingManager:
     def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
@@ -132,7 +101,7 @@ class ScrappingManager:
         self.processed_flats_by_titles = {}
         self.first_run_time_delta = first_run_time_delta
         self.output_manager = OutputManager()
-        self.clock_runner = ClockRunner(check_interval_in_seconds)
+        self.loop_ticker = LoopTicker(check_interval_in_seconds)
 
     def apply_filters(self, flats):
         for flat_filter in self.flat_filters:
@@ -144,7 +113,7 @@ class ScrappingManager:
         return flat.title in self.processed_flats_by_titles
 
     def run(self):
-        while self.clock_runner.tick():
+        while self.loop_ticker.tick():
             for flat_link in self.gumtree_flat_provider.get_most_recent_flat_links():
                 try:
                     flat = Flat.from_url(flat_link)
