@@ -15,6 +15,16 @@ class Database:
 
         self._processed_flats_by_titles = {}
 
+        self._load_db_from_disc()
+
+    def _load_db_from_disc(self):
+        #TODO
+        pass
+
+    def _save_to_disc(self, buffer):
+        #TODO
+        pass
+
     def save(self, flats):
         for flat in flats:
             self._processed_flats_by_titles[flat.title] = flat
@@ -27,7 +37,7 @@ class Database:
 
         self._save_to_email(self.buffer)
         self._save_to_console(self.buffer)
-
+        self._save_to_disc(self.buffer)
 
         self.buffer.clear()
 

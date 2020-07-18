@@ -38,7 +38,7 @@ class ScrappingManager:
 
     def run(self):
         while self._loop_ticker.tick():
-            for flat_link in self._gumtree_flat_provider.get_most_recent_flat_links():
+            for flat_link in self._gumtree_flat_provider.get_most_recent_flat_links(): #TODO integrate with database
                 try:
                     flat = Flat.from_url(flat_link)
 
