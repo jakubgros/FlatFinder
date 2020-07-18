@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+from datetime import timedelta
 from random import random
 import xml.etree.cElementTree as ET
 from mailer import Mailer
@@ -26,16 +27,18 @@ currently_printed_id = 0
 
 
 class ScrappingManager:
-    def __init__(self, *, check_interval_in_seconds, filters, config, extractors):
+    def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
         self.flat_filters = filters
         self.check_interval = check_interval_in_seconds
-        self.gumtree_flat_provider = GumtreeFlatProvider(**config)
+        self.gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
         self.extractors = extractors
 
         self.start = timer()
 
         self.processed_flats_by_titles = {}
         self.flats_by_order_of_processing = []
+
+        self.first_run_time_delta = first_run_time_delta
 
         self.set_up_db()
 
@@ -181,7 +184,7 @@ if __name__ == "__main__":
         BachelorPadExtractor()
     ]
 
-    mgr = ScrappingManager(check_interval_in_seconds=3*60*60,
+    mgr = ScrappingManager(check_interval_in_seconds=60,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room,
@@ -192,6 +195,7 @@ if __name__ == "__main__":
                                'price_low': 1000,
                                'price_high': 1500
                            },
-                           extractors=extractors)
+                           extractors=extractors,
+                           first_run_time_delta=timedelta(minutes=30))
 
     mgr.run()
