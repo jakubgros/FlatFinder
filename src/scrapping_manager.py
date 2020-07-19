@@ -21,33 +21,25 @@ from text.analysis.context_analysers.price_context import PriceContext
 class ScrappingManager:
     def __init__(self, *, check_interval_in_seconds, filters, config, extractors, first_run_time_delta):
         self.flat_filters = filters
-        self._gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, **config)
         self.extractors = extractors
 
         self._first_run_time_delta = first_run_time_delta
         self._database = Database()
+        self._gumtree_flat_provider = GumtreeFlatProvider(first_run_time_delta, self._database, **config)
         self._loop_ticker = LoopTicker(check_interval_in_seconds)
-
-    def apply_filters(self, flats):
-        for flat_filter in self.flat_filters:
-            flats = flat_filter(flats)
-
-        return flats
-
-
 
     def run(self):
         while self._loop_ticker.tick():
             for flat_link in self._gumtree_flat_provider.get_most_recent_flat_links(): #TODO integrate with database
                 try:
+                    self._database.increase_processed_flats_counter()
+
                     flat = Flat.from_url(flat_link)
 
                     if not self._database.has_flat(flat):
 
                         flat.extract_info_from_description(self.extractors)
-
-                        new_flats = self.apply_filters([flat])
-                        self._database.save(new_flats)
+                        self._database.save_flat(flat, self.flat_filters)
 
                 except Exception as e:
                     logging.error(e, exc_info=True)
@@ -74,7 +66,7 @@ if __name__ == "__main__":
         BachelorPadExtractor()
     ]
 
-    mgr = ScrappingManager(check_interval_in_seconds=60,
+    mgr = ScrappingManager(check_interval_in_seconds=15*60,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room,
@@ -86,6 +78,6 @@ if __name__ == "__main__":
                                'price_high': 1500
                            },
                            extractors=extractors,
-                           first_run_time_delta=timedelta(minutes=30))
+                           first_run_time_delta=timedelta(days=1))
 
     mgr.run()

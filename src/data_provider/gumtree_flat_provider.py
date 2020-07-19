@@ -11,7 +11,7 @@ from other.driver import driver
 # TODO add tests
 
 class GumtreeFlatProvider:
-    def __init__(self, first_run_time_delta, processed_flat_links=set(), **kwargs):
+    def __init__(self, first_run_time_delta, database, **kwargs):
         """
         :param kwargs:
         kwargs[price_low]
@@ -33,11 +33,12 @@ class GumtreeFlatProvider:
             = 'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/v1c9008l3200208p{page_number}?'\
               + '&'.join(args)
 
-        self.processed_flat_links = processed_flat_links
+        self.database = database
         self.first_run = True
 
         self.oldest_add_date_to_fetch_on_first_run = datetime.now() - first_run_time_delta
         self.first_search_depth_reached = False
+
 
     def _to_date(self, when_added):
         origin = when_added
@@ -110,23 +111,20 @@ class GumtreeFlatProvider:
                     self.first_search_depth_reached = True
                     break
 
-                if link in self.processed_flat_links and not is_featured: #the same featured link may occur on many pages
+                if self.database.has_link(link) and not is_featured: #the same featured link may occur on many pages
                     has_duplicated = True
 
-                if link not in self.processed_flat_links:
+                if not self.database.has_link(link):
                     new_links.append(link)
-
-
+                    self.database.save_link(link)
 
             most_recent_flat_links.extend(new_links)
-            self.processed_flat_links.update(new_links)
 
             if self.first_search_depth_reached and self.first_run:
                 self.first_run = False
                 break
 
             if has_duplicated:
-                assert not self.first_run
                 break
 
         return most_recent_flat_links

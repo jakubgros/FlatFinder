@@ -1,98 +1,87 @@
+import json
+import os
 from pprint import pprint
-import xml.etree.cElementTree as ET
-from mailer import Mailer
-from mailer import Message
+import uuid
 
+from env_utils.base_dir import base_dir
+from other.EmailSender import EmailSender
+from os import listdir
+from os.path import isfile, join
 
 class Database:
     def __init__(self):
-        self.mailer = Mailer('smtp.gmail.com', 587, use_tls=True)
-        self.mailer.login(usr="123szukaczmieszkan123@gmail.com", pwd="#Rguih1m37x")
         self.amount_of_all_processed = 0
         self.currently_printed_id = 0
-        self.buffer = []
-        self.buffer_size = 10
-
         self._processed_flats_by_titles = {}
+        self.saved_links = set()
+
+        self._parsed_flats_dir = f"{base_dir}/data/database/parsed_flats"
 
         self._load_db_from_disc()
 
+        self._email_sender = EmailSender()
+
     def _load_db_from_disc(self):
-        #TODO
-        pass
+        flat_files = [join(self._parsed_flats_dir, file) for file in listdir(self._parsed_flats_dir)
+                      if isfile(join(self._parsed_flats_dir, file))]
 
-    def _save_to_disc(self, buffer):
-        #TODO
-        pass
+        for flat_file in flat_files:
+            with open(flat_file, "r") as in_handle:
+                flat = json.load(in_handle)
+                self._processed_flats_by_titles[flat['title']] = flat
 
-    def save(self, flats):
+        try:
+            with open(f"{self._parsed_flats_dir}/../processed_links.txt", "r") as in_handle:
+                for link in in_handle.read().splitlines():
+                    self.saved_links.add(link)
+        except FileNotFoundError:
+            pass
+
+    def _save_to_disc(self, flat):
+        while True:
+            file_name = str(uuid.uuid4()) + ".json"
+            file_path = f"{self._parsed_flats_dir}/{file_name}"
+            if not os.path.exists(file_path):
+                break
+
+        with open(file_path, "w") as out_handle:
+            json.dump(flat.to_dict(), out_handle, indent=2)
+
+    def save_flat(self, flat, filters):
+        #not filtered output
+        self._processed_flats_by_titles[flat.title] = flat
+        self._save_to_disc(flat)
+
+        #filtered output
+        flats = [flat]
+        for filters in filters:
+            flats = filters(flats)
+
+
         for flat in flats:
-            self._processed_flats_by_titles[flat.title] = flat
-            self.buffer.append(flat)
+            self.currently_printed_id += 1
+            self._save_to_email(flat)
+            self._save_to_console(flat)
 
-            if len(self.buffer) >= self.buffer_size:
-                self.flush()
+    def _save_to_console(self, flat):
+        print(f"[{self.currently_printed_id}/{self.amount_of_all_processed}]")
+        pprint(flat.to_dict(), indent=2)
 
-    def flush(self):
+    def _save_to_email(self, flat):
+        self._email_sender.send(flat)
 
-        self._save_to_email(self.buffer)
-        self._save_to_console(self.buffer)
-        self._save_to_disc(self.buffer)
+    def save_link(self, link):
+        with open(f"{self._parsed_flats_dir}/../processed_links.txt", "a") as out_handle:
+            print(link, file=out_handle)
 
-        self.buffer.clear()
+        self.saved_links.add(link)
 
-    @staticmethod
-    def _save_to_console(flats):
-        for flat in flats:
-            pprint(flat.to_dict(), indent=2)
-
-    def _save_to_email(self, flats):
-        root = ET.Element("html")
-
-        previous_id = self.currently_printed_id
-        self.currently_printed_id += len(flats)
-        for flat in flats:
-            flat_dict = flat.to_dict()
-            self._display_to_html(flat_dict, root)
-
-        message = Message(From="123szukaczmieszkan123@gmail.com", To="kubagros@gmail.com")
-        message.Subject = f"MIESZKANIA [{previous_id}-{self.currently_printed_id}/{self.amount_of_all_processed}]"
-        message.Html = ET.tostring(root, method='html')
-        self.mailer.send(message)
-
-    @staticmethod
-    def _display_to_html(flat_dict, root):
-        address_attr = flat_dict['attributes'].get("Lokalizacja", "")
-        gmaps_attr = flat_dict['address']
-        extracted_addr = [addr for addr in flat_dict['description_extracted_attributes']['address'].values()]
-
-        table = ET.SubElement(root, "table", style="border: 1px solid black; background-color: #E9967A")
-
-        for label, value in [
-            ('title', flat_dict['title']),
-            ('price', flat_dict['price']),
-            ('address_attr', address_attr),
-            ('gmaps_attr', gmaps_attr),
-            ('extracted_addr', extracted_addr),
-            ('gmaps_attr', gmaps_attr),
-            ('description', flat_dict['description']),
-            ('link', flat_dict['url']),
-        ]:
-            label = str(label)
-            value = str(value)
-            tr = ET.SubElement(table, "tr")
-            ET.SubElement(tr, "td").text = label
-            ET.SubElement(tr, "td").text = value
-
-        for photo in flat_dict['photos']:
-            tr = ET.SubElement(root, "tr")
-            ET.SubElement(tr, "img", src=photo)
-
-        # SEPARATORS
-        ET.SubElement(root, "hr")
-        ET.SubElement(root, "br")
-        ET.SubElement(root, "br")
-        ET.SubElement(root, "hr")
+    def has_link(self, link):
+        return link in self.saved_links
 
     def has_flat(self, flat):
         return flat.title in self._processed_flats_by_titles
+
+    def increase_processed_flats_counter(self):
+        self.amount_of_all_processed += 1
+
