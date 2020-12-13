@@ -1,4 +1,5 @@
 import logging
+import sys
 from datetime import timedelta
 
 from filters.attribute_filter import AttributeFilter
@@ -29,20 +30,47 @@ class ScrappingManager:
         self._loop_ticker = LoopTicker(check_interval_in_seconds)
 
     def run(self):
+
+        logger = logging.getLogger('scrapLogger')
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        logger.addHandler(handler)
+
+        logger.info("ASDASD")
         while self._loop_ticker.tick():
             for flat_link in self._gumtree_flat_provider.get_most_recent_flat_links(): #TODO integrate with database
                 try:
                     self._database.increase_processed_flats_counter()
 
+                    logger.info("Scrapping flat started...")
                     flat = Flat.from_url(flat_link)
+                    logger.info("done")
+
 
                     if not self._database.has_flat(flat):
+                        logger.info("Flat not found in db yet")
 
+                        logger.info("Extracting info from description started...")
                         flat.extract_info_from_description(self.extractors)
+                        logger.info("done")
+
+                        logger.info("saving flat to db...")
                         self._database.save_flat(flat, self.flat_filters)
+                        logger.info("done")
+
+                    else:
+                        logger.info("Flat already in db. Skipping")
+
+
 
                 except Exception as e:
-                    logging.error(e, exc_info=True)
+                    logger.error(e, exc_info=True)
 
 
 if __name__ == "__main__":
@@ -53,7 +81,12 @@ if __name__ == "__main__":
     excluded_addresses_filter = ExcludeAddressFilter(["Nowa Huta", "Borek Fałęcki", "Wzgórza Krzesławickie", "Prokocim",
                                                       "Łagiewniki", "Prądnik Czerwony", "Podgórze duchackie",
                                                       "Bieńczyce", "Czyżyny", "Bieżanów", "Mistrzejowice",
-                                                      "Swoszowice", "Ruczaj"])
+                                                      "Swoszowice", "Ruczaj",
+
+                                                      'Eliasza Radzikowskiego', 'Aleja 29 Listopada',
+                                                      'Dobrego Pasterza', 'Żabiniec', 'Jana Sobieskiego', 'Białoprądnicka',
+
+                                                      ])
 
     extractors = [
         AddressExtractor(address_provider, excluded_contexts=[
@@ -66,18 +99,27 @@ if __name__ == "__main__":
         BachelorPadExtractor()
     ]
 
-    mgr = ScrappingManager(check_interval_in_seconds=15*60,
+    two_room_cfg = {
+       'price_low': 800,
+       'price_high': 1500,
+       'room': 2
+    }
+
+    three_room_cfg = {
+       'price_low': 1000,
+       'price_high': 2200,
+       'room': 3
+    }
+
+    mgr = ScrappingManager(check_interval_in_seconds=1*60*60,
                            filters=[
                                without_kitchenette,
                                without_interconnecting_room,
                                not_bachelor_pad,
                                excluded_addresses_filter
                            ],
-                           config={
-                               'price_low': 1000,
-                               'price_high': 1500
-                           },
                            extractors=extractors,
-                           first_run_time_delta=timedelta(days=1))
+                           config=two_room_cfg,
+                           first_run_time_delta=timedelta(days=4))
 
     mgr.run()

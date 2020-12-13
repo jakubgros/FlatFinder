@@ -4,7 +4,7 @@ from mailer import Mailer, Message
 
 
 class EmailSender:
-    def __init__(self, *, buffer_size=10):
+    def __init__(self, *, buffer_size=5):
         self.mailer = Mailer('smtp.gmail.com', 587, use_tls=True)
         self.mailer.login(usr="123szukaczmieszkan123@gmail.com", pwd="#Rguih1m37x")
         self.flats_buffer = []

@@ -1,3 +1,4 @@
+import logging
 from timeit import default_timer as timer
 import time
 from random import random
@@ -29,6 +30,8 @@ class LoopTicker:
             time_passed_in_seconds = end - self.start
             time_left_in_the_interval = self._get_interval() - time_passed_in_seconds
             if time_left_in_the_interval > 0:
+                logging.info(f"Going sleep for {time_left_in_the_interval}s")
+
                 time.sleep(time_left_in_the_interval)
 
             self.start = timer()

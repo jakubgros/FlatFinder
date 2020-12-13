@@ -6,7 +6,7 @@ class BachelorPadExtractor:
     attribute_name = 'bachelor pad'
 
     def __call__(self, description: str):
-        phrases_to_look_for = ['kawalerka']
+        phrases_to_look_for = ['kawalerka', 'studio', 'garsoniera', 'jednopokojowe', '1-pokojowe', '1 pokojowe', 'jedno pokojowe']
 
         comparator = MorphologicComparator().equals
 

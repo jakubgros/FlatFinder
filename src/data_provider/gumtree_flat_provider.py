@@ -29,6 +29,9 @@ class GumtreeFlatProvider:
         if 'from' in kwargs:
             args.append(f'fr={kwargs["from"]}')
 
+        if 'room' in kwargs:
+            args.append(f'nr={kwargs["room"]}')
+
         self.web_url \
             = 'https://www.gumtree.pl/s-mieszkania-i-domy-do-wynajecia/krakow/v1c9008l3200208p{page_number}?'\
               + '&'.join(args)
